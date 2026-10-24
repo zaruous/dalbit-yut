@@ -1,5 +1,8 @@
 node_modules/
-.vercel/
 dist/
+build-test/
+build-static/
+preview-build/
+.vercel/
 coverage/
 .DS_Store

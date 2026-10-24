@@ -1,7 +1,6 @@
-const fs=require('fs'),vm=require('vm'),assert=require('assert');
-const ctx={window:{},Math,console};vm.createContext(ctx);
-for(const file of ['mapEngine.js','gameEngine.js'])vm.runInContext(fs.readFileSync(__dirname+'/src/'+file,'utf8'),ctx,{filename:file});
-const M=ctx.window.YutMaps,E=ctx.window.YutEngine;
+const assert=require('assert');
+const M=require('./build-test/mapEngine.js');
+const E=require('./build-test/gameEngine.js');
 let checks=0;const check=(cond,msg)=>{assert(cond,msg);checks++};
 for(const type of ['A','B']){
  const graph=M.makeGraph(type);

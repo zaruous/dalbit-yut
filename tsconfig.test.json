@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "outDir": "build-test",
+    "rootDir": "src-ts",
+    "jsx": "react"
+  },
+  "include": [
+    "src-ts/mapEngine.ts",
+    "src-ts/gameEngine.ts"
+  ]
+}

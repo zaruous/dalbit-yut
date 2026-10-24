@@ -15,9 +15,9 @@
 - Current falling Yut effect is an animated 2D simulation, not a physically accurate rigid-body simulator.
 
 ## Files
-- `src/mapEngine.js`: board graph, lanes, route generation and fork behavior.
-- `src/gameEngine.js`: turns, pieces, captures, stacks, roll results, AI candidate scoring.
-- `src/App.js`: React UI, manual piece/destination interactions, animation.
+- `src-ts/mapEngine.ts`: board graph, lanes, route generation and fork behavior.
+- `src-ts/gameEngine.ts`: turns, pieces, captures, stacks, roll results, AI candidate scoring.
+- `src-ts/App.tsx`: React UI, manual piece/destination interactions, animation.
 - `src/styles.css`: moonlit hanok UI and effects.
 - `public/hanok-night.svg`: background asset.
 - `vendor/`: locally bundled React/ReactDOM UMD scripts (React 16); read THIRD_PARTY_NOTICES.md.
@@ -36,8 +36,12 @@ This is a static, no-server UMD React implementation. It is not a Vite-based pro
 ## Cinematic UI redesign (2026-10-24)
 
 - Keep the React 16 UMD project and both existing board engines. Do not rewrite user-manual movement as automation.
-- `src/theme-cinematic.css` overlays `src/styles.css` and controls the warm sunset/hanok theme. If changing colors/layout, edit the theme first.
+- `src-ts/theme-cinematic.css` overlays `src/styles.css` and controls the warm sunset/hanok theme. If changing colors/layout, edit the theme first.
 - `public/hanok-sunset-atmosphere.webp` is a softened scene reference: it sits behind truly interactive elements. Never bake buttons/board controls into a static screenshot.
-- `src/App.js` contains SVG ThrowMat with 4 independent sticks, actual `낙` result and `Board` target rings; preserve keyboard/click handlers and destination confirmation.
+- `src-ts/App.tsx` contains SVG ThrowMat with 4 independent sticks, actual `낙` result and `Board` target rings; preserve keyboard/click handlers and destination confirmation.
 - PC layout: left player portraits / center board + directly-below throw / right manual controls & game history. Mobile: board + throw first, player info second, actions third.
 - Run `npm test` (150 complete randomized games) and browser-check the manual piece click, gold target click, map switches, forced nak and small screen width.
+
+## React + TypeScript migration
+
+`src-ts/*.ts` and `src-ts/App.tsx` are canonical. `index.html` loads the TSX entry with Vite, Vercel builds `dist/`. Use `npm run typecheck && npm test && npm run build` after changes; 150 gameplay simulations test A/B graphs. Keep manual piece/destination confirmation, local/AI modes, cinematic CSS and nak animation. `preview.html` is generated from the TypeScript code for standalone local preview.
