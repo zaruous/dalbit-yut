@@ -2,10 +2,10 @@
 'use strict';
 const maps=root.YutMaps;
 const COLORS=[
- {name:'홍련',color:'#f57b69',light:'#ffd9c4',avatar:'🦊'},
- {name:'청월',color:'#76b9f4',light:'#d5eaff',avatar:'🐰'},
- {name:'청솔',color:'#8bd8b6',light:'#d1fae7',avatar:'🐯'},
- {name:'자운',color:'#bf9bfb',light:'#eee0ff',avatar:'🐻'}
+ {name:'황금',color:'#eca14d',light:'#ffe4ba',avatar:'🐕'},
+ {name:'청월',color:'#6daefb',light:'#d7eaff',avatar:'🐰'},
+ {name:'초록',color:'#55c77f',light:'#d1fae7',avatar:'🐯'},
+ {name:'홍단',color:'#ee6468',light:'#ffdcdd',avatar:'🐧'}
 ];
 const NAMES={'-1':'빽도','1':'도','2':'개','3':'걸','4':'윷','5':'모'};
 const SCORES={'-1':'↶','1':'Ⅰ','2':'Ⅱ','3':'Ⅲ','4':'Ⅳ','5':'Ⅴ'};

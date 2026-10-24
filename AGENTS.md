@@ -32,3 +32,12 @@
 
 ## Notes
 This is a static, no-server UMD React implementation. It is not a Vite-based project; do not silently change build assumptions. If modernizing React, migrate and test as a separate scoped change. Custom board paths and nak handling are explicitly house rules.
+
+## Cinematic UI redesign (2026-10-24)
+
+- Keep the React 16 UMD project and both existing board engines. Do not rewrite user-manual movement as automation.
+- `src/theme-cinematic.css` overlays `src/styles.css` and controls the warm sunset/hanok theme. If changing colors/layout, edit the theme first.
+- `public/hanok-sunset-atmosphere.webp` is a softened scene reference: it sits behind truly interactive elements. Never bake buttons/board controls into a static screenshot.
+- `src/App.js` contains SVG ThrowMat with 4 independent sticks, actual `낙` result and `Board` target rings; preserve keyboard/click handlers and destination confirmation.
+- PC layout: left player portraits / center board + directly-below throw / right manual controls & game history. Mobile: board + throw first, player info second, actions third.
+- Run `npm test` (150 complete randomized games) and browser-check the manual piece click, gold target click, map switches, forced nak and small screen width.
