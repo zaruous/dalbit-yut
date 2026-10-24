@@ -1,0 +1,9 @@
+{
+  "name": "dalbit-yut-garden",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-contained React Yutnori game for Vercel static hosting",
+  "scripts": {
+    "test": "node test-engine.cjs"
+  }
+}
