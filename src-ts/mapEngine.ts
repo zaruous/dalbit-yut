@@ -83,7 +83,7 @@ export function getOptions(graph: BoardGraph,state: Pick<PiecePath, 'node'|'lane
   if(graph.type==='A'&&state.node==='C'&&state.lane==='ne') return [{value:'straight',label:'남서로 직진'},{value:'finish',label:'남동으로 전환'}];
   return [{value:'normal',label:'정해진 방향으로 전진'}];
 }
-export function suggestedOption(options: RouteChoice[]): MoveChoice{return options.find(x=>x.value==='shortcut')?.value ?? options.find(x=>x.value==='straight')?.value ?? 'normal'}
+export function suggestedOption(options: RouteChoice[]): MoveChoice{return options.find(x=>x.value==='shortcut')?.value ?? options.find(x=>x.value==='finish')?.value ?? options[0]?.value ?? 'normal'}
 
 function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: MoveChoice): PieceStep{
   const node=pos.node,lane=pos.lane;
@@ -125,7 +125,12 @@ export function movePiece(graph: BoardGraph,oldState: PiecePath,pips: number,cho
   if(pips===-1){
     if(state.history.length<2)return {...state,lastResult:'판에 말이 없어 빽도를 사용할 수 없습니다'};
     const prev=state.node;
-    state.history.pop();const last=state.history.at(-1)!;
+    if(prev==='O1'&&state.history.at(-2)?.node==='WAIT'){
+      // Reverse onto the on-board finish checkpoint, never back into the reserve.
+      // Seed its outer approach so further back-do moves continue O0 -> O23 -> O22.
+      state.history=[{node:'WAIT',lane:'outer'},...graph.outerIds.slice(1).map(node=>({node,lane:'outer' as const})),{node:'O0',lane:'outer'}];
+    }else state.history.pop();
+    const last=state.history.at(-1)!;
     state.node=last.node;state.lane=last.lane;
     state.lastPath=[prev,state.node];state.lastResult=`빽도: ${prev} → ${state.node}`;
     return state;

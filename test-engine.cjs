@@ -2,9 +2,50 @@ const assert=require('assert');
 const M=require('./build-test/mapEngine.js');
 const E=require('./build-test/gameEngine.js');
 let checks=0;const check=(cond,msg)=>{assert(cond,msg);checks++};
+const originalRandom=Math.random;
+// Explicit outcomes for every visible XXX pattern (bit i = stick i).
+const expectedByMask=[4,1,1,2,1,2,2,3,1,2,2,3,2,3,3,5];
+try{
+ for(let mask=0;mask<16;mask++)for(const backdo of [false,true]){
+  const faces=Array.from({length:4},(_,i)=>!!(mask&(1<<i)));
+  let index=0;Math.random=()=>faces[index++]?0.25:0.75;
+  const rolled=E.rollSticks(backdo);
+  const expected=backdo&&mask===1?-1:expectedByMask[mask];
+  check(rolled.faces.every((face,i)=>face===faces[i]),'Rendered XXX faces must match roll');
+  check(rolled.value===expected,'Face combination '+mask+' backdo='+backdo);
+  if(mask===15||mask===0){
+   const bonus=E.throwResult(E.createGame({}),rolled,false);
+   check(bonus.phase==='roll'&&bonus.rolls[0].value===(mask===15?5:4),'Mo and yut grant another throw');
+  }
+ }
+}finally{Math.random=originalRandom;}
 for(const type of ['A','B']){
  const graph=M.makeGraph(type);
  check(M.validateGraph(graph).length===0,'Map '+type+' graph has errors');
+ const first=M.movePiece(graph,M.initialState(),1);
+ const firstHistory=JSON.stringify(first.history);
+ const reversed=M.movePiece(graph,first,-1);
+ check(reversed.node==='O0'&&reversed.lane==='outer','Do then backdo reaches finish checkpoint on '+type);
+ check(reversed.lastPath.join(' ')==='O1 O0','Backdo animates directly to checkpoint');
+ check(JSON.stringify(first.history)===firstHistory,'Backdo preserves original piece state');
+ check(M.movePiece(graph,M.movePiece(graph,reversed,-1),-1).node==='O22','Repeated backdo continues around outer finish approach');
+ for(let pips=1;pips<=5;pips++)check(M.movePiece(graph,reversed,pips).node==='FIN','Forward roll completes from finish checkpoint');
+ const finishGame=E.createGame({board:type,mode:'local'});
+ finishGame.pieces[0]={...finishGame.pieces[0],...first};
+ finishGame.pieces[1]={...finishGame.pieces[1],...first};
+ finishGame.pieces[4]={...finishGame.pieces[4],...reversed};
+ finishGame.phase='move';finishGame.rolls=[{id:'back-start',value:-1,faces:[true,false,false,false]}];
+ const backOption=E.moveOptions(finishGame,'p0-0','back-start')[0];
+ check(backOption.destination==='O0','Game offers finish checkpoint for backdo');
+ check(!E.moveOptions(finishGame,'p0-2','back-start').length,'Waiting pieces cannot use backdo');
+ const backResult=E.resolveMove(finishGame,backOption);
+ check(backResult.meta.moved===2&&backResult.meta.captured===1,'Backdo carries stack and captures at finish checkpoint');
+ check(backResult.game.pieces[0].node==='O0'&&backResult.game.pieces[4].node==='WAIT','Backdo keeps mover on board and captured opponent in reserve');
+ const nearWin=backResult.game;
+ nearWin.pieces[2]={...nearWin.pieces[2],node:'FIN'};nearWin.pieces[3]={...nearWin.pieces[3],node:'FIN'};
+ nearWin.phase='move';nearWin.rolls=[{id:'finish-start',value:1,faces:[false,true,false,false]}];
+ const completed=E.resolveMove(nearWin,E.moveOptions(nearWin,'p0-0','finish-start')[0]);
+ check(completed.meta.moved===2&&completed.game.winner===0,'Forward move from checkpoint completes stack and wins');
  let p=M.initialState(),res=M.movePiece(graph,p,5,'normal');
  check(res.node==='O5','Five steps should reach O5');
  res=M.movePiece(graph,res,1,'normal');
@@ -15,9 +56,28 @@ for(const type of ['A','B']){
  check(a.node!==b.node,'Shortcut must differ from outer');
  const back=M.movePiece(graph,b,-1,'normal');
  check(back.node===b.history[b.history.length-2].node,'Backdo should reverse actual edge');
+ for(const node of ['O6','O12']){
+  const junction={...M.initialState(),node};
+  check(M.suggestedOption(M.getOptions(graph,junction))==='shortcut','Default junction route is shortcut');
+  check(M.movePiece(graph,junction,1).node===(type==='A'?(node==='O6'?'NE1':'NW1'):(node==='O6'?'I0':'W0')),'Default move enters shortcut');
+  check(M.movePiece(graph,junction,1,'outer').node===(node==='O6'?'O7':'O13'),'Explicit outer route stays available');
+  const game=E.createGame({board:type,mode:'local'});
+  game.pieces[0]={...game.pieces[0],...junction};game.phase='move';game.rolls=[{id:'junction',value:1,faces:[false,true,false,false]}];
+  const options=E.moveOptions(game,'p0-0','junction');
+  const preferred=M.suggestedOption(options.map(o=>({value:o.choice,label:o.label})));
+  const chosen=options.find(o=>o.choice===preferred);
+  check(chosen.choice==='shortcut','UI default selects legal shortcut');
+  check(game.pieces[0].node===node,'Selecting route does not move human piece');
+  check(E.resolveMove(game,chosen).game.pieces[0].node===chosen.destination,'Confirmed shortcut resolves');
+ }
+ check(M.movePiece(graph,{...M.initialState(),node:'O5'},2).node==='O7','Passing junction must not enter shortcut');
  for(const route of Object.values(graph.routes))
   check(route.nodes[0]==='O0'&&route.nodes.at(-1)==='O0','Route should return home');
 }
+const center={...M.initialState(),node:'C',lane:'ne'};
+check(M.movePiece(M.makeGraph('A'),center,1).node==='SE1','Center stop defaults toward finish');
+check(M.movePiece(M.makeGraph('A'),center,1,'straight').node==='SW1','Explicit straight center route remains available');
+check(M.movePiece(M.makeGraph('A'),{...center,node:'NE2'},2).node==='SW1','Passing center continues straight');
 let g=E.createGame({mode:'local',count:2,board:'A'});
 g=E.throwResult(g,{value:1,faces:[true,false,false,false]},false);
 check(g.phase==='move','Roll must enter move phase');
@@ -62,3 +122,4 @@ for(const board of ['A','B'])for(const count of [2,3,4])for(let seed=0;seed<25;s
  games++;
 }
 console.log('OK: '+checks+' assertions across '+games+' completed games, maps A and B');
+require('./test-ai.cjs');

@@ -1,5 +1,6 @@
 import * as E from './gameEngine.js';
 import * as M from './mapEngine.js';
+import {chooseAIAction} from './aiEngine.js';
 import type { GameState, GameConfig, MoveOption, MoveMeta, LandingStick, YutRoll, GamePiece } from './gameEngine.js';
 import type { MoveChoice } from './mapEngine.js';
 
@@ -233,8 +234,8 @@ checkAI(){
  if(g.phase!=='roll'&&g.phase!=='move')return;
  this.aiTimer=setTimeout(()=>{this.aiTimer=null;if(this.destroyed)return;const current=this.state.game;if(!current.players[current.current].ai||this.state.moving||this.state.stage==='throwing'||this.state.settingsOpen)return;
   if(current.phase==='roll')this.throwYut('safe',true);else if(current.phase==='move'){
-   const acts=E.legalActions(current);if(!acts.length){this.setState({game:E.normalize(current)});return;}
-   const ranked=acts.sort((a,b)=>E.scoreOption(current,b)-E.scoreOption(current,a));this.commitMove(ranked[0],true);
+   const action=chooseAIAction(current);if(!action){this.setState({game:E.normalize(current)});return;}
+   this.commitMove(action,true);
   }
  },g.phase==='roll'?850:620);
 };
@@ -261,7 +262,7 @@ selectPiece(id: string){
  const g=this.state.game,roll=this.activeRoll();if(!roll||g.phase!=='move'||g.players[g.current].ai||this.state.moving)return;
  const opts=E.moveOptions(g,id,roll.id);if(!opts.length)return;
  if(this.state.selectedPiece===id){this.setState({selectedPiece:null,selectedChoice:null});return;}
- this.setState({selectedPiece:id,selectedChoice:opts[0].choice});
+ this.setState({selectedPiece:id,selectedChoice:M.suggestedOption(opts.map(o=>({value:o.choice,label:o.label})))});
 };
 activeRoll(): YutRoll|null{const g=this.state.game;return g.rolls.find(x=>x.id===this.state.selectedRoll)||g.rolls[0]||null;};
 commitMove(option: MoveOption,ai: boolean){
@@ -283,7 +284,8 @@ moveTick(){
 render(){
  const s=this.state,g=s.game,owner=E.currentPlayer(g),graph=M.makeGraph(g.config.board),human=!owner.ai;
  const roll=this.activeRoll(),opts=s.selectedPiece&&roll?E.moveOptions(g,s.selectedPiece,roll.id):[];
- const selectedOpt=opts.find(o=>o.choice===s.selectedChoice)||opts[0];
+ const defaultChoice=M.suggestedOption(opts.map(o=>({value:o.choice,label:o.label})));
+ const selectedOpt=opts.find(o=>o.choice===s.selectedChoice)||opts.find(o=>o.choice===defaultChoice);
  const groups=E.uniqueMovablePieces(g),allowed=roll?new Set(E.legalActions(g,roll.id).map(o=>o.pieceId)):new Set();
  const turnTitle=g.winner!==null?'게임 종료':s.moving?'말이 이동하고 있어요':g.phase==='roll'?(owner.ai?'AI가 윷을 던지는 중':'윷을 던져주세요'):(owner.ai?'AI가 말 선택 중':s.selectedPiece?'이동 경로를 선택하세요':'움직일 말을 선택하세요');
  const statusDesc=g.phase==='roll'?'멍석 안에 윷가락이 모두 떨어져야 유효해요.':g.phase==='move'?'결과 선택 → 말 선택 → 목적지 클릭':`승리: ${g.players[g.winner ?? 0]?.label||''}`;
@@ -333,7 +335,7 @@ render(){
    h('section',{className:'panel board-panel'},
     h('div',{className:'board-top'},h('div',{className:'board-heading'},h('strong',null,`✿ ${g.config.board==='A'?'팔각 순환형':'이중 링형'}`),h('small',null,g.config.board==='A'?'전통의 길에서 새로운 승부를':'안쪽 길로 빠르게 역전하기')),
      h('div',{className:'board-switch'},...(['A','B'] as const).map(key=>h('button',{key,className:cx('board-choice',g.config.board===key&&'active'),onClick:()=>{if(g.config.board!==key)this.startGame({...g.config,board:key});}},key==='A'?'팔각형':'이중 링')))),
-    h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:s.selectedChoice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
+    h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:selectedOpt?.choice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
     h('div',{className:'board-cap'},h('span',null,'✦ 갈림길에 정확히 정차하면 지름길'),h('span',null,'말 선택 → 황금색 목적지 클릭')),
     h('div',{className:'map-sep'}),
     h('div',{className:'throw-top'},h('div',null,h('div',{className:'throw-title'},'✦ 달빛 멍석 · 윷 던지기'),h('div',{className:'throw-desc'},'네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')),h('div',{style:{fontSize:11,color:'#eac78f',fontWeight:850}},g.phase==='move'?'말 이동 중':`${g.players[g.current].label} 차례`)),

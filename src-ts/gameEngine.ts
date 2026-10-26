@@ -109,8 +109,9 @@ function normalize(g: GameState): GameState{
 }
 function rollSticks(backdo: boolean): YutRollOutcome{
  const faces=Array.from({length:4},()=>Math.random()<.5);
+ // Count the visible XXX faces: 0 = yut, 1..3 = do/gae/geol, 4 = mo.
  const count=faces.filter(Boolean).length;
- const value=count===0?5:(count===1&&faces[0]&&backdo?-1:count);
+ const value=count===0?4:count===4?5:(count===1&&faces[0]&&backdo?-1:count);
  return {faces,value};
 }
 function generateLanding(force: number,mode: 'nak'|'safe'|'random'): LandingOutcome{

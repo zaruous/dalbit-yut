@@ -10,6 +10,7 @@
   },
   "include": [
     "src-ts/mapEngine.ts",
-    "src-ts/gameEngine.ts"
+    "src-ts/gameEngine.ts",
+    "src-ts/aiEngine.ts"
   ]
 }
