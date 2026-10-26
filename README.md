@@ -1,72 +1,86 @@
-# 달빛 윷마당 — React + TypeScript (Vite)
+# 달빛 윷마당 — React + TypeScript
 
-한국 전통 윷놀이에서 영감을 받은 1~4인용 웹 게임입니다. **React TSX + TypeScript 게임 엔진**, Vite 정적 빌드로 Vercel에 배포합니다. 기존 시네마틱 한옥·노을 배경과 직접 말 이동 UX를 유지했습니다.
+한옥 노을을 배경으로 즐기는 **1인 AI / 2~4인 로컬 윷놀이**. 윷을 던지고, 움직일 말을 직접 선택한 뒤 **황금색 목적지를 눌러** 이동합니다.
 
-## 게임 미리보기
+## 실제 브라우저 화면 (Visual QA v1.0)
 
-![한옥 노을 배경](./public/hanok-sunset-atmosphere.webp)
+![게임과 분리된 새로운 한옥 노을 배경](./public/hanok-autumn-scene.svg)
 
-[▶ 직접 플레이하는 단일 HTML 미리보기](./preview.html) · [GitHub 소스 보기](./src-ts/App.tsx)
+**실제 게임 화면과 이펙트는 [플레이 가능한 HTML 미리보기](./preview.html)에서 확인하세요.**
 
-> 위 HTML 파일은 현재 TypeScript 코드를 컴파일해 하나로 묶은 검토용 파일입니다. GitHub는 HTML을 렌더링하지 않으므로 파일을 내려받아 브라우저에서 여세요.
+[**플레이 가능한 HTML 미리보기**](./preview.html) · 모바일 반응형 미리보기 지원 · [시각화 품질 기준 및 검증 보고서](./docs/visual-quality-v1.md)
 
-## 주요 기능
+> 위 이미지들은 그림 콘셉트가 아니라 **실제 React/TypeScript 컴파일 코드를 Chromium에서 실행해 캡처한 장면**입니다. `preview.html`은 빌드된 TypeScript 코드와 배경·스타일·React 런타임을 포함하는 독립 HTML 파일입니다.
 
-- **1인:** AI 상대 1~3명 / **로컬 대전:** 2~4인 (한 기기에서 턴 교대)
-- 한 플레이어당 말 4개, 도·개·걸·윷·모·빽도, 잡기/업기, 보너스 던지기와 완주 판정
-- 팔각 순환형(A), 이중 링형(B) 커스텀 윷판
-- 사용자가 **윷 결과 선택 → 말 클릭 → 지름길 선택 → 황금색 목적지 클릭**으로 이동 확정. AI만 자동 이동
-- 윷판 바로 아래의 멍석, 윷 4개 회전·착지·파티클, 힘 조절, **낙 판정** (윷 하나가 멍석 밖에 완전히 떨어지면 무효)
-- 전통 금장 플레이어 카드, 단풍·등불·한옥 배경, PC/모바일 반응형 레이아웃
+## 개선된 디자인
 
-## 실행 및 테스트
+- **독립 배경:** 한옥 마루·노을·산·단풍·등불을 벡터 레이어로 제작했습니다. 배경 이미지에는 윷판, 플레이어 카드, 버튼 같은 UI가 포함되지 않습니다.
+- **플레이어 영역:** 캐릭터 아바타, 4개의 말, 진행 상태 바, 현재 차례를 금장 카드로 강조합니다.
+- **윷 던지기:** 윷판 **바로 아래**의 짜임 멍석 위에서 4개의 윷가락이 각각 회전·낙하·착지하고 파티클과 결과를 표시합니다.
+- **수동 말 이동:** 사용자가 윷 결과 → 말 → 바깥길/지름길 → 금빛 목적지를 선택합니다. 이동 경로 번호, 점프, 착지·잡기·업기 효과를 표시합니다.
+- **낙:** 윷가락 중 하나라도 멍석 밖으로 완전히 벗어나면 무효, 다음 차례로 넘어갑니다. 경계에 부분적으로 걸쳐 있으면 유효로 판정합니다.
+- **반응형:** PC에서는 플레이어 / 게임판+던지기 / 조작·로그 3열, 모바일에서는 보드 아래 던지기를 바로 이어서 배치합니다.
 
-Node.js 20.19+ 또는 22.12+ 사용을 권장합니다.
+## 게임 기능
+
+- 1인 AI 상대 1~3명, 한 기기에서 2~4인 로컬 플레이
+- 플레이어별 말 4개, 도·개·걸·윷·모·빽도, 잡기·업기·추가 던지기·승리
+- 팔각 순환형(A), 이중 링형(B) 변형 맵 선택
+- 분기점에 **정확히 멈춘 말만** 지름길 진입 선택 가능
+- 사용자가 직접 말 선택/이동 확정, AI의 차례만 자동 진행
+- 던지는 힘 조절 및 낙 시험 버튼
+
+## 로컬 실행
+
+Node.js 20.19+ 또는 22.12+ 권장.
 
 ```bash
 npm install
 npm run dev
 ```
 
-개발 서버 주소는 Vite 실행 로그를 확인하세요. 타입 검사와 게임 규칙 테스트:
+정적 검증과 브라우저 검토용 HTML 생성:
 
 ```bash
 npm run typecheck
 npm test
+npm run build:preview
 npm run build
 ```
 
-`npm test`는 TypeScript 경로/게임 엔진을 CommonJS로 컴파일한 뒤 2개 맵, 2~4인 총 **150판의 자동 플레이**를 검사합니다. 브라우저 UI도 직접 눌러 확인해 주세요.
+`npm test`는 실제 TypeScript 엔진을 컴파일하여 2개 맵의 2~4인 게임 **150판을 자동 실행**합니다.
 
 ## Vercel 배포
 
-GitHub 저장소를 Vercel에 연결한 뒤 다음 설정을 사용합니다.
+이 GitHub 저장소를 Vercel에서 Import합니다.
 
-| 항목 | 값 |
+| 설정 | 값 |
 |---|---|
-| Framework Preset | Vite |
-| Build Command | `npm run build` |
+| Framework | Vite |
+| Install | `npm install` |
+| Build | `npm run build` |
 | Output Directory | `dist` |
 
-`vercel.json`에 동일 설정이 있습니다. **GitHub 업로드만으로 실제 Vercel URL이 생성되지는 않습니다.** Vercel 프로젝트 연결이 필요합니다.
+> GitHub 커밋은 완료될 수 있어도 Vercel에 실제 배포되려면 Vercel 프로젝트 연결이 필요합니다.
 
-## 소스 구조
+## 주요 소스
 
-| 경로 | 설명 |
+| 파일 | 내용 |
 |---|---|
-| `src-ts/App.tsx` | React TSX 윷판, 플레이어, 던지기·말 이동 UI |
-| `src-ts/gameEngine.ts` | 게임 상태·턴·AI·낙·잡기·업기·승리 규칙 |
-| `src-ts/mapEngine.ts` | 팔각형·이중 링형 경로 및 분기 선택 |
-| `src-ts/styles.css` | 기본 레이아웃과 반응형 스타일 |
-| `src-ts/theme-cinematic.css` | 한옥·노을 디자인, 플레이어 카드, 이펙트 테마 |
-| `public/` | 배경/파비콘/로컬 UMD React 번들 |
-| `index.html` | Vite 진입점 |
-| `preview.html` | TS 컴파일 결과가 포함된 독립 실행 미리보기 |
-| `test-engine.cjs` | 회귀 테스트 |
-| `AGENTS.md` | Codex 개발 지침 |
+| `src-ts/App.tsx` | React 화면, 직접 말 선택·윷·말 이동 애니메이션 |
+| `src-ts/gameEngine.ts` | 게임 상태, 낙·AI·잡기·업기·승리 판정 |
+| `src-ts/mapEngine.ts` | 팔각형·이중 링형 경로와 분기 처리 |
+| `src-ts/styles.css` | 공통 레이아웃과 SVG |
+| `src-ts/theme-cinematic.css` | 기존 시네마틱 테마 |
+| `src-ts/quality-v1.css` | 새 품질 기준용 화면·반응형·이펙트 스타일 |
+| `public/hanok-autumn-scene.svg` | UI 잔상이 없는 독립 한옥 배경 |
+| `scripts/build-preview.cjs` | TypeScript 컴파일 결과를 단일 HTML로 묶음 |
+| `docs/visual-quality-v1.md` | 품질 기준, 자동 검증, 수동 검수 항목 |
 
-현재 UI는 기존 React `createElement`를 TypeScript TSX 컴포넌트 내부에서 사용해 이전 디자인을 유지하는 방식입니다. 다음 개발 시 컴포넌트별 JSX와 최신 React 버전으로 단계적으로 리팩터링할 수 있습니다.
+## 검증 범위와 주의사항
 
-## 규칙 및 라이선스
+2026-10-26 Chromium에서 1600×900, 1366×768, 390×844, 360×800 화면을 검사했습니다. **가로 스크롤·런타임 JavaScript 예외 없음**, 수동 말 선택→목적지 클릭, 강제 낙→차례 전환을 확인했습니다. TypeScript 검사와 150판 자동 시뮬레이션도 통과했습니다.
 
-A/B 맵과 낙 판정은 본 프로젝트의 변형 규칙입니다. 윷가락 이동은 2D 착지 좌표/회전 기반 시뮬레이션이며 물리 엔진을 적용한 실사 재현은 아닙니다. 라이브러리 라이선스는 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)를 참고하세요.
+이 환경은 npm 레지스트리 접근이 제한되어 Vite 패키지를 설치할 수 없어 **`npm run build`의 실제 프로덕션 빌드는 확인하지 못했습니다.** 저장소의 독립 HTML은 테스트했으며, Vercel 연결 후 빌드 로그를 추가로 확인해야 합니다. 애니메이션은 경계 좌표 기반의 2D 연출이며, 3D 물리 엔진은 아닙니다. 해당 맵과 낙 처리는 커스텀 규칙입니다.
+
+라이선스: [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) · Codex 가이드: [AGENTS.md](./AGENTS.md)

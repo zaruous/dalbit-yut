@@ -29,7 +29,9 @@ function PieceShape(props: any){
    h('ellipse',{cx:0,cy:-8,rx:11,ry:10,fill:color,stroke:'#fff0d1',strokeWidth:2}),
    h('ellipse',{cx:-3.3,cy:-10,rx:4.8,ry:3,fill:'#fff9df',opacity:'.65'}),
    h('circle',{cx:0,cy:-8,r:2.5,fill:'#fff1cf',opacity:'.6'}),
-   number>1?h('g',null,h('circle',{cx:15,cy:-14,r:10.5,fill:'#33251d',stroke:'#ffdd94',strokeWidth:1.8}),h('text',{x:15,y:-10,textAnchor:'middle',fontSize:11,fontWeight:900,fill:'#ffe7b9'},number)):null
+   number>1?h('g',null,h('circle',{cx:15,cy:-14,r:10.5,fill:'#33251d',stroke:'#ffdd94',strokeWidth:1.8}),h('text',{x:15,y:-10,textAnchor:'middle',fontSize:11,fontWeight:900,fill:'#ffe7b9'},number)):null,
+   selected?h('g',{className:'selected-piece-label'},h('rect',{x:-27,y:-40,width:54,height:19,rx:8,fill:'#55301c',stroke:'#ffdc8f',strokeWidth:1.4}),h('text',{x:0,y:-27,textAnchor:'middle',fontSize:11},'선택한 말')):null,
+   onClick?h('circle',{className:'piece-hit-area',cx:0,cy:0,r:35,fill:'transparent',stroke:'none'}):null
  );
 }
 function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving,burst}: any){
@@ -81,7 +83,7 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
      h('circle',{className:'target-outer',cx:to.x,cy:to.y,r:23,fill:'#f8d58f',stroke:'#fff4cc',strokeWidth:2.7,strokeDasharray:'5 4'}),
      h('circle',{cx:to.x,cy:to.y,r:17,fill:'#5c3c27',stroke:'#ffc864',strokeWidth:2.2}),
      h('text',{x:to.x,y:to.y+4.5,textAnchor:'middle',fontSize:10.5,fontWeight:900,fill:'#fff1c8'},chosenOption.destination==='FIN'?'완주':chosenOption.destination==='WAIT'?'대기':'이동'),
-     h('circle',{className:'invisible-hit',cx:to.x,cy:to.y,r:30})
+     h('circle',{className:'invisible-hit',cx:to.x,cy:to.y,r:37})
   );
  })():null;
  const decor=h('g',{className:'board-ink-scenes','aria-hidden':true},
@@ -129,9 +131,11 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
    game.config.board==='A'?h('text',{x:264,y:221,className:'board-label'},'중앙'):h('text',{x:214,y:222,className:'board-label'},'내선')
   ),
   highlight?h('path',{d:poly(graph,highlight),className:'movement-trail'}):null,
+  ...(highlight?highlight.slice(1,-1).map((id,i)=>{const pt=coords(graph,id);return h('g',{className:'target-waypoint',key:`waypoint-${i}`},h('circle',{cx:pt.x,cy:pt.y,r:9.5,fill:'#644124',stroke:'#ffe1a0',strokeWidth:1.5}),h('text',{x:pt.x,y:pt.y+3.4,textAnchor:'middle',fontWeight:900,fontSize:10,fill:'#fff2c7'},i+1));}):[]),
   ...(moving?[h('path',{d:poly(graph,moving.meta.path.slice(0,moving.step+1)),className:'movement-trail',key:'animTrail'})]:[]),
   ...tokenViews,
   movingToken,
+  moving?(()=>{const node=moving.meta.path[Math.min(moving.step,moving.meta.path.length-1)];const pt=coords(graph,node);return h('circle',{key:'moving-impact',className:'step-impact',cx:pt.x,cy:pt.y,r:22,fill:'none',stroke:'#ffe1a0',strokeWidth:4});})():null,
   burst?(()=>{const pos=coords(graph,burst.node);return h('g',{className:'arrival-burst',key:'burst'},
    h('circle',{cx:pos.x,cy:pos.y,r:24,fill:'none',stroke:burst.capture?'#da6256':'#ffcf7e',strokeWidth:6}),
    h('circle',{cx:pos.x,cy:pos.y,r:37,fill:'none',stroke:burst.capture?'#e55c55':'#ffe2aa',strokeWidth:2,strokeDasharray:'5 5'}),
@@ -144,7 +148,8 @@ function ThrowMat({sticks,stage,result}: {sticks: LandingStick[],stage: GameUISt
  const rendered=sticks.map((st,i)=>{
   const fx=st.front;
   const marks=[-23,-7,9,25];
-  return h('g',{key:i,transform:`translate(${st.x} ${st.y}) rotate(${st.angle})`,className:cx('yutstick',st.nak&&'is-nak'),style:{'--delay':`${i*89}ms`}},
+  return h('g',{key:i,transform:`translate(${st.x} ${st.y}) rotate(${st.angle})`,className:cx('yutstick',st.nak&&'is-nak')},
+   h('g',{className:'stick-flight',style:{'--delay':`${i*89}ms`}},
     h('ellipse',{cx:3,cy:14,rx:43,ry:9,fill:'#24130d',opacity:.36}),
     h('rect',{x:-44,y:-12,width:88,height:27,rx:10,fill:'#3e1b13',stroke:'#ffe5a2',strokeWidth:1.5}),
     h('path',{d:'M-41 -8L-37 -14H33L41 -8H-41Z',fill:'#f5c985',stroke:'#ffe5b3',strokeWidth:1}),
@@ -155,6 +160,7 @@ function ThrowMat({sticks,stage,result}: {sticks: LandingStick[],stage: GameUISt
     h('path',{d:'M-31 -7L23 -7',fill:'none',stroke:'#fff8d7',strokeWidth:1.3,opacity:.56}),
     i===0?h('circle',{cx:33,cy:0,r:3.6,fill:'#b64b39',stroke:'#f8e2a8',strokeWidth:1}):null,
     st.nak?h('circle',{className:'nak-warning-ring',cx:0,cy:0,r:39,stroke:'#ff7c63',strokeWidth:3,strokeDasharray:'4 5',fill:'none'}):null
+   )
   );
  });
  return h('div',{className:cx('throw-sandbox','cinematic-throw',stage==='throwing'&&'is-throwing',result==='낙'&&'is-invalid')},
@@ -179,7 +185,7 @@ function ThrowMat({sticks,stage,result}: {sticks: LandingStick[],stage: GameUISt
       h('text',{x:546,y:78,textAnchor:'end',className:'mat-label'},'YUT'),
       h('g',{className:'sticks-shadow'},...rendered)
    ),
-   h('div',{className:'throw-stage-caption','aria-hidden':true},h('span',null,'✦'),h('span',null,stage==='throwing'?'달빛 아래 윷가락이 날아오릅니다':'전통 멍석 · 네 가락을 던져 운명을 가르다'),h('span',null,'✦')),
+   h('div',{className:'throw-stage-caption','aria-hidden':true},h('span',null,'✦'),h('span',null,stage==='throwing'?'회전 · 낙하 · 착지 중…':result==='낙'?'낙 · 말 이동 없이 다음 차례':result?'윷 결과를 확인하고 내 말을 선택하세요':'한옥 마루의 금빛 멍석 · 윷 네 가락'),h('span',null,'✦')),
    result?h('div',{className:cx('result-orb','visible',result==='낙'&&'nak'),'aria-live':'polite'},
      h('span',{className:'result-small'},result==='낙'?'무효 · 차례 교대':'윷 결과'),
      h('strong',null,result),
@@ -289,11 +295,12 @@ render(){
       h('div',{className:'avatar-coin'},h('div',{className:'avatar'},p.avatar)),
       h('div',{className:'player-identity'},
         h('div',{className:'player-name'},p.label),
-        h('div',{className:'player-role'},p.ai?'AI 대전 상대':p.id===0&&g.config.mode==='ai'?'나의 말':'참가자'),
-        h('div',{className:'pawns'},...pcs.map((pc,i)=>h('span',{key:i,className:cx('pawn-mini',pc.node==='FIN'&&'done'),style:{'--piece':p.color},title:pc.node==='FIN'?'완주':pc.node==='WAIT'?'대기':'이동 중'})))
+        h('div',{className:'player-role'},p.ai?'인공지능 상대':p.id===0&&g.config.mode==='ai'?'내 플레이어':'참가자'),
+        h('div',{className:'pawns'},...pcs.map((pc,i)=>h('span',{key:i,className:cx('pawn-mini',pc.node==='FIN'&&'done'),style:{'--piece':p.color},title:pc.node==='FIN'?'완주':pc.node==='WAIT'?'대기':'이동 중'}))),
+        h('div',{className:'player-progress','aria-label':`${done}개 완주`},h('div',{className:'player-progress-fill',style:{width:`${done*25}%`}}))
       ),
       h('div',{className:'player-right'},
-        p.id===g.current?h('span',{className:'on-turn'},'현재 차례'):h('span',{className:'player-flag'},'⚑'),
+        p.id===g.current?h('span',{className:'on-turn'},'● 내 차례'):h('span',{className:'player-tag'},p.ai?'AI':'대기'),
         h('div',{className:'player-status'},done>0?`${done}/4 완주`:`대기 ${ready}개`)
       )
     )
@@ -308,7 +315,7 @@ render(){
   h('div',{className:'ambient-leaves','aria-hidden':true},...Array.from({length:12},(_,i)=>h('i',{className:'ambient-leaf',key:i,style:{'--left':`${6+i*8}%`,'--delay':`${i*-1.6}s`,'--duration':`${14+i%5*2}s`}}))),
   h('div',{className:'app-wrap'},
   h('header',{className:'header'},
-   h('div',{className:'brand'},h('div',{className:'brand-mark'},h('strong',null,'윷놀이'),h('span',{className:'brand-seal'},'전통')),h('div',{className:'brand-sub'},'함께하는 즐거운 우리 놀이')),
+   h('div',{className:'brand'},h('div',{className:'brand-mark'},h('strong',null,'달빛 윷마당'),h('span',{className:'brand-seal'},'전통')),h('div',{className:'brand-sub'},'한옥 마루에서 즐기는 우리들의 한 판')),
    h('div',{className:'header-right'},h('span',{className:'head-chip'},`제 ${String(g.turn)} 턴`),
     h('button',{className:'header-btn icon-button','aria-label':s.sound?'소리 끄기':'소리 켜기',title:s.sound?'소리 끄기':'소리 켜기',onClick:()=>this.setState({sound:!s.sound})},s.sound?'♫':'♬'),
     h('button',{className:'header-btn icon-button','aria-label':'새 게임 설정',title:'새 게임 설정',onClick:()=>this.setState({settingsOpen:true})},'⚙'))
@@ -329,7 +336,7 @@ render(){
     h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:s.selectedChoice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
     h('div',{className:'board-cap'},h('span',null,'✦ 갈림길에 정확히 정차하면 지름길'),h('span',null,'말 선택 → 황금색 목적지 클릭')),
     h('div',{className:'map-sep'}),
-    h('div',{className:'throw-top'},h('div',null,h('div',{className:'throw-title'},'✦ 윷을 던져 운명을 결정하세요'),h('div',{className:'throw-desc'},'네 가락이 멍석 안에 남아야 유효 · 밖으로 완전히 떨어지면 낙')),h('div',{style:{fontSize:11,color:'#eac78f',fontWeight:850}},g.phase==='move'?'말 이동 중':`${g.players[g.current].label} 차례`)),
+    h('div',{className:'throw-top'},h('div',null,h('div',{className:'throw-title'},'✦ 달빛 멍석 · 윷 던지기'),h('div',{className:'throw-desc'},'네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')),h('div',{style:{fontSize:11,color:'#eac78f',fontWeight:850}},g.phase==='move'?'말 이동 중':`${g.players[g.current].label} 차례`)),
     h(ThrowMat,{sticks:s.sticks,stage:s.stage,result:s.result}),
     h('div',{className:'throw-actions'},
      h('button',{className:'primary-action throw-main-button',disabled:!human||g.phase!=='roll'||s.stage==='throwing'||!!s.moving,onClick:()=>this.throwYut('random',false)},h('span',{className:'throw-icon'},'♢'),s.stage==='throwing'?'윷가락이 날아갑니다…':g.phase==='move'?'말을 이동해 주세요':g.lastRoll&&(g.lastRoll.value===4||g.lastRoll.value===5)?'보너스 윷 던지기':'윷 던지기',h('span',{className:'button-ornament'},'❖')),
@@ -351,7 +358,7 @@ render(){
     h('div',{className:'log-section'},h('div',{className:'side-section-title'},'게임 기록',h('span',null,'LIVE')),h('div',{className:'log-list'},...logViews)),
    )
   ),
-  h('div',{className:'footer-copy'},'DALBIT YUT · 가을의 한옥에서 즐기는 특별한 한 판 · 1인 AI / 2~4인 로컬 대전'),
+  h('div',{className:'footer-copy'},'DALBIT YUT · 한옥의 노을과 함께하는 윷놀이 · 1인 AI / 2~4인 로컬 대전'),
   s.toast?h('div',{className:'toast',role:'status'},s.toast):null,
   s.settingsOpen?h('div',{className:'modal-backdrop',role:'presentation',onMouseDown:(ev)=>{if(ev.target===ev.currentTarget)this.setState({settingsOpen:false});}},
    h('div',{className:'modal',role:'dialog','aria-modal':true,'aria-label':'게임 설정'},h('div',{style:{color:'#e5c17d',fontSize:12,fontWeight:900}},'새로운 한 판'),h('h2',null,'달빛 아래 윷놀이'),h('p',null,'모드와 참가 인원을 선택하세요. 1인 모드는 나머지 참가자가 AI입니다.'),
@@ -371,6 +378,6 @@ state: GameUIState={game:E.createGame({mode:'ai',count:2,board:'A'}),setup:{mode
 const mount=document.getElementById('root');
 if(!mount) throw new Error('Game root element was not found');
 // The TSX entry is compiled by Vite for production and by tsc for offline QA.
-const GameRoot = (): JSX.Element => <App />;
-ReactDOM.render(h(GameRoot),mount);
+// Expose the mounted component for visual regression and movement QA.
+(window as any).__DALBIT_INSTANCE__=ReactDOM.render(h(App),mount);
 (window as any).__DALBIT_APP__={version:'3.0.0-ts',engine:E,maps:M};

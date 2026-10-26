@@ -1,0 +1,274 @@
+/* DALBIT YUT — visual quality gate v1.0
+ * Independent scenic SVG, accessible player cards and legible interactive VFX.
+ * Gameplay remains controlled by the React TypeScript state machine.
+ */
+:root{--quality-gold:#f4c681;--quality-cream:#fff1d4;--quality-copper:#bc7540;--quality-wood:#3c211d}
+html{background:#261a26}
+body{
+ background:#251b2c url('/hanok-autumn-scene.svg') center center/cover fixed no-repeat;
+ color:#fff1d8;
+}
+.app-shell{background:linear-gradient(180deg,#130e1d28 0%,#130c1c0e 40%,#170e1e50 100%);min-height:100vh}
+.app-shell:before{
+ background:linear-gradient(90deg,rgba(26,14,23,.38) 0%,rgba(29,16,27,.04) 21%,rgba(29,16,27,.04) 79%,rgba(26,14,23,.42) 100%);
+ z-index:-1;
+}
+.app-shell:after{height:6px;background:linear-gradient(#20121b,#895234 70%,#2b171b);box-shadow:0 2px 0 #ffd28a4a,0 5px 17px #170a11c9}
+.app-wrap{max-width:1720px;padding:13px clamp(14px,1.6vw,28px) 16px}
+.header{min-height:78px;margin:0 4px 10px;align-items:center}
+.brand{display:block;min-width:0}
+.brand-mark strong{font-size:clamp(34px,3vw,47px);letter-spacing:-.07em;font-weight:900;color:#ffedc4;text-shadow:0 2px 0 #703e25,0 6px 16px #160b14,0 0 17px #f6c37a80}
+.brand-sub{font-size:12px;margin:5px 0 0 4px;color:#ffe0a5;font-weight:800;text-shadow:0 1px 4px #1d0d16}
+.brand-mark .brand-seal{margin-top:6px}
+.head-chip{padding:10px 14px;font-size:12px;border:1px solid #e4aa67;background:#2b1b24df}
+.header-btn.icon-button{width:44px;height:44px;font-size:21px;background:linear-gradient(155deg,#503423,#201821)}
+.header-btn:focus-visible,.board-choice:focus-visible,.rack-piece:focus-visible,.primary-action:focus-visible,.sub-action:focus-visible,.roll-pill:focus-visible,.route-btn:focus-visible,.setting-btn:focus-visible{outline:3px solid #fff0ac;outline-offset:3px}
+.lantern-decor{display:none}/* Scene already has physical lanterns. Do not duplicate them. */
+.ambient-leaf{opacity:.35;filter:drop-shadow(0 0 3px #5b1c24)}
+.layout{grid-template-columns:minmax(246px,268px) minmax(520px,1fr) minmax(260px,282px);gap:14px;align-items:start}
+.panel{border-radius:12px;border:1px solid #e0aa68cf;background:linear-gradient(158deg,#2c1b22f2,#1c151bf5 65%,#2a1a1bf5);box-shadow:0 0 0 2px #2a1718dd,0 0 0 3px #f1c17d4d,0 15px 38px #100812b9,inset 0 1px 0 #ffdda65e,inset 0 0 25px #12091052;backdrop-filter:blur(5px)}
+.panel:before{content:'';position:absolute;inset:5px;border:1px solid #e6b97920;pointer-events:none;border-radius:8px}
+.player-panel,.right-panel,.board-panel{position:relative}
+.side-section-title{font-size:13px;letter-spacing:.03em;color:#ffe3ae;font-weight:900;margin-bottom:12px}
+.side-section-title span{font-size:11px;color:#e5c8a6;letter-spacing:0}
+.player-panel{padding:15px 12px}
+.turn-hero{background:linear-gradient(120deg,#7a452fda,#382523d9 67%,#2a1e23ed);border:1px solid #f7c886;border-radius:10px;padding:11px 13px;margin-bottom:13px;box-shadow:inset 0 1px #ffebc262,0 5px 13px #150b0f77}
+.turn-name{font-size:20px;color:#fff3d6}
+.turn-sub{font-size:12px;line-height:1.5;color:#ffe3be;margin-top:6px}
+.turn-hero .eyebrow{font-size:10px;color:#f8cf93}
+.players-list{gap:10px}
+.player-card{min-height:91px;border-radius:12px;padding:11px 9px;background:linear-gradient(110deg,#29191ef5,#1a1820f5 62%,#2a1a20f5);border:1px solid color-mix(in srgb,var(--player-accent) 70%,#917051);box-shadow:0 5px 13px #0007,inset 0 1px #fce5b32b}
+.player-card.active{background:linear-gradient(110deg,#794122ec,#422920f5 64%,#2b1b20f5);border:2px solid #ffdea2;box-shadow:0 0 0 2px #ab6d36,0 0 21px #ebad6c88,0 8px 18px #14090db3,inset 0 1px #ffefca99}
+.player-hanji-pattern{right:16%;top:7px;opacity:.07}
+.player-main{gap:9px;min-height:65px;align-items:center}
+.avatar-coin{width:61px;height:61px;border-radius:50%;padding:4px;box-shadow:inset 0 1px #fff8d0,0 3px 8px #09090bc2,0 0 0 1px #7b4223}
+.avatar{font-size:31px;border:2px solid #47291f}
+.player-name{font-size:15px;line-height:1.25;color:#fff5dc!important}
+.player-role{font-size:11px;color:#dfc4ad;margin-top:3px}
+.pawns{gap:7px;margin-top:10px}
+.pawn-mini{width:15px;height:16px}
+.pawn-mini:before{left:3.5px;width:9px;height:10px}
+.on-turn{font-size:10px;padding:5px 9px;color:#3b2016;border:1px solid #fff0bd;background:linear-gradient(#fff3c2,#f2af59)}
+.player-flag{font-size:19px;color:#d5b58d}
+.player-status{font-size:11px;color:#f3d7b2}
+.player-progress{height:4px;border-radius:8px;background:#5d3b37;overflow:hidden;margin-top:8px;border:1px solid #f9d6a22a}
+.player-progress-fill{height:100%;background:linear-gradient(90deg,var(--player-accent),#ffedb9);border-radius:8px;transition:width .3s}
+.player-tag{font-size:10px;color:#ffebb9;background:#5d403b87;border:1px solid #d2a16c57;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.player-panel .subpanel{margin-top:14px;padding-top:13px}
+.rack-title{font-size:13px;color:#ffdea5}
+.rack-piece{min-height:67px;border:1px solid #b98a5d;border-radius:10px;background:linear-gradient(#50332d,#241a21)}
+.rack-piece.pickable{background:linear-gradient(#946037,#392721);border:2px solid #ffdfa0;box-shadow:0 0 16px #eeb56b83,inset 0 1px #fff0ca57}
+.rack-token{font-size:23px}
+.rack-piece>small{font-size:11px;color:#ffe0ae}
+.tiny-guide b{font-size:12px}.tips{font-size:11px;color:#e3ccac}
+/* The parchment board is a separate functional vector layer, not part of the background. */
+.board-panel{padding:12px 15px 12px;background:linear-gradient(155deg,#302022f5,#221920ed 64%,#39231ff5)}
+.board-top{margin:2px 3px 11px}
+.board-heading strong{font-size:16px;color:#ffe3a1}
+.board-heading small{font-size:11px;color:#f0d1a8}
+.board-switch{background:#21151ade;border-color:#c99659}
+.board-choice{font-size:11px;min-height:35px}
+.board-shadow{max-width:548px;padding:10px;border-radius:5px;background:linear-gradient(135deg,#f2bf75 0%,#5f3823 6%,#a96f45 12%,#3d261f 18%,#70432c 83%,#f3c788 95%);box-shadow:0 0 0 2px #21111a,0 0 0 4px #dba45c,0 0 0 6px #352021,0 17px 22px #160a12c7,inset 0 0 0 2px #ffe9ba70}
+.board-cloth{border-color:#47291b;background:linear-gradient(145deg,#e9c794,#fff0c3 42%,#e3c59a)}
+.board-svg{max-height:min(49vh,490px);width:100%}
+.board-cap{font-size:11px;color:#f9daac;margin-top:11px}
+.board-cap span:first-child{color:#ffdfa0}
+.route-line{stroke:#3d2a22;stroke-width:3.1}.route-inner{stroke:#4d382c;stroke-width:3}
+.node-circle{stroke:#403128;stroke-width:2.5}
+.board-label{font-size:10.3px}
+.board-target{cursor:pointer;filter:drop-shadow(0 0 12px #f7c55d) drop-shadow(0 0 5px #fff6b5)}
+.board-target .target-outer{animation:targetRing 1.45s ease-in-out infinite}
+.target-waypoint{pointer-events:none;filter:drop-shadow(0 0 7px #f7d17d)}
+.selected-piece-label{pointer-events:none;filter:drop-shadow(0 2px 3px #5b3926b5)}
+.selected-piece-label text{font-weight:900;paint-order:stroke;stroke:#34201b;stroke-width:2.7px;fill:#fff0c2}
+.step-impact{pointer-events:none;transform-box:fill-box;transform-origin:center;animation:arrivalGoldPulse .24s ease-out both}
+@keyframes arrivalGoldPulse{from{opacity:.8;transform:scale(.5)}to{opacity:0;transform:scale(1.6)}}
+.piece-handle.available .piece-halo{stroke-width:4;stroke:#ffc568;animation:pieceSelectGlow 1s infinite}
+.piece-handle.selected .piece-halo{stroke:#ffe097;stroke-width:5;animation:pieceSelectGlow .85s infinite}
+.piece-handle.animated{animation:pieceJump .24s ease-in-out infinite alternate}
+.map-sep{height:1px;margin:11px 0 10px;background:linear-gradient(90deg,transparent,#edb97fdd 20%,#edb97fdd 80%,transparent)}
+/* Woven throw mat, independent 4 sticks, restrained physical sparkle. */
+.throw-title{font-size:15px;color:#ffe8b7}
+.throw-desc{font-size:11px;color:#e9c6a5}
+.cinematic-throw{margin-top:8px;min-height:152px;border:3px solid #ae7544;border-radius:50% 50% 15px 15px / 23% 23% 15px 15px;background:
+ radial-gradient(ellipse at 50% 38%,#8b582fa6 0%,#533520ca 55%,#24171bed 96%),
+ repeating-linear-gradient(0deg,#eab87730 0 2px,#43231a1b 2px 5px,#daa56e30 5px 7px),
+ repeating-linear-gradient(90deg,#37231a55 0 2px,#b1855766 2px 5px,#3c231b55 5px 7px);
+ box-shadow:inset 0 0 22px #1a0c0cc9,inset 0 4px 8px #fff2bf3a,0 0 0 2px #2e1b16,0 8px 17px #0008}
+.cinematic-throw:before{inset:5px;border:2px dotted #edc79093;z-index:0}
+.mat-svg{height:148px;overflow:visible}
+.throw-etched-cloud{font-size:31px;color:#ffdc9852}
+.throw-stage-caption{font-size:11px;color:#ffe0b2;bottom:7px;font-weight:800}
+.cinematic-throw.is-throwing .sparkles{opacity:1}
+.mat-sticks g.yutstick{filter:drop-shadow(0 5px 3px #190c10a6) drop-shadow(0 0 4px #ffd88e44)}
+.mat-sticks.throwing g.yutstick{animation-duration:1350ms}
+.throw-main-button{min-height:52px;font-size:18px;letter-spacing:.06em;background:linear-gradient(180deg,#e85c49 0%,#bb2e32 55%,#8e1d2d 100%);border:2px solid #ffd7a3;border-radius:12px;box-shadow:inset 0 2px #fff4c270,inset 0 -3px #68121d,0 4px 0 #48111a,0 7px 14px #0008}
+.throw-main-button:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 0 #48111a,0 0 19px #fca35b99}
+.throw-icon{font-size:28px}
+.throw-actions{gap:10px;margin-top:10px}
+.sub-action{font-size:12px;min-width:84px;border-color:#dbad74;color:#ffe1b9}
+.power-row{font-size:11px;color:#f5d6b4;padding-top:10px}
+.power-row strong{font-size:12px;color:#ffdea3}
+.result-orb{z-index:7;box-shadow:0 0 23px #efab57b8,inset 0 0 12px #fff4bf}
+.result-orb strong{font-size:34px}
+/* Right controls: readable steps and approachable options. */
+.right-panel{padding:17px 14px;background:linear-gradient(165deg,#2c1b22f5,#17141af8 65%,#33211df5)}
+.phase-badge{font-size:12px;min-height:31px}
+.step-title{font-size:21px;line-height:1.36;color:#fff1d1}
+.step-desc{font-size:12px;color:#e7c7a9}
+.move-steps{gap:8px;margin-bottom:15px}
+.move-step{min-height:53px;padding:7px 3px;gap:4px;border-radius:9px}
+.move-step b{font-size:11px}
+.move-step small{font-size:11px}
+.results-caption{font-size:12px;color:#ffe4ba}
+.no-rolls{font-size:12px;color:#ddbea0;line-height:1.4}
+.roll-pill{min-height:46px;font-size:14px;padding:9px 11px}
+.roll-pill small{font-size:11px}
+.manual-block{border-radius:12px;padding:13px}
+.manual-title{font-size:14px;color:#ffe6b8}
+.target-help{font-size:12px;color:#e8cfb1;line-height:1.55}
+.route-btn{font-size:12px;min-height:44px;padding:10px 12px}
+.log-section{border-top-color:#deb78373;padding-top:14px}
+.log-line{padding:10px 8px;gap:9px}
+.log-icon{width:36px;height:36px;font-size:21px}
+.log-line b{font-size:12px}
+.log-content span{font-size:11px;color:#e4cdb3;line-height:1.55}
+.footer-copy{color:#f4d2a8;opacity:.93}
+/* Honor accessibility and viewport constraints. */
+@media(min-width:971px) and (max-height:940px){
+ .header{min-height:68px;margin-bottom:9px}
+ .board-svg{max-height:min(49vh,464px)}
+ .board-shadow{max-width:508px}
+ .board-panel{padding:10px 14px}
+ .throw-mat-boundary{filter:none}
+ .cinematic-throw{min-height:116px;margin-top:7px}
+ .mat-svg{height:117px}
+ .throw-main-button{min-height:44px;font-size:16px}
+ .throw-actions{margin-top:8px}
+ .board-cap{margin-top:7px}
+ .map-sep{margin:7px 0}
+}
+@media(max-width:1220px){
+ .layout{grid-template-columns:218px minmax(410px,1fr) 236px;gap:10px}
+ .player-panel,.right-panel{padding:12px 10px}
+ .avatar-coin{width:48px;height:48px}.avatar{font-size:25px}
+ .player-card{min-height:77px;padding:8px 7px}
+ .player-name{font-size:13px}.player-role{font-size:10px}
+ .on-turn{padding:4px 5px;font-size:9px}
+ .board-shadow{max-width:520px}
+}
+@media(max-width:970px){
+ .layout{grid-template-columns:minmax(175px,1fr) minmax(380px,1.9fr)}
+ .right-panel{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+ .right-panel .log-section{border-left:1px solid #d09d663e;border-top:0;margin-top:0;padding:0 0 0 15px}
+ .board-shadow{max-width:540px}.board-svg{max-height:none}
+}
+@media(max-width:700px){
+ body{background-attachment:scroll;background-position:center top}
+ .app-shell:before{background:linear-gradient(#2415205e,#23131f43)}
+ .app-wrap{padding:7px 8px 25px}
+ .header{min-height:65px;margin:0 1px 9px}
+ .brand-mark strong{font-size:30px}
+ .brand-sub{font-size:10px}
+ .header-btn.icon-button{width:36px;height:36px;font-size:18px}
+ .layout{display:flex;flex-direction:column;gap:12px}
+ .board-panel{order:1;padding:10px 9px}
+ .player-panel{order:2;padding:13px 10px}
+ .right-panel{order:3;display:block;padding:15px 12px}
+ .board-shadow{max-width:none;padding:6px}
+ .board-svg{max-height:none;width:100%}
+ .board-top{margin-bottom:9px}
+ .board-cap{font-size:10px;gap:5px;flex-wrap:wrap}
+ .throw-title{font-size:14px}.throw-desc{font-size:10px}
+ .cinematic-throw{min-height:139px}
+ .mat-svg{height:134px}
+ .throw-stage-caption{font-size:9px;gap:8px}
+ .throw-main-button{font-size:16px;min-height:50px}
+ .player-panel .turn-sub{font-size:11px}
+ .players-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .player-card{min-height:82px;padding:8px 5px}
+ .player-main{gap:5px;min-height:60px}
+ .avatar-coin{width:39px;height:39px;padding:3px}
+ .avatar{font-size:21px}
+ .player-name{font-size:12px}.player-role{font-size:10px}
+ .player-status{font-size:9px}.on-turn{font-size:8px;padding:4px 5px}
+ .player-progress{height:3px;margin-top:4px}
+ .pawns{margin-top:6px;gap:4px}.pawn-mini{width:10px;height:11px}.pawn-mini:before{width:6px;height:7px;left:2px;top:-3px}
+ .right-panel .log-section{border-left:0;border-top:1px solid #deb78373;padding:13px 0 0;margin-top:15px}
+ .board-target .invisible-hit{stroke-width:2}
+ .power-row{font-size:11px}
+}
+@media(max-width:370px){
+ .brand-mark strong{font-size:26px}
+ .player-card{padding:7px 4px}.player-name{font-size:11px}
+ .player-progress{display:none}
+ .throw-stage-caption{font-size:8px;gap:5px}
+ .throw-title{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.ambient-leaf,.player-card.active,.throw-energy-circle,.movement-trail,.mat-sticks.throwing g.yutstick,.board-target .target-outer{animation:none!important}}
+/* Height-aware compositions: the board, throwing mat, and primary throw action
+   all remain in a single desktop viewport at 900p and 768p. */
+@media(min-width:971px) and (max-height:940px){
+ .header{min-height:58px;margin:0 4px 6px}
+ .brand-mark strong{font-size:36px}.brand-sub{font-size:10px;margin-top:3px}
+ .app-wrap{padding-top:7px;padding-bottom:7px}
+ .board-top{margin-bottom:6px}
+ .board-shadow{max-width:484px;padding:8px}
+ .board-svg{max-height:42vh}
+ .board-cap{margin-top:5px;font-size:10px}
+ .map-sep{margin:6px 0}
+ .throw-title{font-size:14px}
+ .throw-desc{font-size:10px}
+ .cinematic-throw{min-height:112px;margin-top:6px}
+ .mat-svg{height:108px}
+ .throw-actions{margin-top:7px}
+ .throw-main-button{min-height:44px}
+ .power-row{padding-top:7px}
+ .footer-copy{margin:5px 0 0}
+}
+@media(min-width:971px) and (max-height:800px){
+ .board-svg{max-height:38vh}
+ .board-shadow{max-width:450px;padding:7px}
+ .board-top{margin-bottom:5px}
+ .board-cap{margin-top:3px}
+ .throw-desc{font-size:9px}
+ .cinematic-throw{min-height:96px;margin-top:5px}
+ .mat-svg{height:93px}
+ .throw-main-button{min-height:40px}
+ .power-row{padding-top:5px}
+ .board-panel{padding:8px 11px}
+}
+@media(min-width:971px) and (min-height:840px) and (max-height:940px){
+ .board-shadow{max-width:538px}
+ .board-svg{max-height:47vh}
+}
+@media(min-width:971px) and (max-height:800px){
+ .header{min-height:49px}
+ .board-svg{max-height:35vh}
+ .throw-actions{margin-top:5px}
+}
+@media(min-width:971px) and (max-height:800px){
+ .player-panel .tips-block{display:none}
+}
+@media(max-width:700px){
+ .board-choice{min-height:44px}
+ .header-btn.icon-button{width:44px;height:44px}
+ .piece-hit-area{cursor:pointer}
+}
+/* Keep all four sticks visible inside the mat while they spin and descend. */
+.mat-sticks.throwing g.yutstick{animation:yutTossQuality 1360ms cubic-bezier(.15,.64,.22,1) both;animation-delay:var(--delay)}
+@keyframes yutTossQuality{
+ 0%{opacity:.25;transform:translate(0,36px) rotate(-420deg) scale(.72);filter:drop-shadow(0 5px 3px #110910)}
+ 20%{opacity:1;transform:translate(-12px,-24px) rotate(-290deg) scale(1.02);filter:drop-shadow(0 3px 8px #ffda94)}
+ 42%{opacity:1;transform:translate(9px,-49px) rotate(-165deg) scale(1.08);filter:drop-shadow(0 8px 12px #f2b66a)}
+ 66%{transform:translate(-4px,-18px) rotate(-56deg) scale(1.03)}
+ 79%{transform:translate(2px,5px) rotate(20deg) scale(1.01)}
+ 89%{transform:translate(0,-9px) rotate(-9deg)}
+ 100%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.mat-sticks.throwing g.yutstick{animation:none!important}}
+
+.mat-sticks.throwing g.yutstick{animation:none!important}
+.mat-sticks.throwing g.yutstick > g.stick-flight{animation:yutTossQuality 1360ms cubic-bezier(.15,.64,.22,1) both;animation-delay:var(--delay);transform-box:fill-box;transform-origin:center}
+@media(prefers-reduced-motion:reduce){.mat-sticks.throwing g.yutstick > g.stick-flight{animation:none!important}}
+
