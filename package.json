@@ -10,7 +10,9 @@
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host",
     "test": "tsc -p tsconfig.test.json && node scripts/mark-commonjs.cjs && node test-engine.cjs",
-    "build:static": "tsc -p tsconfig.static.json"
+    "build:static": "tsc -p tsconfig.static.json",
+    "test:laya": "npm test && node --test test-laya.cjs",
+    "laya:benchmark": "npm test && node scripts/benchmark-laya.cjs"
   },
   "devDependencies": {
     "typescript": "^5.8.3",

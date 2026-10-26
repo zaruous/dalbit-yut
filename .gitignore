@@ -6,3 +6,5 @@ preview-build/
 .vercel/
 coverage/
 .DS_Store
+.venv-laya/
+__pycache__/

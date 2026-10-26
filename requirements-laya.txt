@@ -1,0 +1,7 @@
+# Optional CPU experiment; the browser game does not depend on Python.
+laya==0.4.15
+torch==2.14.1
+transformers==5.20.2
+huggingface-hub==2.3.0
+numpy==2.5.4
+safetensors==0.8.0
