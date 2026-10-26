@@ -7,4 +7,5 @@ preview-build/
 coverage/
 .DS_Store
 .venv-laya/
+laya-data/
 __pycache__/
