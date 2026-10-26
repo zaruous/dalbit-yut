@@ -16,6 +16,15 @@ test('shortlist contains the existing AI move and only legal moves without chang
  for(const option of input.options)assert(E.resolveMove(state,option));
  assert.equal(JSON.stringify(state),before);
 });
+test('v2 input includes complete rules, path state, and post-move consequences',()=>{
+ const state=game(),before=JSON.stringify(state),input=candidatesFor(state,'v2');
+ assert.match(input.state,/Roll odds/);assert.match(input.state,/shortcut is available only/);
+ assert.match(input.state,/node\/lane and recent route history/);
+ for(const value of Object.values(input.criteria)){
+  assert.match(value,/After:/);assert.match(value,/distance to FIN/);assert.match(value,/one-roll reach/);
+ }
+ assert.equal(JSON.stringify(state),before);
+});
 test('accepts a model selection exclusively from supplied legal candidates',async()=>{
  const state=game();let request;
  const result=await chooseLayaAction(state,{predict:async input=>{request=input;return {choice:'a1',elapsedMs:5};}});
@@ -33,7 +42,7 @@ test('no candidate during roll phase does not invoke the model',async()=>{
  const result=await chooseLayaAction(E.createGame({}),{predict:async()=>{throw Error('must not run');}});
  assert.equal(result.action,null);assert.equal(result.source,'forced');
 });
-const fake=(body,options={})=>new LayaWorker({command:process.execPath,args:['-e',body],startupMs:1000,decisionMs:1000,...options});
+const fake=(body,options={})=>new LayaWorker({command:process.execPath,args:['-e',body],startupMs:3000,decisionMs:1000,...options});
 test('real process JSONL transport handles readiness and request IDs',async()=>{
  const worker=fake(`console.log(JSON.stringify({ready:true}));require('readline').createInterface({input:process.stdin}).on('line',line=>{const x=JSON.parse(line);console.log(JSON.stringify({id:x.id,choice:'a1',elapsedMs:4}));});`);
  try{await worker.ready;const [a,b]=await Promise.all([worker.predict({}),worker.predict({})]);assert.equal(a.choice,'a1');assert.notEqual(a.id,b.id);}finally{worker.close();}

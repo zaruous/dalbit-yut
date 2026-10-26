@@ -22,22 +22,39 @@ def main():
         import torch
         torch.set_num_threads(4)
         torch.set_num_interop_threads(1)
+    requested_device = os.environ.get("LAYA_DEVICE", "cpu").lower()
+    if requested_device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    elif requested_device in ("cpu", "cuda"):
+        device = requested_device
+    else:
+        emit({"error": "invalid_device", "device": requested_device})
+        return 1
+    if device == "cuda" and not torch.cuda.is_available():
+        emit({"error": "cuda_unavailable", "device": device})
+        return 1
     versions = {name: importlib.metadata.version(name) for name in ("laya", "torch", "transformers")}
+    max_len = int(os.environ.get("LAYA_MAX_LEN", "512"))
+    head_max_len = int(os.environ.get("LAYA_HEAD_MAX_LEN", "256"))
+    if max_len < 128 or head_max_len < 64 or head_max_len > max_len:
+        emit({"error": "invalid_token_limits"})
+        return 1
     if args.check_install:
-        emit({"installed": versions, "device": "cpu", "model_loaded": False})
+        emit({"installed": versions, "device": device, "model_loaded": False})
         return 0
     try:
         with contextlib.redirect_stdout(sys.stderr):
             agent = laya.load(
                 os.environ.get("LAYA_MODEL", "convaiinnovations/laya"),
                 revision=os.environ.get("LAYA_MODEL_REVISION") or None,
-                device="cpu",
+                device=device,
             )
     except Exception as exc:
         # Do not print proxy credentials, HTTP headers or signed download URLs.
         emit({"error": "model_load_failed", "exception": type(exc).__name__})
         return 1
-    emit({"ready": True, "versions": versions, "revision": agent.revision, "device": "cpu"})
+    emit({"ready": True, "versions": versions, "revision": agent.revision, "device": device,
+          "max_len": max_len, "head_max_len": head_max_len})
     for line in sys.stdin:
         request_id = None
         try:
@@ -45,11 +62,11 @@ def main():
             request_id = request["id"]
             criteria = request["criteria"]
             state = request["state"]
-            if not isinstance(state, str) or len(state) > 8192:
+            if not isinstance(state, str) or len(state) > 16384:
                 raise ValueError("invalid state")
             if not isinstance(criteria, dict) or not 2 <= len(criteria) <= 4:
                 raise ValueError("expected two to four legal candidates")
-            if any(not isinstance(k, str) or not isinstance(v, str) or len(v) > 500 for k, v in criteria.items()):
+            if any(not isinstance(k, str) or not isinstance(v, str) or len(v) > 2000 for k, v in criteria.items()):
                 raise ValueError("invalid criteria")
             started = time.perf_counter()
             with contextlib.redirect_stdout(sys.stderr), torch.inference_mode():
@@ -57,7 +74,7 @@ def main():
                     "type": "choice",
                     "instructions": "Choose the Yutnori move most likely to win: finish all four pieces, capture enemies for extra throws, use shortcuts and avoid losing valuable stacks.",
                     "criteria": criteria,
-                }}, max_len=512, head_max_len=256)
+                }}, max_len=max_len, head_max_len=head_max_len)
             usage = result.get("usage", {})
             if usage.get("truncated") or usage.get("options"):
                 emit({"id": request_id, "error": "truncated_model_input"})

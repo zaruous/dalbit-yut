@@ -7,10 +7,12 @@ function roll(random){const old=Math.random;Math.random=random;try{return E.roll
 (async()=>{
  const seeds=Number(process.argv[2]||2),offset=Number(process.argv[3]||0);
  if(!Number.isInteger(seeds)||seeds<1||seeds>100||!Number.isInteger(offset)||offset<0)throw Error('Expected 1..100 seeds and a nonnegative offset');
- const worker=new LayaWorker();
+ const startupMs=Number(process.env.LAYA_STARTUP_MS||120000),decisionMs=Number(process.env.LAYA_DECISION_MS||5000);
+ if(!Number.isFinite(startupMs)||startupMs<1||!Number.isFinite(decisionMs)||decisionMs<1)throw Error('LAYA_STARTUP_MS and LAYA_DECISION_MS must be positive numbers');
+ const worker=new LayaWorker({startupMs,decisionMs});
  try{
   const runtime=await worker.ready;
-  const report={runtime,seedsPerMapAndSeat:seeds,seedOffset:offset,games:0,layaWins:0,baselineWins:0,decisions:{laya:0,forced:0,fallback:0},fallbackReasons:{},totalInferenceMs:0};
+  const report={runtime,inputVersion:process.env.LAYA_INPUT_VERSION||'v1',seedsPerMapAndSeat:seeds,seedOffset:offset,games:0,layaWins:0,baselineWins:0,decisions:{laya:0,forced:0,fallback:0},fallbackReasons:{},totalInferenceMs:0};
   for(const board of ['A','B'])for(let seed=offset+1;seed<=offset+seeds;seed++)for(const layaSeat of [0,1]){
    const dice=[rng(seed*7919+17),rng(seed*7919+31)];let game=E.createGame({board,mode:'local'}),steps=0;
    while(game.winner===null&&steps++<3000){
