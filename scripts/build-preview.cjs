@@ -2,8 +2,9 @@
 const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
 const root=path.join(__dirname,'..'),rd=p=>fs.readFileSync(path.join(root,p),'utf8');
 const out=path.resolve(root,process.argv[2]||process.env.OUT||'preview.html');
-const tsc=fs.existsSync(path.join(root,'node_modules/.bin/tsc'))?path.join(root,'node_modules/.bin/tsc'):'tsc';
-execFileSync(tsc,['-p','tsconfig.static.json'],{cwd:root,stdio:'inherit'});
+// Invoke the JS entry point directly: .bin/tsc is a shell shim on Windows.
+const tsc=require.resolve('typescript/bin/tsc');
+execFileSync(process.execPath,[tsc,'-p','tsconfig.static.json'],{cwd:root,stdio:'inherit'});
 const MIME={'.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg'};
 const dataUri=f=>{const p=path.join(root,'public',f);return fs.existsSync(p)&&MIME[path.extname(f)]?`data:${MIME[path.extname(f)]};base64,${fs.readFileSync(p).toString('base64')}`:null};
 const inlineUrls=css=>css.replace(/url\((['"]?)\/([^'")]+)\1\)/g,(m,q,f)=>{const d=dataUri(f);return d?`url("${d}")`:m});

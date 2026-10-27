@@ -5,7 +5,7 @@ const E=require('../build-test/gameEngine.js');
 const M=require('../build-test/mapEngine.js');
 const {chooseAIAction}=require('../build-test/aiEngine.js');
 
-const graphs={A:M.makeGraph('A'),B:M.makeGraph('B')};
+const graphs={S:M.makeGraph('S'),A:M.makeGraph('A'),B:M.makeGraph('B')};
 const rollNames={'-1':'back-do','1':'do','2':'gae','3':'geol','4':'yut','5':'mo'};
 const rollChances=[[-1,1/16],[1,3/16],[2,6/16],[3,4/16],[4,1/16],[5,1/16]];
 const distances=new Map();
@@ -21,7 +21,7 @@ function distance(board,piece){
    queue.push({node:next.node,lane:next.lane,steps:pos.steps+1});
   }
  }
- return 26;
+ return graph.outerSteps+2;
 }
 
 function reachChance(game,player,target){
@@ -55,8 +55,8 @@ function positions(game,history=false){
 }
 
 function rulesFor(board){
- const common='House rules: each player has 4 pieces; first to put all 4 in FIN wins. Roll odds are back-do -1:1/16, do +1:3/16, gae +2:6/16, geol +3:4/16, yut +4:1/16, mo +5:1/16. Yut, mo, and capturing grant another throw. Stored rolls may be used in any order. Friendly pieces on one node form a stack which moves together; an enemy landing there captures the whole stack and sends it to WAIT. A shortcut is available only when a move starts exactly on O6 or O12. WAIT cannot use back-do. O1 back-do goes to the on-board O0 finish checkpoint; a later forward step from O0 reaches FIN. Landing on O0 is not yet FIN.';
- const map=board==='A'?'Map A routes: outer O0>O1>...>O23>O0>FIN. From O6 choose outer or O6>NE1>NE2>C>SW1>SW2>O18. If a move starts at C after the NE route, choose SW continuation or C>SE1>SE2>O0. From O12 choose outer or O12>NW1>NW2>C>SE1>SE2>O0.'
+ const common=`House rules: each player has 4 pieces; first to put all 4 in FIN wins. Roll odds are back-do -1:1/16, do +1:3/16, gae +2:6/16, geol +3:4/16, yut +4:1/16, mo +5:1/16. Yut, mo, and capturing grant another throw. Stored rolls may be used in any order. Friendly pieces on one node form a stack which moves together; an enemy landing there captures the whole stack and sends it to WAIT. A shortcut is available only when a move starts exactly on ${graphs[board].cornerIds[1]} or ${graphs[board].cornerIds[2]}. WAIT cannot use back-do. O1 back-do goes to the on-board O0 finish checkpoint; a later forward step from O0 reaches FIN. Landing on O0 is not yet FIN.`;
+ const map=board==='S'?'Map S (standard square) routes: outer O0>O1>...>O19>O0>FIN. From O5 choose outer or O5>NE1>NE2>C>SW1>SW2>O15. If a move starts at C after the NE route, choose SW continuation or C>SE1>SE2>O0. From O10 choose outer or O10>NW1>NW2>C>SE1>SE2>O0.':board==='A'?'Map A routes: outer O0>O1>...>O23>O0>FIN. From O6 choose outer or O6>NE1>NE2>C>SW1>SW2>O18. If a move starts at C after the NE route, choose SW continuation or C>SE1>SE2>O0. From O12 choose outer or O12>NW1>NW2>C>SE1>SE2>O0.'
   :'Map B routes: outer O0>O1>...>O23>O0>FIN. From O6 choose outer or O6>I0>I1>I2>I3>I4>I5>I6>I7>I8>R1>O0. From O12 choose outer or O12>W0>I4>I5>I6>I7>I8>R1>O0.';
  return `${common} ${map}`;
 }
@@ -131,7 +131,7 @@ function candidatesFor(game,inputVersion=process.env.LAYA_INPUT_VERSION||'v1'){
   state:`${rulesFor(game.config.board)} Current turn: P${game.current}, phase ${game.phase}, turn ${game.turn}. Full piece state (node/lane and recent route history): ${positions(game,true)} Stored results: ${game.rolls.map(r=>`${rollNames[r.value]}(${r.value})`).join(',')}. All supplied outcomes are legal; compare their resulting states and long-term winning prospects.`};
  if(inputVersion!=='v1')throw Error(`Unknown LAYA_INPUT_VERSION ${inputVersion}`);
  return {fallback,options:chosen.map(c=>c.option),criteria:Object.fromEntries(chosen.map((c,i)=>['a'+i,c.summary])),
-  state:`Map ${game.config.board}, player ${game.current}. O0 is the finish checkpoint; FIN is completed, WAIT is reserve. A: O6->NE1->NE2->C; O12->NW1->NW2->C; center can exit via SE1->SE2->O0 when stopped. B: O6/O12 lead to inner ring. Pieces: ${game.pieces.map(p=>`P${p.player}:${p.node}`).join(' ')}. Stored results: ${game.rolls.map(r=>r.value).join(',')}. Choose among the supplied legal outcomes.`};
+  state:`Map ${game.config.board}, player ${game.current}. O0 is the finish checkpoint; FIN is completed, WAIT is reserve. ${game.config.board==='S'?'S: 20-node square outer track; O5->NE1->NE2->C; O10->NW1->NW2->C; stop at C to exit via SE1->SE2->O0.':'A: O6->NE1->NE2->C; O12->NW1->NW2->C; center can exit via SE1->SE2->O0 when stopped. B: O6/O12 lead to inner ring.'} Pieces: ${game.pieces.map(p=>`P${p.player}:${p.node}`).join(' ')}. Stored results: ${game.rolls.map(r=>r.value).join(',')}. Choose among the supplied legal outcomes.`};
 }
 
 async function chooseLayaAction(game,worker){

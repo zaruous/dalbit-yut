@@ -2,7 +2,7 @@ import * as E from './gameEngine.js';
 import * as M from './mapEngine.js';
 import type {GameState, GamePiece, MoveOption, MoveResolution} from './gameEngine.js';
 
-const graphs={A:M.makeGraph('A'),B:M.makeGraph('B')};
+const graphs={S:M.makeGraph('S'),A:M.makeGraph('A'),B:M.makeGraph('B')};
 const distances=new Map<string,number>();
 
 /** Shortest forward distance, including choices at future junction stops. */
@@ -18,13 +18,13 @@ function distance(board: M.BoardType,piece: M.PieceStep): number{
    queue.push({node:next.node,lane:next.lane,steps:pos.steps+1});
   }
  }
- return 26;
+ return graph.outerSteps+2;
 }
 
 function pieceValue(g: GameState,piece: GamePiece): number{
  if(piece.node==='WAIT')return 0;
  if(piece.node==='FIN')return 100;
- return 8+2*(25-distance(g.config.board,piece));
+ return 8+2*(graphs[g.config.board].outerSteps+1-distance(g.config.board,piece));
 }
 
 /** Each of the 16 equally likely face patterns; no knowledge of future throws. */

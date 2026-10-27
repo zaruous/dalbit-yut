@@ -49,11 +49,20 @@ check(chooseAIAction(E.createGame({}))===null,'Do not move during roll phase');
 check(chooseAIAction(scenario(['WAIT','WAIT','WAIT','WAIT'],[],[-1]))===null,'Return no action if all pieces wait on backdo');
 
 // Finish games with the new decision maker at every seat, including 3/4 players.
+for(const count of [2,3,4]){
+ const watch=E.createGame({mode:'spectate',count,board:'B'});
+ check(watch.config.mode==='spectate'&&watch.players.length===count&&watch.players.every(p=>p.ai),'Spectator mode must have only AI seats');
+ check(watch.players.every(p=>watch.pieces.filter(piece=>piece.player===p.id).length===4),'Every spectator AI must own four pieces');
+ check(new Set(watch.players.map(p=>p.label)).size===count,'Spectator AI labels must be distinct');
+ const versus=E.createGame({mode:'ai',count});
+ check(!versus.players[0].ai&&versus.players.slice(1).every(p=>p.ai),'Human versus AI retains exactly one human');
+ check(E.createGame({mode:'local',count}).players.every(p=>!p.ai),'Local mode retains all human seats');
+}
 let games=0,randomState=1234567;
 Math.random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};
 try{
- for(const board of ['A','B'])for(const count of [2,3,4])for(let seed=0;seed<4;seed++){
-  let game=E.createGame({board,count,mode:'local'}),steps=0;
+ for(const board of ['S','A','B'])for(const count of [2,3,4])for(let seed=0;seed<4;seed++){
+  let game=E.createGame({board,count,mode:'spectate'}),steps=0;
   while(game.winner===null&&steps++<3000){
    if(game.phase==='roll'){game=E.throwResult(game,E.rollSticks(true),false);continue;}
    const action=chooseAIAction(game);

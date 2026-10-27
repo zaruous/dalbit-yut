@@ -118,7 +118,7 @@ stack=r.game;stack.current=0;stack.phase='move';stack.rolls=[{id:'s',value:1}];
 r=E.resolveMove(stack,E.moveOptions(stack,'p0-0','s')[0]);
 check(r.meta.moved===2,'Stack travels together');
 let games=0;
-for(const board of ['A','B'])for(const count of [2,3,4])for(let seed=0;seed<25;seed++){
+for(const board of ['S','A','B'])for(const count of [2,3,4])for(let seed=0;seed<25;seed++){
  let state=E.createGame({mode:'local',count,board}),steps=0;
  while(state.winner===null&&steps++<4500){
   if(state.phase==='roll')state=E.throwResult(state,E.rollSticks(true),false);
@@ -134,5 +134,6 @@ for(const board of ['A','B'])for(const count of [2,3,4])for(let seed=0;seed<25;s
  assert(state.winner!==null,'Game did not finish: '+board+'/'+count+'/'+seed+'/'+steps);
  games++;
 }
-console.log('OK: '+checks+' assertions across '+games+' completed games, maps A and B');
+console.log('OK: '+checks+' assertions across '+games+' completed games, maps S, A and B');
+require('./test-standard.cjs');
 require('./test-ai.cjs');

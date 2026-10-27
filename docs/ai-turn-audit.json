@@ -1,0 +1,684 @@
+{
+  "date": "2026-10-27T12:40:34.407Z",
+  "scope": "No production gameplay changes. All seats controlled by current search AI, not Laya. Two maps and 2/3/4 players; engine simulation + actual mounted React controller + native-timer animation sample.",
+  "sources": {
+    "src-ts/App.tsx": "67b13675b4546d7326fa16bfe9a90c05a177ed7529d7478d31b8f63c635d72ab",
+    "src-ts/gameEngine.ts": "94c8cea18c53469da027f062803e8e7f273ab9143c62835d0be03539b54d5bc7",
+    "src-ts/aiEngine.ts": "f35174acd57e9cef89c828682cec2c4ca97621058cc6bc8d912d607cc370f864",
+    "build-test/gameEngine.js": "471c88d465dd2c5da54d7bb5cb385827634268ca2989e4fa04680f9025f6aa4c",
+    "build-test/aiEngine.js": "b9dbdbe7e15afef4a71223f621fa3a570f929676b6c74f83d0bb41c0750b0e33"
+  },
+  "accounting": {
+    "engine": {
+      "turnStarts": 16530,
+      "bonusThrows": 9945,
+      "actualThrows": 26475
+    },
+    "browser": {
+      "turnStarts": 422,
+      "bonusThrows": 284,
+      "actualThrows": 706
+    },
+    "live": {
+      "turnStarts": 10,
+      "bonusThrows": 10,
+      "actualThrows": 20,
+      "unspentCredit": 0
+    }
+  },
+  "engine": {
+    "seedsPerConfiguration": 50,
+    "games": 300,
+    "throws": 26475,
+    "moves": 25889,
+    "bonusYut": 1633,
+    "bonusMo": 1695,
+    "bonusCapture": 6617,
+    "nak": 205,
+    "turns": 16230,
+    "violations": [],
+    "longestImmediateChain": {
+      "board": "A",
+      "count": 2,
+      "seed": 41,
+      "turn": 36,
+      "player": 1,
+      "phase": "roll",
+      "credits": 0,
+      "length": 5,
+      "outcomes": [
+        "모",
+        "윷",
+        "윷",
+        "모",
+        "개"
+      ]
+    },
+    "longestTurn": {
+      "board": "B",
+      "count": 3,
+      "seed": 38,
+      "turn": 16,
+      "player": 0,
+      "throws": 9,
+      "events": [
+        "던짐:윷",
+        "던짐:도",
+        "이동:WAIT→O1",
+        "이동:O1→O5 잡기 1",
+        "던짐:윷",
+        "던짐:걸",
+        "이동:O5→O9",
+        "이동:O3→O6 잡기 2",
+        "던짐:개",
+        "이동:WAIT→O2 잡기 1",
+        "던짐:도",
+        "이동:O9→O10 잡기 1",
+        "던짐:윷",
+        "던짐:윷",
+        "던짐:걸",
+        "이동:O2→O6",
+        "이동:WAIT→O4",
+        "이동:O6→I2"
+      ]
+    },
+    "configurations": [
+      {
+        "board": "A",
+        "count": 2,
+        "games": 50,
+        "throws": 2275
+      },
+      {
+        "board": "A",
+        "count": 3,
+        "games": 50,
+        "throws": 3942
+      },
+      {
+        "board": "A",
+        "count": 4,
+        "games": 50,
+        "throws": 7082
+      },
+      {
+        "board": "B",
+        "count": 2,
+        "games": 50,
+        "throws": 2432
+      },
+      {
+        "board": "B",
+        "count": 3,
+        "games": 50,
+        "throws": 4488
+      },
+      {
+        "board": "B",
+        "count": 4,
+        "games": 50,
+        "throws": 6256
+      }
+    ]
+  },
+  "browser": {
+    "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+    "previous": "1931602",
+    "profile": "ai-turn-browser",
+    "date": "2026-10-27T12:35:04.059Z",
+    "method": "Real mounted App.checkAI/throwYut/commitMove/moveTick/componentDidUpdate, all seats AI, virtual timers preserving delays/order; CSS animation disabled",
+    "games": 6,
+    "throws": 706,
+    "moves": 692,
+    "bonusYut": 42,
+    "bonusMo": 34,
+    "bonusCapture": 208,
+    "nak": 6,
+    "violations": [],
+    "configurations": [
+      {
+        "board": "A",
+        "count": 2,
+        "seed": 910002,
+        "throws": 41,
+        "moves": 41,
+        "turns": 25,
+        "winner": 0,
+        "virtualCallbacks": 360
+      },
+      {
+        "board": "A",
+        "count": 3,
+        "seed": 910003,
+        "throws": 174,
+        "moves": 173,
+        "turns": 109,
+        "winner": 0,
+        "virtualCallbacks": 1476
+      },
+      {
+        "board": "A",
+        "count": 4,
+        "seed": 910004,
+        "throws": 184,
+        "moves": 179,
+        "turns": 99,
+        "winner": 2,
+        "virtualCallbacks": 1579
+      },
+      {
+        "board": "B",
+        "count": 2,
+        "seed": 910102,
+        "throws": 46,
+        "moves": 46,
+        "turns": 29,
+        "winner": 0,
+        "virtualCallbacks": 392
+      },
+      {
+        "board": "B",
+        "count": 3,
+        "seed": 910103,
+        "throws": 153,
+        "moves": 145,
+        "turns": 97,
+        "winner": 0,
+        "virtualCallbacks": 1264
+      },
+      {
+        "board": "B",
+        "count": 4,
+        "seed": 910104,
+        "throws": 108,
+        "moves": 108,
+        "turns": 63,
+        "winner": 2,
+        "virtualCallbacks": 933
+      }
+    ],
+    "maxImmediateThrows": 3
+  },
+  "live": {
+    "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+    "previous": "1931602",
+    "profile": "ai-turn-live",
+    "date": "2026-10-27T12:39:49.620Z",
+    "method": "Real mounted App, all seats AI, native timers at normal speed and original CSS animations",
+    "realTime": true,
+    "games": 0,
+    "throws": 20,
+    "moves": 19,
+    "bonusYut": 0,
+    "bonusMo": 0,
+    "bonusCapture": 10,
+    "nak": 0,
+    "violations": [],
+    "configurations": [
+      {
+        "board": "B",
+        "count": 4,
+        "seed": 910104,
+        "throws": 20,
+        "moves": 19,
+        "turns": 10,
+        "winner": null,
+        "completed": false,
+        "polls": 1140
+      }
+    ],
+    "maxImmediateThrows": 1,
+    "trace": [
+      {
+        "elapsedMs": 2355,
+        "turn": 1,
+        "player": 0,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 3716,
+        "turn": 1,
+        "player": 0,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 6037,
+        "turn": 2,
+        "player": 1,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 7389,
+        "turn": 2,
+        "player": 1,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 9708,
+        "turn": 2,
+        "player": 1,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 11056,
+        "turn": 2,
+        "player": 1,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 13370,
+        "turn": 3,
+        "player": 2,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 14970,
+        "turn": 3,
+        "player": 2,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 3,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 17291,
+        "turn": 4,
+        "player": 3,
+        "action": "roll",
+        "outcome": "도",
+        "captured": 0,
+        "nextPlayer": 3,
+        "nextPhase": "move",
+        "storedResults": [
+          1
+        ]
+      },
+      {
+        "elapsedMs": 18400,
+        "turn": 4,
+        "player": 3,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 20720,
+        "turn": 5,
+        "player": 0,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 22077,
+        "turn": 5,
+        "player": 0,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 24397,
+        "turn": 6,
+        "player": 1,
+        "action": "roll",
+        "outcome": "도",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          1
+        ]
+      },
+      {
+        "elapsedMs": 25541,
+        "turn": 6,
+        "player": 1,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 27877,
+        "turn": 6,
+        "player": 1,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 29492,
+        "turn": 6,
+        "player": 1,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 31872,
+        "turn": 6,
+        "player": 1,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 33238,
+        "turn": 6,
+        "player": 1,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 35639,
+        "turn": 6,
+        "player": 1,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 37383,
+        "turn": 6,
+        "player": 1,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 39766,
+        "turn": 7,
+        "player": 2,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 41122,
+        "turn": 7,
+        "player": 2,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 2,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 43452,
+        "turn": 7,
+        "player": 2,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 45060,
+        "turn": 7,
+        "player": 2,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 2,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 47382,
+        "turn": 7,
+        "player": 2,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 48741,
+        "turn": 7,
+        "player": 2,
+        "action": "move",
+        "captured": 2,
+        "nextPlayer": 2,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 51075,
+        "turn": 7,
+        "player": 2,
+        "action": "roll",
+        "outcome": "빽도",
+        "captured": 0,
+        "nextPlayer": 2,
+        "nextPhase": "move",
+        "storedResults": [
+          -1
+        ]
+      },
+      {
+        "elapsedMs": 52188,
+        "turn": 7,
+        "player": 2,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 3,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 54508,
+        "turn": 8,
+        "player": 3,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 3,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 56120,
+        "turn": 8,
+        "player": 3,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 58444,
+        "turn": 9,
+        "player": 0,
+        "action": "roll",
+        "outcome": "개",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "move",
+        "storedResults": [
+          2
+        ]
+      },
+      {
+        "elapsedMs": 59889,
+        "turn": 9,
+        "player": 0,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 0,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 62227,
+        "turn": 9,
+        "player": 0,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 63878,
+        "turn": 9,
+        "player": 0,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 0,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 66234,
+        "turn": 9,
+        "player": 0,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 0,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 67946,
+        "turn": 9,
+        "player": 0,
+        "action": "move",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 70882,
+        "turn": 10,
+        "player": 1,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      },
+      {
+        "elapsedMs": 72930,
+        "turn": 10,
+        "player": 1,
+        "action": "move",
+        "captured": 1,
+        "nextPlayer": 1,
+        "nextPhase": "roll",
+        "storedResults": []
+      },
+      {
+        "elapsedMs": 75334,
+        "turn": 10,
+        "player": 1,
+        "action": "roll",
+        "outcome": "걸",
+        "captured": 0,
+        "nextPlayer": 1,
+        "nextPhase": "move",
+        "storedResults": [
+          3
+        ]
+      }
+    ]
+  }
+}

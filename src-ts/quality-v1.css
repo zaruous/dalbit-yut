@@ -68,19 +68,36 @@ body{
 .board-heading small{font-size:11px;color:#f0d1a8}
 .board-switch{background:#21151ade;border-color:#c99659}
 .board-choice{font-size:11px;min-height:35px}
-.board-shadow{max-width:548px;padding:10px;border-radius:5px;background:linear-gradient(135deg,#f2bf75 0%,#5f3823 6%,#a96f45 12%,#3d261f 18%,#70432c 83%,#f3c788 95%);box-shadow:0 0 0 2px #21111a,0 0 0 4px #dba45c,0 0 0 6px #352021,0 17px 22px #160a12c7,inset 0 0 0 2px #ffe9ba70}
-.board-cloth{border-color:#47291b;background:linear-gradient(145deg,#e9c794,#fff0c3 42%,#e3c59a)}
-.board-svg{max-height:min(49vh,490px);width:100%}
+.board-shadow{max-width:548px;padding:10px;border-radius:8px;background:repeating-linear-gradient(2deg,#b9823920 0 1px,transparent 1px 5px),linear-gradient(135deg,#b68948,#51321f 9%,#2b1d17 44%,#654029 86%,#bd9255);box-shadow:0 0 0 1px #20150f,0 0 0 2px #d5ab66,0 0 0 5px #38251b,0 16px 25px #160a12b3,inset 0 1px 0 #ffe6b085,inset 0 -2px 0 #160e0a}
+.board-shadow:before,.board-shadow:after{content:none}
+.board-cloth{border:1px solid #e1b56c;border-radius:5px;background:#3e281d;box-shadow:inset 0 0 0 1px #1d120d}
+.board-cloth:after{inset:1px;border:1px solid #f9d89c52;border-radius:4px}
+.board-svg{max-height:min(49vh,490px);width:100%;display:block}
 .board-cap{font-size:11px;color:#f9daac;margin-top:11px}
 .board-cap span:first-child{color:#ffdfa0}
-.route-line{stroke:#3d2a22;stroke-width:3.1}.route-inner{stroke:#4d382c;stroke-width:3}
-.node-circle{stroke:#403128;stroke-width:2.5}
+.board-ink-scenes,.board-landmark,.route-line,.route-inner,.node-circle{filter:none}
+.route-inlay{fill:none;stroke:#fff7df;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:.78;pointer-events:none}
+.route-line{stroke:#644b34;stroke-width:2.8}.route-inner{stroke:#856849;stroke-width:2.5}
+.node-circle{fill:url(#nodeIvory);stroke:#795b38;stroke-width:1.15}
+.node-circle.fork{fill:url(#nodeAmber);stroke:#74502b;stroke-width:1.5}
+.node-circle.goal{fill:url(#nodeJade);stroke:#345b49;stroke-width:1.5}
+.node-circle.center{fill:url(#nodeObsidian);stroke:#deb66f;stroke-width:1.7}
+.node-circle.inner{fill:url(#nodeIvory);stroke:#8e744e;stroke-width:1.15}
+.node-engraving{fill:none;stroke:#fff8e5;stroke-width:.7;opacity:.8;pointer-events:none}
+.node-circle.center+.node-engraving{stroke:#e1b56e;opacity:.5}
+.board-craft-detail{pointer-events:none}
+.board-signature{font-family:Georgia,'Nanum Myeongjo',serif;fill:#795e3c;text-anchor:middle;letter-spacing:2.8px;font-size:6.5px}
 .board-label{font-size:10.3px}
 .board-target{cursor:pointer;filter:drop-shadow(0 0 12px #f7c55d) drop-shadow(0 0 5px #fff6b5)}
 .board-target .target-outer{animation:targetRing 1.45s ease-in-out infinite}
 .target-waypoint{pointer-events:none;filter:drop-shadow(0 0 7px #f7d17d)}
 .selected-piece-label{pointer-events:none;filter:drop-shadow(0 2px 3px #5b3926b5)}
 .selected-piece-label text{font-weight:900;paint-order:stroke;stroke:#34201b;stroke-width:2.7px;fill:#fff0c2}
+.modal .setup-composition{margin:10px 0 0;padding:9px 11px;border:1px solid #e1b56c55;border-radius:8px;background:#dba25310;color:#ffe1a3;font-size:12px;font-weight:800;line-height:1.5}
+.watch-entry{min-height:44px;color:#ffe4aa;border-color:#dba35d;background:linear-gradient(135deg,#60432b,#2a1b22);white-space:nowrap}
+.spectator-controls .primary-action{min-height:44px;font-size:15px}
+.spectator-controls .sub-action{min-width:90px}
+.spectator-note .target-help{color:#efd9b6}
 .step-impact{pointer-events:none;transform-box:fill-box;transform-origin:center;animation:arrivalGoldPulse .24s ease-out both}
 @keyframes arrivalGoldPulse{from{opacity:.8;transform:scale(.5)}to{opacity:0;transform:scale(1.6)}}
 .piece-handle.available .piece-halo{stroke-width:4;stroke:#ffc568;animation:pieceSelectGlow 1s infinite}
@@ -165,6 +182,7 @@ body{
 }
 @media(max-width:700px){
  body{background-attachment:scroll;background-position:center top}
+ .header{gap:8px}.header-right{gap:4px}.watch-entry{padding:7px 6px;font-size:11px;min-height:44px}
  .app-shell:before{background:linear-gradient(#2415205e,#23131f43)}
  .app-wrap{padding:7px 8px 25px}
  .header{min-height:65px;margin:0 1px 9px}

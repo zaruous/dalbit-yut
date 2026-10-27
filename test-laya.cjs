@@ -25,6 +25,12 @@ test('v2 input includes complete rules, path state, and post-move consequences',
  }
  assert.equal(JSON.stringify(state),before);
 });
+test('standard board input uses the 20-node square and correct corner IDs',()=>{
+ const state=game(),input=candidatesFor(state,'v2');
+ assert.equal(state.config.board,'S');
+ assert.match(input.state,/O5 or O10/);assert.match(input.state,/O19>O0>FIN/);
+ assert.match(input.state,/standard square/);
+});
 test('accepts a model selection exclusively from supplied legal candidates',async()=>{
  const state=game();let request;
  const result=await chooseLayaAction(state,{predict:async input=>{request=input;return {choice:'a1',elapsedMs:5};}});
@@ -42,7 +48,9 @@ test('no candidate during roll phase does not invoke the model',async()=>{
  const result=await chooseLayaAction(E.createGame({}),{predict:async()=>{throw Error('must not run');}});
  assert.equal(result.action,null);assert.equal(result.source,'forced');
 });
-const fake=(body,options={})=>new LayaWorker({command:process.execPath,args:['-e',body],startupMs:3000,decisionMs:1000,...options});
+// Windows process startup can exceed 3s under antivirus/load. Only the test
+// fixture gets extra startup allowance; production and inference deadlines stay unchanged.
+const fake=(body,options={})=>new LayaWorker({command:process.execPath,args:['-e',body],startupMs:process.platform==='win32'?15000:3000,decisionMs:1000,...options});
 test('real process JSONL transport handles readiness and request IDs',async()=>{
  const worker=fake(`console.log(JSON.stringify({ready:true}));require('readline').createInterface({input:process.stdin}).on('line',line=>{const x=JSON.parse(line);console.log(JSON.stringify({id:x.id,choice:'a1',elapsedMs:4}));});`);
  try{await worker.ready;const [a,b]=await Promise.all([worker.predict({}),worker.predict({})]);assert.equal(a.choice,'a1');assert.notEqual(a.id,b.id);}finally{worker.close();}

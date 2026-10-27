@@ -1,5 +1,6 @@
-/** Deterministic typed Yutnori graph for the two custom maps. */
-export type BoardType = 'A' | 'B';
+/** Deterministic Yutnori graphs: standard square and two optional custom maps. */
+export const BOARD_TYPES = ['S','A','B'] as const;
+export type BoardType = typeof BOARD_TYPES[number];
 export type Lane = 'outer' | 'ne' | 'nw' | 'sw' | 'se' | 'ring' | 'complete';
 export type MoveChoice = 'outer' | 'shortcut' | 'straight' | 'finish' | 'normal' | 'back';
 export interface Point { x: number; y: number }
@@ -9,6 +10,7 @@ export interface BoardGraph extends BoardMeta {
   type: BoardType;
   xy: Record<string, Point>;
   outerIds: string[];
+  cornerIds: [string,string,string,string];
   routes: Record<string, BoardRoute>;
 }
 export interface PieceStep { node: string; lane: Lane }
@@ -20,33 +22,38 @@ export interface PiecePath extends PieceStep {
 export interface RouteChoice { value: MoveChoice; label: string }
 
 /**
- * YUT MAP LAB v3: two deterministic variants with a graph-based move engine.
+ * Standard square plus two deterministic variants with a graph-based move engine.
  * Rules are a proposed house-ruleset, not a claim of one universal folk standard.
  * Physical nodes are unique: O0 is BOTH arrival and exit checkpoint, but WAIT is off-board.
  */
 const TYPE_META: Record<BoardType, BoardMeta> = {
+  S: { title:'기본 윷판', subtitle:'사각 외곽 · 중앙 X자 지름길', outerSteps:20 },
   A: { title:'팔각 순환형', subtitle:'정통 X자 지름길을 팔각 외곽으로 변형', outerSteps:24 },
   B: { title:'이중 링형', subtitle:'두 분기에서 열린 내선으로 합류하는 일방향 윷판', outerSteps:24 }
 };
 
-const outerIds = Array.from({length:24}, (_,i)=>`O${i}`);
+export function boardMeta(type: BoardType): BoardMeta{return TYPE_META[type];}
 const point = (x: number,y: number): Point=>({x:Number(x.toFixed(2)),y:Number(y.toFixed(2))});
-function makeOuterCoordinates(): Record<string, Point>{
+function makeOuterCoordinates(type: BoardType,outerIds: string[]): Record<string, Point>{
   const x0=250,y0=235,r=181;
-  const corners=Array.from({length:8},(_,i)=>point(x0+r*Math.cos((45-i*45)*Math.PI/180),y0+r*Math.sin((45-i*45)*Math.PI/180)));
+  const corners=type==='S'?[point(420,405),point(420,65),point(80,65),point(80,405)]:Array.from({length:8},(_,i)=>point(x0+r*Math.cos((45-i*45)*Math.PI/180),y0+r*Math.sin((45-i*45)*Math.PI/180)));
+  const perSide=outerIds.length/corners.length;
   return Object.fromEntries(outerIds.map((id,i)=>{
-    const segment=Math.floor(i/3),t=(i%3)/3;
-    const a=corners[segment],b=corners[(segment+1)%8];
+    const segment=Math.floor(i/perSide),t=(i%perSide)/perSide;
+    const a=corners[segment],b=corners[(segment+1)%corners.length];
     return [id,point(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t)];
   }));
 }
 function interpolate(a: Point,b: Point,t: number): Point{return point(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t)}
 export function makeGraph(type: BoardType): BoardGraph{
   if(!TYPE_META[type]) throw new Error(`Unknown map ${type}`);
-  const xy: Record<string, Point>=makeOuterCoordinates();
-  if(type==='A'){
+  const outerIds=Array.from({length:TYPE_META[type].outerSteps},(_,i)=>`O${i}`);
+  const cornerIds: BoardGraph['cornerIds']=type==='S'?['O0','O5','O10','O15']:['O0','O6','O12','O18'];
+  const [home,ne,nw,sw]=cornerIds;
+  const xy: Record<string, Point>=makeOuterCoordinates(type,outerIds);
+  if(type!=='B'){
     const c=point(250,235);xy.C=c;
-    for(const [prefix,anchor] of ([['NE',xy.O6],['NW',xy.O12],['SW',xy.O18],['SE',xy.O0]] as Array<[string,Point]>)){
+    for(const [prefix,anchor] of ([['NE',xy[ne]],['NW',xy[nw]],['SW',xy[sw]],['SE',xy[home]]] as Array<[string,Point]>)){
       xy[`${prefix}1`]=interpolate(anchor,c,1/3);
       xy[`${prefix}2`]=interpolate(anchor,c,2/3);
     }
@@ -64,23 +71,24 @@ export function makeGraph(type: BoardType): BoardGraph{
     xy.W0=interpolate(xy.O12,xy.I4,.52);
     xy.R1=interpolate(xy.I8,xy.O0,.54);
   }
-  const routes: Record<string, BoardRoute>=type==='A' ? {
+  const neIndex=outerIds.indexOf(ne),nwIndex=outerIds.indexOf(nw),swIndex=outerIds.indexOf(sw);
+  const routes: Record<string, BoardRoute>=type!=='B' ? {
     outer:{ label:'외곽 완주', nodes:[...outerIds,'O0'],note:'지름길을 사용하지 않는 기본 경로' },
-    east:{ label:'① 북동 분기', nodes:[...outerIds.slice(0,7),'NE1','NE2','C','SW1','SW2',...outerIds.slice(18),'O0'],note:'북동에서 진입 후 중앙을 통과해 남서로 직진' },
-    west:{ label:'② 북서 분기', nodes:[...outerIds.slice(0,13),'NW1','NW2','C','SE1','SE2','O0'],note:'북서에서 진입 후 중앙을 통과해 완주점으로 직진' },
-    center:{ label:'중앙 정차 → 전환', nodes:[...outerIds.slice(0,7),'NE1','NE2','C','SE1','SE2','O0'],note:'①번 지름길의 중앙에 정확히 정차한 뒤 다음 이동에서 남동쪽 선택' }
+    east:{ label:'① 북동 분기', nodes:[...outerIds.slice(0,neIndex+1),'NE1','NE2','C','SW1','SW2',...outerIds.slice(swIndex),'O0'],note:'북동에서 진입 후 중앙을 통과해 남서로 직진' },
+    west:{ label:'② 북서 분기', nodes:[...outerIds.slice(0,nwIndex+1),'NW1','NW2','C','SE1','SE2','O0'],note:'북서에서 진입 후 중앙을 통과해 완주점으로 직진' },
+    center:{ label:'중앙 정차 → 전환', nodes:[...outerIds.slice(0,neIndex+1),'NE1','NE2','C','SE1','SE2','O0'],note:'①번 지름길의 중앙에 정확히 정차한 뒤 다음 이동에서 남동쪽 선택' }
   } : {
     outer:{ label:'외곽 완주', nodes:[...outerIds,'O0'],note:'지름길을 사용하지 않는 기본 경로' },
     east:{ label:'① 내선 진입', nodes:[...outerIds.slice(0,7),'I0','I1','I2','I3','I4','I5','I6','I7','I8','R1','O0'],note:'북동에서 내부 일방향 경로로 진입' },
     west:{ label:'② 내선 합류', nodes:[...outerIds.slice(0,13),'W0','I4','I5','I6','I7','I8','R1','O0'],note:'북서에서 내선의 공유 합류점 I4로 진입' }
   };
-  return {type,...TYPE_META[type],xy,outerIds,routes};
+  return {type,...TYPE_META[type],xy,outerIds,cornerIds,routes};
 }
 
 export function initialState(): PiecePath{return { node:'WAIT', lane:'outer', history:[{node:'WAIT',lane:'outer'}], lastPath:[], lastResult:'시작 전' }}
 export function getOptions(graph: BoardGraph,state: Pick<PiecePath, 'node'|'lane'>): RouteChoice[]{
-  if(state.node==='O6'||state.node==='O12') return [{value:'outer',label:'바깥길 유지'},{value:'shortcut',label:state.node==='O6'?'① 지름길 진입':'② 지름길 진입'}];
-  if(graph.type==='A'&&state.node==='C'&&state.lane==='ne') return [{value:'straight',label:'남서로 직진'},{value:'finish',label:'남동으로 전환'}];
+  if(state.node===graph.cornerIds[1]||state.node===graph.cornerIds[2]) return [{value:'outer',label:'바깥길 유지'},{value:'shortcut',label:state.node===graph.cornerIds[1]?'① 지름길 진입':'② 지름길 진입'}];
+  if(graph.type!=='B'&&state.node==='C'&&state.lane==='ne') return [{value:'straight',label:'남서로 직진'},{value:'finish',label:'남동으로 전환'}];
   return [{value:'normal',label:'정해진 방향으로 전진'}];
 }
 export function suggestedOption(options: RouteChoice[]): MoveChoice{return options.find(x=>x.value==='shortcut')?.value ?? options.find(x=>x.value==='finish')?.value ?? options[0]?.value ?? 'normal'}
@@ -92,14 +100,14 @@ function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: Mov
   if(node==='O0')return {node:'FIN',lane:'complete'};
   if(/^O\d+$/.test(node)){
     const i=Number(node.slice(1));
-    if((i===6||i===12)&&first&&choice==='shortcut'){
-      if(graph.type==='A')return i===6?{node:'NE1',lane:'ne'}:{node:'NW1',lane:'nw'};
-      return i===6?{node:'I0',lane:'ring'}:{node:'W0',lane:'ring'};
+    if((node===graph.cornerIds[1]||node===graph.cornerIds[2])&&first&&choice==='shortcut'){
+      if(graph.type!=='B')return node===graph.cornerIds[1]?{node:'NE1',lane:'ne'}:{node:'NW1',lane:'nw'};
+      return node===graph.cornerIds[1]?{node:'I0',lane:'ring'}:{node:'W0',lane:'ring'};
     }
-    return {node:`O${(i+1)%24}`,lane:'outer'};
+    return {node:`O${(i+1)%graph.outerIds.length}`,lane:'outer'};
   }
-  if(graph.type==='A'){
-    const next={NE1:'NE2',NE2:'C',NW1:'NW2',NW2:'C',SW1:'SW2',SW2:'O18',SE1:'SE2',SE2:'O0'};
+  if(graph.type!=='B'){
+    const next={NE1:'NE2',NE2:'C',NW1:'NW2',NW2:'C',SW1:'SW2',SW2:graph.cornerIds[3],SE1:'SE2',SE2:'O0'};
     if(node==='C'){
       if(lane==='ne' && first && choice==='finish') return {node:'SE1',lane:'se'};
       return lane==='ne'?{node:'SW1',lane:'sw'}:{node:'SE1',lane:'se'};
@@ -127,7 +135,7 @@ export function movePiece(graph: BoardGraph,oldState: PiecePath,pips: number,cho
     const prev=state.node;
     if(prev==='O1'&&state.history.at(-2)?.node==='WAIT'){
       // Reverse onto the on-board finish checkpoint, never back into the reserve.
-      // Seed its outer approach so further back-do moves continue O0 -> O23 -> O22.
+      // Seed the map's outer approach so further back-do moves follow its last nodes.
       state.history=[{node:'WAIT',lane:'outer'},...graph.outerIds.slice(1).map(node=>({node,lane:'outer' as const})),{node:'O0',lane:'outer'}];
     }else state.history.pop();
     const last=state.history.at(-1)!;

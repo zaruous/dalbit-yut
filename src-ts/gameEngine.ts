@@ -4,7 +4,7 @@ import type {BoardType, PiecePath, MoveChoice, RouteChoice} from './mapEngine.js
 export interface PlayerVisual { name: string; color: string; light: string; avatar: string }
 export interface Player extends PlayerVisual { id: number; label: string; ai: boolean }
 export interface GamePiece extends PiecePath { id: string; player: number; index: number }
-export interface GameConfig { mode: 'ai'|'local'; count: number; board: BoardType; backdo: boolean }
+export interface GameConfig { mode: 'ai'|'local'|'spectate'; count: number; board: BoardType; backdo: boolean }
 export interface YutRollOutcome { faces: boolean[]; value: number }
 export interface YutRoll extends YutRollOutcome { id: string }
 export interface GameLog { id: string; type: string; text: string; player: number|null }
@@ -51,11 +51,11 @@ const SCORES: Record<number, string>={'-1':'↶','1':'Ⅰ','2':'Ⅱ','3':'Ⅲ','
 let idSeq=1;
 function newId(){return String(idSeq++);}
 function createGame(opts: Partial<GameConfig>): GameState{
- const config: GameConfig={mode:opts.mode==='local'?'local':'ai',count:Math.min(4,Math.max(2,Number(opts.count ?? 2))),board:opts.board==='B'?'B':'A',backdo:opts.backdo!==false};
- const players: Player[]=Array.from({length:config.count},(_,i)=>({id:i,...COLORS[i],label:config.mode==='ai'?(i===0?'나':`${COLORS[i].name} AI`):`플레이어 ${i+1}`,ai:config.mode==='ai'&&i>0}));
+ const config: GameConfig={mode:opts.mode==='spectate'?'spectate':opts.mode==='local'?'local':'ai',count:Math.min(4,Math.max(2,Number(opts.count ?? 2))),board:opts.board==='A'||opts.board==='B'?opts.board:'S',backdo:opts.backdo!==false};
+ const players: Player[]=Array.from({length:config.count},(_,i)=>({id:i,...COLORS[i],label:config.mode==='local'?`플레이어 ${i+1}`:config.mode==='ai'&&i===0?'나':`${COLORS[i].name} AI`,ai:config.mode==='spectate'||config.mode==='ai'&&i>0}));
  const pieces: GamePiece[]=players.flatMap(p=>Array.from({length:4},(_,i)=>({...maps.initialState(),id:`p${p.id}-${i}`,player:p.id,index:i})));
  return {config,players,pieces,current:0,phase:'roll',rolls:[],lastRoll:null,winner:null,turn:1,
- logs:[{id:newId(),type:'system',text:`${config.board==='A'?'팔각 순환형':'이중 링형'} 윷놀이가 시작되었습니다.`,player:null}],throwCount:0};
+ logs:[{id:newId(),type:'system',text:`${maps.boardMeta(config.board).title} 윷놀이가 시작되었습니다.`,player:null}],throwCount:0};
 }
 function currentPlayer(g: GameState): Player{return g.players[g.current];}
 function occupied(piece: GamePiece): boolean{return piece.node!=='WAIT'&&piece.node!=='FIN';}

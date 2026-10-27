@@ -1,0 +1,1564 @@
+{
+  "scope": "Windows Chrome, actual CSS viewport 1600x900, same seeds 400-405, 5 safe + 1 forced nak per condition; rAF scheduling, not GPU presentation tracing",
+  "summary": [
+    {
+      "file": "throw-desktop-1793101993434.json",
+      "version": "previous",
+      "blur": true,
+      "n": 6,
+      "idleFps": 53.64154177957232,
+      "throwMeanFps": 62.2772028482778,
+      "throwMinFps": 52.32679829763419,
+      "throwMaxFps": 70.16066792955783,
+      "meanP95Ms": 25.116666666673456,
+      "maxFrameMs": 66.60000000000582,
+      "framesOver50ms": 2
+    },
+    {
+      "file": "throw-desktop-1793102038427.json",
+      "version": "current",
+      "blur": true,
+      "n": 6,
+      "idleFps": 51.19358109558667,
+      "throwMeanFps": 62.27709580035522,
+      "throwMinFps": 57.56293779041551,
+      "throwMaxFps": 66.66666666666667,
+      "meanP95Ms": 25.066666666667516,
+      "maxFrameMs": 58.29999999999927,
+      "framesOver50ms": 1
+    },
+    {
+      "file": "throw-desktop-1793102082985.json",
+      "version": "current",
+      "blur": false,
+      "n": 6,
+      "idleFps": 73.55787843592721,
+      "throwMeanFps": 76.31479516977907,
+      "throwMinFps": 60.34124011652104,
+      "throwMaxFps": 95.56361607142854,
+      "meanP95Ms": 23.649999999999938,
+      "maxFrameMs": 66.5,
+      "framesOver50ms": 2
+    },
+    {
+      "file": "throw-desktop-1793102206890.json",
+      "version": "previous",
+      "blur": false,
+      "n": 6,
+      "idleFps": 92.37236572819249,
+      "throwMeanFps": 63.416498357985,
+      "throwMinFps": 56.152172387169344,
+      "throwMaxFps": 75.34007673526334,
+      "meanP95Ms": 30.53333333333285,
+      "maxFrameMs": 75,
+      "framesOver50ms": 9
+    }
+  ],
+  "runs": [
+    {
+      "file": "throw-desktop-1793101993434.json",
+      "data": {
+        "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+        "previous": "1931602",
+        "profile": "desktop",
+        "date": "2026-10-27T11:53:13.357Z",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "dpr": 0.75,
+        "width": 1600,
+        "height": 900,
+        "visibility": "visible",
+        "renderer": "ANGLE (Intel, Intel(R) Arc(TM) Graphics (0x00007D55) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "topLevel": true,
+        "results": [
+          {
+            "version": "previous",
+            "blur": true,
+            "idle": {
+              "fps": 53.64154177957232,
+              "p95Ms": 25.10000000000582
+            },
+            "samples": [
+              {
+                "seed": 400,
+                "mode": "safe",
+                "result": "개",
+                "frames": 75,
+                "fps": 52.32679829763419,
+                "p95Ms": 33.30000000001746,
+                "maxMs": 66.60000000000582,
+                "over33": 3,
+                "over50": 1,
+                "settleMs": 1462.7999999523163,
+                "snapPx": 9.550831390947826,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1408.5
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.5999999046325684
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1462.4000000953674
+                  }
+                ]
+              },
+              {
+                "seed": 401,
+                "mode": "safe",
+                "result": "개",
+                "frames": 96,
+                "fps": 66.57420249653259,
+                "p95Ms": 25,
+                "maxMs": 33.30000000001746,
+                "over33": 0,
+                "over50": 0,
+                "settleMs": 1464.5,
+                "snapPx": 10.249380969186149,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1388.7000000476837
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.2999999523162842
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1463.9000000953674
+                  }
+                ]
+              },
+              {
+                "seed": 402,
+                "mode": "safe",
+                "result": "개",
+                "frames": 99,
+                "fps": 69.07619313424588,
+                "p95Ms": 17,
+                "maxMs": 41.70000000001164,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1464.9000000953674,
+                "snapPx": 10.079657838295232,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1391
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 2.5
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1464.5
+                  }
+                ]
+              },
+              {
+                "seed": 403,
+                "mode": "safe",
+                "result": "빽도",
+                "frames": 100,
+                "fps": 70.16066792955783,
+                "p95Ms": 17,
+                "maxMs": 33.30000000001746,
+                "over33": 0,
+                "over50": 0,
+                "settleMs": 1469.9000000953674,
+                "snapPx": 9.648837065057096,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1384.5
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.7999999523162842
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1469.4000000953674
+                  }
+                ]
+              },
+              {
+                "seed": 404,
+                "mode": "safe",
+                "result": "개",
+                "frames": 77,
+                "fps": 53.409169730179215,
+                "p95Ms": 33.30000000001746,
+                "maxMs": 58.39999999999418,
+                "over33": 3,
+                "over50": 1,
+                "settleMs": 1460.7999999523163,
+                "snapPx": 9.472945606619039,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1404.3999998569489
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.7000000476837158
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1460.2999999523163
+                  }
+                ]
+              },
+              {
+                "seed": 405,
+                "mode": "nak",
+                "result": "낙",
+                "frames": 88,
+                "fps": 62.1161855015171,
+                "p95Ms": 25.10000000000582,
+                "maxMs": 33.5,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1459.6999998092651,
+                "snapPx": 8.474101107802674,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1414.0999999046326
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.1999998092651367
+                  },
+                  {
+                    "kind": "nak",
+                    "ms": 1456.5999999046326
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "throw-desktop-1793102038427.json",
+      "data": {
+        "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+        "previous": "1931602",
+        "profile": "desktop",
+        "date": "2026-10-27T11:53:58.350Z",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "dpr": 0.75,
+        "width": 1600,
+        "height": 900,
+        "visibility": "visible",
+        "renderer": "ANGLE (Intel, Intel(R) Arc(TM) Graphics (0x00007D55) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "topLevel": true,
+        "results": [
+          {
+            "version": "current",
+            "blur": true,
+            "idle": {
+              "fps": 51.19358109558667,
+              "p95Ms": 25.200000000000728
+            },
+            "samples": [
+              {
+                "seed": 400,
+                "mode": "safe",
+                "result": "개",
+                "frames": 95,
+                "fps": 66.66666666666667,
+                "p95Ms": 25.099999999998545,
+                "maxMs": 33.29999999999927,
+                "over33": 0,
+                "over50": 0,
+                "settleMs": 1460.2000000476837,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1174.2999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1174.2999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1174.2999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1249.5999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1249.5999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1249.5999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1324.7000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1324.7000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1324.7000000476837
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1407.3999998569489
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1407.3999998569489
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1407.3999998569489
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.5999999046325684
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 832.2000000476837
+                  }
+                ]
+              },
+              {
+                "seed": 401,
+                "mode": "safe",
+                "result": "개",
+                "frames": 88,
+                "fps": 61.3967766692249,
+                "p95Ms": 25,
+                "maxMs": 49.899999999999636,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1456,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1166.8999998569489
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1166.8999998569489
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1166.8999998569489
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1250
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1250
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1250
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1308.3999998569489
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1308.3999998569489
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1308.3999998569489
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1391.7000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1391.7999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1391.7999999523163
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.5
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 832.5999999046326
+                  }
+                ]
+              },
+              {
+                "seed": 402,
+                "mode": "safe",
+                "result": "개",
+                "frames": 93,
+                "fps": 65.25857834537933,
+                "p95Ms": 25,
+                "maxMs": 25.100000000000364,
+                "over33": 0,
+                "over50": 0,
+                "settleMs": 1455.2999999523163,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1181
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1181.0999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1181.0999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1247.4000000953674
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1247.4000000953674
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1247.4000000953674
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1306.2000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1306.2000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1306.2000000476837
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1381.5
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1381.5
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1381.5
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.0999999046325684
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 832.2000000476837
+                  }
+                ]
+              },
+              {
+                "seed": 403,
+                "mode": "safe",
+                "result": "빽도",
+                "frames": 83,
+                "fps": 57.56293779041551,
+                "p95Ms": 25.100000000002183,
+                "maxMs": 58.29999999999927,
+                "over33": 2,
+                "over50": 1,
+                "settleMs": 1467.4000000953674,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1166.7000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1166.7999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1166.7999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1243.4000000953674
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1243.4000000953674
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1243.5
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1316.7999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1316.9000000953674
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1316.9000000953674
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1392
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1392
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1392
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.7000000476837158
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 840.4000000953674
+                  }
+                ]
+              },
+              {
+                "seed": 404,
+                "mode": "safe",
+                "result": "개",
+                "frames": 91,
+                "fps": 63.12430632630417,
+                "p95Ms": 25.100000000002183,
+                "maxMs": 41.70000000000073,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1454.9000000953674,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1199.7999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1199.9000000953674
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1199.9000000953674
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1274.7999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1274.7999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1274.7999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1333.2999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1333.2999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1333.4000000953674
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1399.5999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1399.5999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1399.5999999046326
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 2.0999999046325684
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 835.5
+                  }
+                ]
+              },
+              {
+                "seed": 405,
+                "mode": "nak",
+                "result": "낙",
+                "frames": 85,
+                "fps": 59.65330900414073,
+                "p95Ms": 25.100000000002183,
+                "maxMs": 33.29999999999927,
+                "over33": 0,
+                "over50": 0,
+                "settleMs": 1458.7000000476837,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1195.4000000953674
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1195.5
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1195.5
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1261.4000000953674
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1261.5
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1261.5
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1328
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1328
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1328
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1403.2999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1403.2999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1403.2999999523163
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 2
+                  },
+                  {
+                    "kind": "nak",
+                    "ms": 833.7000000476837
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "throw-desktop-1793102082985.json",
+      "data": {
+        "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+        "previous": "1931602",
+        "profile": "desktop",
+        "date": "2026-10-27T11:54:42.883Z",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "dpr": 0.75,
+        "width": 1600,
+        "height": 900,
+        "visibility": "visible",
+        "renderer": "ANGLE (Intel, Intel(R) Arc(TM) Graphics (0x00007D55) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "topLevel": true,
+        "results": [
+          {
+            "version": "current",
+            "blur": false,
+            "idle": {
+              "fps": 73.55787843592721,
+              "p95Ms": 25.099999999999454
+            },
+            "samples": [
+              {
+                "seed": 400,
+                "mode": "safe",
+                "result": "개",
+                "frames": 110,
+                "fps": 78.10281170122127,
+                "p95Ms": 25,
+                "maxMs": 33.399999999999636,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1459.7000000476837,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1208.2999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1208.2999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1208.2999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1283.5
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1283.5
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1283.5
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1350.2999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1350.2999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1350.2999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1428
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1428.0999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1428.0999999046326
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.7999999523162842
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 837.5999999046326
+                  }
+                ]
+              },
+              {
+                "seed": 401,
+                "mode": "safe",
+                "result": "개",
+                "frames": 97,
+                "fps": 67.67127110366961,
+                "p95Ms": 25,
+                "maxMs": 41.399999999999636,
+                "over33": 2,
+                "over50": 0,
+                "settleMs": 1460.3000001907349,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1209.7000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1209.7000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1209.7000000476837
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1275.2000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1275.3000001907349
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1275.3000001907349
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1341.8000001907349
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1341.9000000953674
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1342
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1425.6000001430511
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1425.7000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1425.7000000476837
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.1000001430511475
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 833
+                  }
+                ]
+              },
+              {
+                "seed": 402,
+                "mode": "safe",
+                "result": "개",
+                "frames": 107,
+                "fps": 75.97273501846068,
+                "p95Ms": 25.100000000000364,
+                "maxMs": 66.5,
+                "over33": 4,
+                "over50": 2,
+                "settleMs": 1456.5,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1222.2000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1222.2000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1222.2000000476837
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1287.5
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1287.5
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1287.5
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1359.0999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1359.0999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1359.0999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1431.3999998569489
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1431.3999998569489
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1431.3999998569489
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.3999998569488525
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 834.3999998569489
+                  }
+                ]
+              },
+              {
+                "seed": 403,
+                "mode": "safe",
+                "result": "빽도",
+                "frames": 137,
+                "fps": 95.56361607142854,
+                "p95Ms": 16.700000000000728,
+                "maxMs": 33.599999999998545,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1462.7999999523163,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1187.5999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1187.5999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1187.5999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1254.2999999523163
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1254.2999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1254.4000000953674
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1331
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1331.0999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1331.0999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1397.2000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1397.2000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1397.2000000476837
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.5
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 834.5999999046326
+                  }
+                ]
+              },
+              {
+                "seed": 404,
+                "mode": "safe",
+                "result": "개",
+                "frames": 111,
+                "fps": 80.23709700737327,
+                "p95Ms": 25,
+                "maxMs": 50,
+                "over33": 1,
+                "over50": 0,
+                "settleMs": 1460.3999998569489,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1200.5999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1200.7000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1200.7000000476837
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1291.8999998569489
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1291.8999998569489
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1291.8999998569489
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1352.0999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1352.0999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1352.0999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1425.7000000476837
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1425.7000000476837
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1425.7000000476837
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 831.7000000476837
+                  }
+                ]
+              },
+              {
+                "seed": 405,
+                "mode": "nak",
+                "result": "낙",
+                "frames": 87,
+                "fps": 60.34124011652104,
+                "p95Ms": 25.099999999998545,
+                "maxMs": 41.79999999999927,
+                "over33": 3,
+                "over50": 0,
+                "settleMs": 1462.1999998092651,
+                "snapPx": 0,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutShadow",
+                    "ms": 1166.6999998092651
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1166.7999999523163
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1166.7999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1237.5999999046326
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1237.5999999046326
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1237.5999999046326
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1304.1999998092651
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1304.1999998092651
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1304.2999999523163
+                  },
+                  {
+                    "name": "yutShadow",
+                    "ms": 1395.6999998092651
+                  },
+                  {
+                    "name": "yutArc",
+                    "ms": 1395.6999998092651
+                  },
+                  {
+                    "name": "yutFlight",
+                    "ms": 1395.6999998092651
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 2.1999998092651367
+                  },
+                  {
+                    "kind": "nak",
+                    "ms": 833.7999999523163
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "throw-desktop-1793102206890.json",
+      "data": {
+        "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+        "previous": "1931602",
+        "profile": "desktop",
+        "date": "2026-10-27T11:56:46.821Z",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+        "dpr": 0.75,
+        "width": 1600,
+        "height": 900,
+        "visibility": "visible",
+        "renderer": "ANGLE (Intel, Intel(R) Arc(TM) Graphics (0x00007D55) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "topLevel": true,
+        "results": [
+          {
+            "version": "previous",
+            "blur": false,
+            "idle": {
+              "fps": 92.37236572819249,
+              "p95Ms": 16.79999999998836
+            },
+            "samples": [
+              {
+                "seed": 400,
+                "mode": "safe",
+                "result": "개",
+                "frames": 80,
+                "fps": 56.152172387169344,
+                "p95Ms": 25.10000000000582,
+                "maxMs": 58.70000000001164,
+                "over33": 2,
+                "over50": 1,
+                "settleMs": 1469.2000000476837,
+                "snapPx": 8.94189608841477,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1414.7000000476837
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.8999998569488525
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1468.5999999046326
+                  }
+                ]
+              },
+              {
+                "seed": 401,
+                "mode": "safe",
+                "result": "개",
+                "frames": 90,
+                "fps": 62.800921080176224,
+                "p95Ms": 33.09999999999127,
+                "maxMs": 74.80000000000291,
+                "over33": 3,
+                "over50": 2,
+                "settleMs": 1457.0999999046326,
+                "snapPx": 8.840781122184659,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1407.7999999523163
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 2.0999999046325684
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1456.7000000476837
+                  }
+                ]
+              },
+              {
+                "seed": 402,
+                "mode": "safe",
+                "result": "개",
+                "frames": 108,
+                "fps": 75.34007673526334,
+                "p95Ms": 25.10000000000582,
+                "maxMs": 66.59999999999127,
+                "over33": 4,
+                "over50": 1,
+                "settleMs": 1455.2000000476837,
+                "snapPx": 9.304552083021738,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1402.4000000953674
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.1000001430511475
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1454.9000000953674
+                  }
+                ]
+              },
+              {
+                "seed": 403,
+                "mode": "safe",
+                "result": "빽도",
+                "frames": 102,
+                "fps": 71.14955357142829,
+                "p95Ms": 24.89999999999418,
+                "maxMs": 33.19999999999709,
+                "over33": 0,
+                "over50": 0,
+                "settleMs": 1461.5,
+                "snapPx": 9.991293475753125,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1383.0999999046326
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.2000000476837158
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1460.7000000476837
+                  }
+                ]
+              },
+              {
+                "seed": 404,
+                "mode": "safe",
+                "result": "개",
+                "frames": 80,
+                "fps": 56.46527385657809,
+                "p95Ms": 41.60000000000582,
+                "maxMs": 75,
+                "over33": 6,
+                "over50": 3,
+                "settleMs": 1467.5,
+                "snapPx": 7.657670050472614,
+                "activeAtSettle": [],
+                "landings": [
+                  {
+                    "name": "yutTossQuality",
+                    "ms": 1419.2000000476837
+                  }
+                ],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 1.5999999046325684
+                  },
+                  {
+                    "kind": "land",
+                    "ms": 1466.7999999523163
+                  }
+                ]
+              },
+              {
+                "seed": 405,
+                "mode": "nak",
+                "result": "낙",
+                "frames": 83,
+                "fps": 58.590992517294694,
+                "p95Ms": 33.39999999999418,
+                "maxMs": 75,
+                "over33": 5,
+                "over50": 2,
+                "settleMs": 1468.2000000476837,
+                "snapPx": 11.940182065485716,
+                "activeAtSettle": [],
+                "landings": [],
+                "sounds": [
+                  {
+                    "kind": "throw",
+                    "ms": 2.200000047683716
+                  },
+                  {
+                    "kind": "nak",
+                    "ms": 1464.1000001430511
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "timings": [
+    {
+      "file": "throw-timing-desktop-1793101831589.json",
+      "data": {
+        "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+        "previous": "1931602",
+        "profile": "timing-desktop",
+        "version": "previous",
+        "date": "2026-10-27T11:50:31.583Z",
+        "width": 1600,
+        "height": 900,
+        "method": "WAAPI seek to exactly 1450ms, compare four corners before/after settled; not a performance measurement",
+        "checks": [
+          {
+            "seed": 400,
+            "snapPx": 10.79068202705918,
+            "unfinished": [
+              {
+                "name": "yutTossQuality",
+                "endMs": 1538
+              },
+              {
+                "name": "yutTossQuality",
+                "endMs": 1627.0000000000002
+              }
+            ]
+          },
+          {
+            "seed": 401,
+            "snapPx": 10.691136092034268,
+            "unfinished": [
+              {
+                "name": "yutTossQuality",
+                "endMs": 1538
+              },
+              {
+                "name": "yutTossQuality",
+                "endMs": 1627.0000000000002
+              }
+            ]
+          },
+          {
+            "seed": 402,
+            "snapPx": 10.525295744478814,
+            "unfinished": [
+              {
+                "name": "yutTossQuality",
+                "endMs": 1538
+              },
+              {
+                "name": "yutTossQuality",
+                "endMs": 1627.0000000000002
+              }
+            ]
+          },
+          {
+            "seed": 403,
+            "snapPx": 10.42690774024956,
+            "unfinished": [
+              {
+                "name": "yutTossQuality",
+                "endMs": 1538
+              },
+              {
+                "name": "yutTossQuality",
+                "endMs": 1627.0000000000002
+              }
+            ]
+          },
+          {
+            "seed": 404,
+            "snapPx": 10.26604296139475,
+            "unfinished": [
+              {
+                "name": "yutTossQuality",
+                "endMs": 1538
+              },
+              {
+                "name": "yutTossQuality",
+                "endMs": 1627.0000000000002
+              }
+            ]
+          },
+          {
+            "seed": 405,
+            "snapPx": 10.784891402997664,
+            "unfinished": [
+              {
+                "name": "yutTossQuality",
+                "endMs": 1538
+              },
+              {
+                "name": "yutTossQuality",
+                "endMs": 1627.0000000000002
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "file": "throw-timing-desktop-1793101748455.json",
+      "data": {
+        "current": "f628c1e77cf45098dfa6e8071b6f1b6f39850d64",
+        "previous": "1931602",
+        "profile": "timing-desktop",
+        "version": "current",
+        "date": "2026-10-27T11:49:08.391Z",
+        "width": 1600,
+        "height": 900,
+        "method": "WAAPI seek to exactly 1450ms, compare four corners before/after settled; not a performance measurement",
+        "checks": [
+          {
+            "seed": 400,
+            "snapPx": 0,
+            "unfinished": []
+          },
+          {
+            "seed": 401,
+            "snapPx": 0,
+            "unfinished": []
+          },
+          {
+            "seed": 402,
+            "snapPx": 0,
+            "unfinished": []
+          },
+          {
+            "seed": 403,
+            "snapPx": 0,
+            "unfinished": []
+          },
+          {
+            "seed": 404,
+            "snapPx": 0,
+            "unfinished": []
+          },
+          {
+            "seed": 405,
+            "snapPx": 0,
+            "unfinished": []
+          }
+        ]
+      }
+    }
+  ],
+  "excludedFiles": [
+    "throw-desktop-1793100702133.json",
+    "throw-timing-desktop-1793101734084.json"
+  ]
+}
