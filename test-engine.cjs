@@ -95,6 +95,19 @@ check(r.game.phase==='roll','Capture gives bonus throw');
 let n=E.throwResult(r.game,{value:5,faces:[false,false,false,false]},true);
 check(n.current===0,'Nak passes turn');
 check(n.rolls.length===0,'Nak clears results');
+// B1: AI and human throw with the same landing mode.
+const appSrc=require('fs').readFileSync(__dirname+'/src-ts/App.tsx','utf8');
+check(!/throwYut\('safe'/.test(appSrc)&&/throwYut\('random',true\)/.test(appSrc),'AI throws with same random landing mode as humans');
+// B2: no force parameter; fixed baseline nak risk.
+check(E.generateLanding.length===1&&!/power-row|\.force\b/.test(appSrc),'generateLanding takes only mode; no force slider');
+let naks=0;for(let i=0;i<20000;i++)if(E.generateLanding('random').nak)naks++;
+check(naks>40&&naks<400,'Random landing uses fixed baseline nak risk: '+naks);
+// B3: nak on bonus throw voids only that throw.
+let bonus=E.throwResult(E.createGame({mode:'local',count:2,board:'A'}),{value:4,faces:[false,false,false,false]},false);
+bonus=E.throwResult(bonus,{value:1,faces:[true,false,false,false]},true);
+check(bonus.current===0&&bonus.phase==='move'&&bonus.rolls.length===1&&bonus.rolls[0].value===4,'Nak keeps stored yut and enters move');
+r=E.resolveMove(bonus,E.legalActions(bonus)[0]);
+check(r.game.current===1&&r.game.phase==='roll','Turn passes after stored results used');
 let stack=E.createGame({mode:'local',count:2,board:'B'});
 const one=M.movePiece(M.makeGraph('B'),M.initialState(),1,'normal');
 stack.pieces[0]={...stack.pieces[0],node:one.node,lane:one.lane,history:one.history};

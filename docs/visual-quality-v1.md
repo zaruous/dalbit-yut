@@ -39,7 +39,7 @@
 | 대기 말 선택 → 황금색 목적지 클릭 | 통과, 말을 칸별로 이동 |
 | 이중 링 맵 전환·강제 낙 | 통과, 윷가락 한 개가 밖에 표시되고 차례 전환 |
 | 브라우저 JavaScript 런타임 오류 | 없음 |
-| Vite production build | 미확인: npm 패키지 설치 네트워크 제한 |
+| Vite production build | 통과: `npm run build` (vite 6.4.5, `dist/` 생성, 2026-10-27) |
 | 실기기 FPS (PC 60 / 모바일 30 목표) | 미측정 |
 | WCAG 텍스트/버튼 대비 상세 자동 측정 | 미측정 |
 

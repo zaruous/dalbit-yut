@@ -114,13 +114,12 @@ function rollSticks(backdo: boolean): YutRollOutcome{
  const value=count===0?4:count===4?5:(count===1&&faces[0]&&backdo?-1:count);
  return {faces,value};
 }
-function generateLanding(force: number,mode: 'nak'|'safe'|'random'): LandingOutcome{
+function generateLanding(mode: 'nak'|'safe'|'random'): LandingOutcome{
  const sticks: LandingStick[]=[];let anyNak=false;
  for(let i=0;i<4;i++){
   const theta=-105+Math.random()*210;
   let x=205+i*68+(Math.random()-.5)*42,y=76+(Math.random()-.5)*35;
-  const forceRisk=Math.max(0,(force-60)/600);const randRisk=.002+forceRisk;
-  const makeNak=mode==='nak'&&i===3 || mode!=='safe'&&Math.random()<randRisk;
+  const makeNak=mode==='nak'&&i===3 || mode!=='safe'&&Math.random()<.002;
   if(makeNak){const side=Math.floor(Math.random()*2);x=side===0?17:675;y=60+(Math.random()-.5)*22;}
   const c=Math.abs(Math.cos(theta*Math.PI/180)),s=Math.abs(Math.sin(theta*Math.PI/180));
   const dx=c*38+s*10,dy=s*38+c*10;
@@ -133,6 +132,7 @@ function generateLanding(force: number,mode: 'nak'|'safe'|'random'): LandingOutc
 function throwResult(g: GameState,rolled: YutRollOutcome,nak: boolean): GameState{
  if(g.phase!=='roll')return g;
  if(nak){
+  if(g.rolls.length)return normalize(appendLog({...g,phase:'move',throwCount:g.throwCount+1},'nak','낙! 이번 던지기는 무효입니다. 모아 둔 결과로 이동하세요.'));
   let lost=appendLog(g,'nak','낙! 윷가락이 멍석 밖으로 완전히 벗어났습니다. 이동 없이 차례 교대.');
   return nextTurn({...lost,rolls:[],throwCount:g.throwCount+1},'낙으로 차례가 넘어갔습니다.');
  }
