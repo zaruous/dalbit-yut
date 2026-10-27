@@ -11,6 +11,7 @@
     "preview": "vite preview --host",
     "test": "tsc -p tsconfig.test.json && node scripts/mark-commonjs.cjs && node test-engine.cjs",
     "build:static": "tsc -p tsconfig.static.json",
+    "build:preview": "node scripts/build-preview.cjs",
     "test:laya": "npm test && node --test test-laya.cjs",
     "laya:benchmark": "npm test && node scripts/benchmark-laya.cjs"
   },

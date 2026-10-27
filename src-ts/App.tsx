@@ -186,9 +186,9 @@ function ThrowMat({sticks,stage,result}: {sticks: LandingStick[],stage: GameUISt
       h('text',{x:546,y:78,textAnchor:'end',className:'mat-label'},'YUT'),
       h('g',{className:'sticks-shadow'},...rendered)
    ),
-   h('div',{className:'throw-stage-caption','aria-hidden':true},h('span',null,'✦'),h('span',null,stage==='throwing'?'회전 · 낙하 · 착지 중…':result==='낙'?'낙 · 말 이동 없이 다음 차례':result?'윷 결과를 확인하고 내 말을 선택하세요':'한옥 마루의 금빛 멍석 · 윷 네 가락'),h('span',null,'✦')),
+   h('div',{className:'throw-stage-caption','aria-hidden':true},h('span',null,'✦'),h('span',null,stage==='throwing'?'회전 · 낙하 · 착지 중…':result==='낙'?'낙 · 이번 던지기 무효':result?'윷 결과를 확인하고 내 말을 선택하세요':'한옥 마루의 금빛 멍석 · 윷 네 가락'),h('span',null,'✦')),
    result?h('div',{className:cx('result-orb','visible',result==='낙'&&'nak'),'aria-live':'polite'},
-     h('span',{className:'result-small'},result==='낙'?'무효 · 차례 교대':'윷 결과'),
+     h('span',{className:'result-small'},result==='낙'?'이번 던지기 무효':'윷 결과'),
      h('strong',null,result),
      h('span',{className:'result-small'},result==='낙'?'멍석 밖':'말을 이동하세요')
    ):null
@@ -206,7 +206,6 @@ interface GameUIState {
  sound: boolean;
  stage: 'idle'|'throwing'|'settled';
  sticks: LandingStick[];
- force: number;
  result: string|null;
  moving: {meta: MoveMeta; resolution: GameState; step: number}|null;
  burst: {node: string; capture: boolean; joined: boolean}|null;
@@ -233,7 +232,7 @@ checkAI(){
  if(!g||!g.players[g.current].ai||g.winner!==null||s.settingsOpen||s.moving||s.stage==='throwing'||this.aiTimer)return;
  if(g.phase!=='roll'&&g.phase!=='move')return;
  this.aiTimer=setTimeout(()=>{this.aiTimer=null;if(this.destroyed)return;const current=this.state.game;if(!current.players[current.current].ai||this.state.moving||this.state.stage==='throwing'||this.state.settingsOpen)return;
-  if(current.phase==='roll')this.throwYut('safe',true);else if(current.phase==='move'){
+  if(current.phase==='roll')this.throwYut('random',true);else if(current.phase==='move'){
    const action=chooseAIAction(current);if(!action){this.setState({game:E.normalize(current)});return;}
    this.commitMove(action,true);
   }
@@ -243,13 +242,13 @@ throwYut(mode: 'safe'|'nak'|'random',ai: boolean){
  const g=this.state.game;
  if(g.phase!=='roll'||this.state.stage==='throwing'||this.state.moving)return;
  if(!ai&&g.players[g.current].ai)return;
- const rolled=E.rollSticks(g.config.backdo),landing=E.generateLanding(this.state.force,mode);
+ const rolled=E.rollSticks(g.config.backdo),landing=E.generateLanding(mode);
  const sticks=landing.sticks.map((st,i)=>({...st,front:rolled.faces[i]}));
  this.setState({stage:'throwing',sticks,result:null,selectedPiece:null,selectedChoice:null});this.playSound('throw');
  this.defer(()=>{
   const nak=landing.nak,next=E.throwResult(this.state.game,rolled,nak);
   this.setState({game:next,stage:'settled',result:nak?'낙':E.NAMES[rolled.value],selectedRoll:null},()=>this.playSound(nak?'nak':'land'));
-  if(nak)this.notify('낙! 윷이 멍석 경계를 완전히 벗어나 차례가 넘어갑니다.');
+  if(nak)this.notify(next.phase==='move'?'낙! 이번 던지기는 무효입니다. 모아 둔 결과로 이동하세요.':'낙! 윷이 멍석 경계를 완전히 벗어나 차례가 넘어갑니다.');
  },1450);
 };
 startGame(opts?: Partial<GameConfig>){
@@ -342,8 +341,7 @@ render(){
     h(ThrowMat,{sticks:s.sticks,stage:s.stage,result:s.result}),
     h('div',{className:'throw-actions'},
      h('button',{className:'primary-action throw-main-button',disabled:!human||g.phase!=='roll'||s.stage==='throwing'||!!s.moving,onClick:()=>this.throwYut('random',false)},h('span',{className:'throw-icon'},'♢'),s.stage==='throwing'?'윷가락이 날아갑니다…':g.phase==='move'?'말을 이동해 주세요':g.lastRoll&&(g.lastRoll.value===4||g.lastRoll.value===5)?'보너스 윷 던지기':'윷 던지기',h('span',{className:'button-ornament'},'❖')),
-     h('button',{className:'sub-action',disabled:!human||g.phase!=='roll'||s.stage==='throwing'||!!s.moving,onClick:()=>this.throwYut('nak',false)},'낙 시연')),
-    h('div',{className:'power-row'},h('span',null,'던지는 힘'),h('input',{type:'range',min:20,max:100,value:s.force,onChange:ev=>this.setState({force:+ev.target.value}),disabled:s.stage==='throwing','aria-label':'던지는 힘'}),h('strong',null,`${s.force}%`),h('em',null,s.force>75?'낙 위험 ↑':' '))
+     h('button',{className:'sub-action',disabled:!human||g.phase!=='roll'||s.stage==='throwing'||!!s.moving,onClick:()=>this.throwYut('nak',false)},'낙 시연'))
    ),
    h('aside',{className:'panel right-panel'},
     h('div',{className:'action-section'},h('div',{className:'phase-badge'},g.phase==='move'?'✦ 직접 말 이동':g.phase==='won'?'♛ 승리':'✦ 윷 던지기'),
@@ -367,14 +365,14 @@ render(){
     h('label',{className:'form-label'},'게임 모드'),h('div',{className:'setting-options'},...[['ai','1인 · AI 대전'],['local','2~4인 · 함께하기']].map(([value,text])=>h('button',{key:value,className:cx('setting-btn',s.setup.mode===value&&'active'),onClick:()=>this.setState({setup:{...s.setup,mode:value}})},text))),
     h('label',{className:'form-label'},'총 참가 인원'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[2,3,4].map(n=>h('button',{key:n,className:cx('setting-btn',s.setup.count===n&&'active'),onClick:()=>this.setState({setup:{...s.setup,count:n}})},`${n}명`))),
     h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options'},...[['A','팔각 순환형'],['B','이중 링형']].map(([value,text])=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),onClick:()=>this.setState({setup:{...s.setup,board:value}})},text))),
-    h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 차례 종료. 직접 말 선택과 목적지 확정이 기본입니다.'),
+    h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 직접 말 선택과 목적지 확정이 기본입니다.'),
     h('button',{className:'primary-action',onClick:()=>this.startGame(s.setup)},'이 설정으로 게임 시작')
    )):null,
   g.winner!==null?h('div',{className:'modal-backdrop'},h('div',{className:'modal victory'},h('div',{style:{color:'#f2d098',fontSize:12,textAlign:'center'}},'승부 결정'),h('div',{className:'prize'},'🏆'),h('h2',{style:{textAlign:'center'}},`${g.players[g.winner].label} 승리!`),h('p',{style:{textAlign:'center'}},'네 개의 말을 모두 완주했습니다.'),h('button',{className:'primary-action',onClick:()=>this.startGame(g.config)},'다시 한 판'))):null
  ));
 };
 
-state: GameUIState={game:E.createGame({mode:'ai',count:2,board:'A'}),setup:{mode:'ai',count:2,board:'A',backdo:true},selectedRoll:null,selectedPiece:null,selectedChoice:null,settingsOpen:false,sound:true,stage:'idle',sticks:initialSticks(),force:55,result:null,moving:null,burst:null,toast:null};
+state: GameUIState={game:E.createGame({mode:'ai',count:2,board:'A'}),setup:{mode:'ai',count:2,board:'A',backdo:true},selectedRoll:null,selectedPiece:null,selectedChoice:null,settingsOpen:false,sound:true,stage:'idle',sticks:initialSticks(),result:null,moving:null,burst:null,toast:null};
 
 }
 const mount=document.getElementById('root');
