@@ -149,9 +149,11 @@ function ThrowMat({sticks,stage,result}: {sticks: LandingStick[],stage: GameUISt
  const rendered=sticks.map((st,i)=>{
   const fx=st.front;
   const marks=[-23,-7,9,25];
-  return h('g',{key:i,transform:`translate(${st.x} ${st.y}) rotate(${st.angle})`,className:cx('yutstick',st.nak&&'is-nak')},
-   h('g',{className:'stick-flight',style:{'--delay':`${i*89}ms`}},
-    h('ellipse',{cx:3,cy:14,rx:43,ry:9,fill:'#24130d',opacity:.36}),
+  // Outer: landing spot. Shadow stays on the mat; flight = launch-to-landing drift + spin, arc = height + bounce.
+  const delay={'--delay':`${i*70}ms`};
+  return h('g',{key:i,transform:`translate(${st.x} ${st.y})`,className:cx('yutstick',st.nak&&'is-nak')},
+   h('g',{transform:`rotate(${st.angle})`},h('ellipse',{className:'stick-shadow',style:delay,cx:3,cy:14,rx:43,ry:9,fill:'#24130d',opacity:.36})),
+   h('g',{className:'stick-flight',style:{...delay,'--fx':`${330-st.x}px`,'--fy':`${150-st.y}px`}},h('g',{className:'stick-arc',style:delay},h('g',{transform:`rotate(${st.angle})`},
     h('rect',{x:-44,y:-12,width:88,height:27,rx:10,fill:'#3e1b13',stroke:'#ffe5a2',strokeWidth:1.5}),
     h('path',{d:'M-41 -8L-37 -14H33L41 -8H-41Z',fill:'#f5c985',stroke:'#ffe5b3',strokeWidth:1}),
     h('rect',{x:-41,y:-10,width:82,height:23,rx:8,fill:fx?'url(#yutWoodFace)':'url(#yutWoodBack)',stroke:'#fce2a5',strokeWidth:1.2}),
@@ -161,7 +163,7 @@ function ThrowMat({sticks,stage,result}: {sticks: LandingStick[],stage: GameUISt
     h('path',{d:'M-31 -7L23 -7',fill:'none',stroke:'#fff8d7',strokeWidth:1.3,opacity:.56}),
     i===0?h('circle',{cx:33,cy:0,r:3.6,fill:'#b64b39',stroke:'#f8e2a8',strokeWidth:1}):null,
     st.nak?h('circle',{className:'nak-warning-ring',cx:0,cy:0,r:39,stroke:'#ff7c63',strokeWidth:3,strokeDasharray:'4 5',fill:'none'}):null
-   )
+   )))
   );
  });
  return h('div',{className:cx('throw-sandbox','cinematic-throw',stage==='throwing'&&'is-throwing',result==='낙'&&'is-invalid')},
@@ -245,9 +247,10 @@ throwYut(mode: 'safe'|'nak'|'random',ai: boolean){
  const rolled=E.rollSticks(g.config.backdo),landing=E.generateLanding(mode);
  const sticks=landing.sticks.map((st,i)=>({...st,front:rolled.faces[i]}));
  this.setState({stage:'throwing',sticks,result:null,selectedPiece:null,selectedChoice:null});this.playSound('throw');
+ this.defer(()=>this.playSound(landing.nak?'nak':'land'),830);
  this.defer(()=>{
   const nak=landing.nak,next=E.throwResult(this.state.game,rolled,nak);
-  this.setState({game:next,stage:'settled',result:nak?'낙':E.NAMES[rolled.value],selectedRoll:null},()=>this.playSound(nak?'nak':'land'));
+  this.setState({game:next,stage:'settled',result:nak?'낙':E.NAMES[rolled.value],selectedRoll:null});
   if(nak)this.notify(next.phase==='move'?'낙! 이번 던지기는 무효입니다. 모아 둔 결과로 이동하세요.':'낙! 윷이 멍석 경계를 완전히 벗어나 차례가 넘어갑니다.');
  },1450);
 };
