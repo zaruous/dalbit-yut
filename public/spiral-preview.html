@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#341d18">
+<title>돌담 나선정원 — 인게임 미리보기 | 달빛 윷마당</title>
+<meta name="description" content="달빛 윷마당 신규 지형 시안: 3중 나선 돌담길과 모 자리 협문 지름길. 실제 게임 화면 디자인으로 재구성한 정적 미리보기.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* styles.css */
+:root{--ink:#0c1329;--navy:#151f38;--navy2:#233252;--cream:#fff5d9;--gold:#f6ce82;--gold2:#cc9958;--dim:#b7bccd;--aqua:#67d8ce;--rose:#f08378}
+*{box-sizing:border-box}html,body,#root{margin:0;min-height:100%;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif}body{color:#fff6e2;background:#091326 url('hanok-night.svg') center /cover fixed no-repeat}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}button:focus-visible,.piece-handle:focus-visible{outline:2px solid #ffecba;outline-offset:3px}
+.app-shell{min-height:100vh;background:radial-gradient(ellipse at 50% 12%,transparent 0%,rgba(7,13,30,.28) 65%,rgba(6,11,26,.7) 100%);position:relative;overflow:hidden}.app-shell:before{content:'';position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,13,31,.24),rgba(6,13,31,.44));z-index:0}.app-wrap{position:relative;z-index:1;max-width:1580px;margin:auto;padding:13px 24px 24px}.header{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:63px;margin-bottom:10px}.brand{display:flex;align-items:center;gap:12px}.brand-seal{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:radial-gradient(circle,#3f3852,#1a223b);border:1px solid #e0aa6a;box-shadow:0 0 20px #d9a35c3b;font-size:25px}.brand h1{font-family:Georgia,'Nanum Myeongjo','Malgun Gothic',serif;font-size:28px;line-height:1.1;margin:0;font-weight:900;letter-spacing:-.04em;color:#ffdf9c;text-shadow:0 2px 18px #d8a25760}.brand small{color:#cdc1ac;letter-spacing:.12em;font-size:10px;font-weight:700}.header-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}.head-chip{font-size:11px;padding:8px 12px;border:1px solid #f2d6a440;border-radius:30px;color:#f4d69c;background:#172137b8;font-weight:850}.header-btn{border:1px solid #d8e6ff30;border-radius:10px;background:#17263bcc;color:#f6ead3;padding:9px 12px;font-size:12px;font-weight:750;transition:background .2s}.header-btn:hover{background:#2a3c5b}.layout{display:grid;grid-template-columns:minmax(205px,248px) minmax(460px,1fr) minmax(240px,280px);gap:15px;align-items:start}.panel{background:linear-gradient(150deg,#111a2aee,#111c31db);border:1px solid #e5c98d37;border-radius:20px;box-shadow:0 14px 48px #02081875, inset 0 1px #ffffff12;backdrop-filter:blur(15px)}.side{padding:17px 13px}.side-section-title{font-size:11px;font-weight:850;letter-spacing:.14em;color:#e4bb76;display:flex;justify-content:space-between;align-items:center;margin:1px 3px 14px}.side-section-title span{font-size:10px;color:#9fb2c7;letter-spacing:0}.turn-hero{background:linear-gradient(130deg,#374065,#222945);border:1px solid #e9c7855f;border-radius:15px;padding:16px;margin-bottom:15px;box-shadow:inset 0 0 20px #e0a96e17}.turn-hero .eyebrow{font-size:11px;color:#d0c5be;letter-spacing:.08em;margin-bottom:8px}.turn-name{display:flex;align-items:center;gap:9px;font-size:20px;font-weight:900}.turn-dot{width:11px;height:11px;border-radius:50%;background:#f6ca79;box-shadow:0 0 16px #ffb85f}.turn-sub{font-size:11px;color:#c5c9d4;margin-top:8px;line-height:1.6}.players-list{display:flex;flex-direction:column;gap:9px}.player-card{border:1px solid #ffffff1c;border-radius:13px;padding:11px 10px;background:#ffffff09;position:relative;transition:all .18s}.player-card.active{background:linear-gradient(100deg,#f8ce8127,#ffffff0a);border-color:#f4d18a8c;box-shadow:0 0 18px #d8a9662b}.player-main{display:flex;align-items:center;gap:9px}.avatar{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:23px;background:#1c2840;border:1px solid #f2d6a54a}.player-name{font-size:13px;font-weight:850}.player-status{font-size:10px;color:#b6bdcb;margin-top:4px}.pawns{display:flex;gap:4px;align-items:center;margin-top:8px;margin-left:46px}.pawn-mini{width:12px;height:12px;border-radius:50% 50% 5px 5px;background:var(--piece);border:1px solid #fff6;box-shadow:0 2px 0 #071228}.pawn-mini.done{background:#ebd2a2;border-color:#f8edd2}.on-turn{position:absolute;top:9px;right:9px;border-radius:7px;padding:4px 6px;background:#f3c977;color:#30243a;font-weight:900;font-size:9px}.subpanel{border-top:1px solid #e2cca128;margin-top:17px;padding-top:14px}.rack-title{font-size:12px;color:#d6dcdd;margin-bottom:10px;display:flex;justify-content:space-between}.rack{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.rack-piece{border-radius:10px;border:1px solid #ffffff25;background:#1f3048;color:#fff;padding:9px 0;font-size:16px;position:relative;transition:.15s}.rack-piece>small{display:block;font-size:9px;color:#cdd5dd;margin-top:5px;font-weight:700}.rack-piece.pickable{border-color:#f9cf80;box-shadow:0 0 13px #f9cf806e;background:#384258;animation:softPulse 1.6s infinite}.rack-piece.selected{background:#f7cd7f;color:#243047;border-color:#ffeab8}.tips{line-height:1.6;font-size:11px;color:#b3c1d2}.tips b{color:#ffe1a2}.tiny-guide{display:grid;grid-template-columns:24px 1fr;align-items:start;gap:6px;margin:10px 0}.tiny-guide b{height:22px;width:22px;border-radius:7px;display:grid;place-items:center;background:#d9b87524;color:#edcb88;border:1px solid #d8b87655;font-size:11px}.tiny-guide p{margin:2px 0}.board-panel{padding:13px 15px 12px;position:relative;background:linear-gradient(180deg,#121b2dec,#0b182af2);overflow:visible}.board-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:3px 5px 10px}.board-heading strong{font-size:15px;font-weight:900;color:#ffdd9c}.board-heading small{display:block;font-size:10px;color:#b6b7bc;margin-top:4px}.board-switch{display:flex;align-items:center;gap:4px;border-radius:11px;padding:4px;background:#07142a;border:1px solid #a5b4cf38}.board-choice{background:transparent;color:#a8b6c7;border:0;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:850;white-space:nowrap}.board-choice.active{color:#342a24;background:#f1ce91;box-shadow:0 3px 10px #e6ba695e}.board-shadow{margin:auto;max-width:550px;border-radius:13px;background:linear-gradient(135deg,#ba8b5e,#77543f);padding:7px;box-shadow:0 14px 28px #0307107f,0 0 0 1px #f1cd8994,inset 0 0 0 2px #f9d4a05c}.board-cloth{border-radius:10px;overflow:hidden;background:#f1dfb8;border:2px solid #3d4050;position:relative}.board-svg{display:block;width:100%;height:auto;max-height:min(52vh,515px)}.board-cap{max-width:550px;margin:9px auto 0;display:flex;align-items:center;justify-content:space-between;gap:6px;color:#b4c7ce;font-size:10px}.board-cap span:first-child{color:#e2c692}.map-sep{height:1px;background:linear-gradient(90deg,transparent,#dfba7857,transparent);margin:14px 0 12px}.throw-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 4px}.throw-title{font-size:13px;font-weight:850;color:#f8db9e}.throw-desc{font-size:10px;color:#a5b2be;margin-top:3px}.throw-sandbox{position:relative;background:radial-gradient(ellipse at 50% 65%,#4f3a39,#1a263d 72%);border:1px solid #dab17c45;border-radius:14px;margin-top:10px;min-height:140px;box-shadow:inset 0 0 22px #0009;overflow:hidden}.mat-svg{display:block;width:100%;height:138px;overflow:visible}.mat-label{font-family:Georgia,serif;fill:#dec498;font-size:10px;letter-spacing:.24em;opacity:.5}.mat-sticks.throwing g.yutstick{animation:yutToss 1150ms cubic-bezier(.19,.4,.25,1) both;transform-box:fill-box;transform-origin:center;animation-delay:var(--delay)}.mat-sticks g.yutstick.is-nak{filter:drop-shadow(0 0 8px #ff6f67)}.throw-ripple{position:absolute;inset:26px 27%;border-radius:50%;border:3px solid #ffe19e87;pointer-events:none;opacity:0}.throw-ripple.playing{animation:ring 1.2s ease-out 1}.sparkles{pointer-events:none;position:absolute;inset:0}.spark{position:absolute;width:4px;height:4px;background:#ffe7b0;border-radius:50%;box-shadow:0 0 8px #ffd27b;opacity:0}.spark:nth-child(1){top:33%;left:30%}.spark:nth-child(2){top:72%;left:52%}.spark:nth-child(3){top:43%;left:66%}.spark:nth-child(4){top:19%;left:46%}.spark:nth-child(5){top:79%;left:73%}.spark:nth-child(6){top:61%;left:24%}.spark:nth-child(7){top:52%;left:48%}.spark:nth-child(8){top:27%;left:81%}.throwing .spark{animation:twinkle 1.25s ease-out both}.throwing .spark:nth-child(2n){animation-delay:.22s}.throwing .spark:nth-child(3n){animation-delay:.38s}.result-orb{pointer-events:none;position:absolute;right:5%;top:26%;border-radius:50%;min-width:66px;min-height:66px;display:grid;place-items:center;opacity:0;transform:scale(.7);border:2px solid #ffedb2;background:radial-gradient(circle,#fff6d0,#f7bd60 50%,#a95b55);color:#49262d;font-family:Georgia,'Nanum Myeongjo',serif;font-size:25px;font-weight:900;box-shadow:0 0 25px #ffca72,0 0 50px #ffca7244;transition:.35s}.result-orb.visible{opacity:1;transform:scale(1)}.result-orb.nak{background:radial-gradient(circle,#ffe0d6,#ec7467 65%,#982e39);color:white;box-shadow:0 0 25px #ec7467}.throw-actions{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin:10px 0 0}.primary-action{border:1px solid #ffe4b4;border-radius:11px;min-height:42px;background:linear-gradient(110deg,#a54346,#d27055 58%,#a53e43);color:#fff3d4;font-size:14px;font-weight:900;letter-spacing:.01em;box-shadow:0 5px 0 #642b31,0 9px 18px #0007;text-shadow:0 1px #6b3039;transition:.14s}.primary-action:not(:disabled):hover{filter:brightness(1.13);transform:translateY(-2px)}.sub-action{background:#1a293f;border:1px solid #f4cf8340;border-radius:10px;color:#e9c891;padding:11px 13px;font-size:11px;font-weight:850;min-height:42px}.power-row{display:flex;align-items:center;gap:9px;padding:12px 2px 1px;color:#bfcbcb;font-size:10px}.power-row input{flex:1;accent-color:#f9cc83;min-width:10px;height:5px}.power-row strong{color:#f5d8a1;min-width:36px;text-align:right}.power-row em{color:#ef9e9c;font-style:normal}.right-panel{padding:16px 14px}.phase-badge{display:inline-flex;gap:6px;align-items:center;border:1px solid #e2ca8d73;color:#f5d493;background:#ebc3801c;padding:7px 11px;border-radius:10px;font-size:11px;font-weight:850;margin-bottom:12px}.step-title{font-size:18px;font-weight:900;line-height:1.3;margin:0 0 7px}.step-desc{font-size:12px;line-height:1.65;color:#c5cbdb;margin:0 0 16px}.results-caption{display:flex;justify-content:space-between;color:#b6c4d0;font-size:10px;font-weight:700;margin:0 0 8px}.results{display:flex;gap:7px;flex-wrap:wrap;min-height:44px;margin-bottom:7px}.roll-pill{padding:7px 11px;border-radius:10px;border:1px solid #e4cc9b50;background:#37405c;color:#f9dc99;font-size:12px;font-weight:900;transition:.15s}.roll-pill small{color:#d5c8aa;font-size:10px;margin-left:5px}.roll-pill.active{border-color:#ffe1a1;background:#f2cd87;color:#25314b;box-shadow:0 0 18px #ffdb9766}.roll-pill.active small{color:#67513e}.no-rolls{display:flex;align-items:center;min-height:38px;color:#8d9eb3;font-size:11px}.manual-block{border:1px solid #f1d2a146;border-radius:13px;padding:12px;background:#c3926114;margin:12px 0 13px}.manual-title{font-size:11px;color:#e7c890;font-weight:900;margin-bottom:9px}.route-buttons{display:flex;gap:7px;flex-wrap:wrap}.route-btn{border:1px solid #a3c0d057;background:#23314e;color:#d8eaf3;border-radius:8px;padding:8px 10px;font-weight:800;font-size:11px}.route-btn.active{border-color:#f8d891;background:#e4bd78;color:#192b3b}.target-help{font-size:11px;color:#d9d7d2;line-height:1.5;margin:10px 0 0}.log-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto;padding-right:3px;scrollbar-color:#8e7968 #18253e;scrollbar-width:thin}.log-line{border-bottom:1px solid #ead2a01b;padding:5px 0 9px;display:flex;gap:8px;align-items:flex-start;font-size:11px;color:#bcc7d6;line-height:1.55}.log-icon{width:26px;height:26px;border-radius:9px;background:#d2b27e25;border:1px solid #e4c08a35;display:grid;place-items:center;flex-shrink:0;font-size:13px}.log-line b{color:#f7d99f;display:block;font-size:10px;margin-bottom:2px}.footer-copy{text-align:center;color:#91a1b5;letter-spacing:.13em;font-size:10px;margin:14px 0 2px}.modal-backdrop{position:fixed;z-index:60;inset:0;background:#071020cc;display:grid;place-items:center;padding:18px;backdrop-filter:blur(9px)}.modal{max-width:450px;width:100%;border-radius:23px;border:1px solid #efd29a8a;background:linear-gradient(155deg,#27334c,#10172d 82%);box-shadow:0 25px 75px #000c;padding:25px 24px;color:#f8edda}.modal h2{color:#ffe4ae;font-family:Georgia,'Malgun Gothic',serif;font-size:26px;margin:5px 0}.modal p{color:#bdc7d4;font-size:12px;line-height:1.7}.form-label{color:#ebd4a4;font-size:12px;font-weight:850;display:block;margin:20px 0 8px}.setting-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.setting-btn{border-radius:11px;padding:12px 8px;background:#202d46;color:#e0e6ee;border:1px solid #a5bbcf4f;font-size:12px;font-weight:800}.setting-btn.active{background:#e1bf84;color:#1a2e3e;border-color:#fff2cb}.modal .primary-action{width:100%;margin-top:23px}.modal-note{font-size:10px;color:#cbd3dc;margin:12px 0 2px}.victory{border:1px solid #f9d997;border-radius:20px;box-shadow:0 0 60px #e5ad6142}.victory .prize{text-align:center;font-size:70px;margin:12px 0}.toast{position:fixed;z-index:15;bottom:24px;left:50%;transform:translateX(-50%);background:#e9c686;color:#162339;padding:10px 19px;border-radius:30px;font-size:12px;font-weight:800;box-shadow:0 7px 22px #0009;max-width:min(94vw,540px);text-align:center}.board-target{cursor:pointer}.board-target circle:first-child{animation:targetRing 1.7s infinite;transform-origin:center}.piece-handle{cursor:pointer;transition:filter .18s}.piece-handle:hover{filter:brightness(1.17)}.piece-handle.available .piece-halo{animation:softPulse 1.4s infinite}.piece-handle.selected .piece-halo{stroke:#fbd17f;stroke-width:7;stroke-dasharray:4 5}.movement-trail{stroke:#ffd37d;stroke-width:11;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.6;filter:drop-shadow(0 0 7px #ffe1a9)}.board-label{font-size:12px;fill:#6a6051;font-weight:900;paint-order:stroke;stroke:#f9e6c0;stroke-width:4px}.route-line{stroke:#a98962;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round}.route-inner{stroke:#6c8d8b;stroke-width:3.2;stroke-dasharray:6 5;fill:none;stroke-linecap:round;stroke-linejoin:round}.node-circle{fill:#fff8e6;stroke:#5c6570;stroke-width:2}.node-circle.fork{fill:#ffdf94;stroke:#bf8a50;stroke-width:3}.node-circle.goal{fill:#eaf4d6;stroke:#4e9781;stroke-width:4}.node-circle.center{fill:#ebd6ac;stroke:#aa7742;stroke-width:4}.node-circle.inner{fill:#e7f6ed;stroke:#709993;stroke-width:2}.invisible-hit{fill:transparent;stroke:none;cursor:pointer}
+@keyframes softPulse{0%,100%{filter:drop-shadow(0 0 4px #ffe0a477)}50%{filter:drop-shadow(0 0 13px #ffe0a4f2)}}@keyframes yutToss{0%{opacity:0;transform:translate(-25px,-170px) rotate(-620deg) scale(.6)}40%{opacity:1;transform:translate(15px,-90px) rotate(-290deg) scale(1.1)}72%{transform:translate(-6px,-15px) rotate(30deg) scale(1.1)}87%{transform:translate(3px,-21px) rotate(-18deg)}100%{opacity:1;transform:translate(0,0) rotate(0)}}@keyframes ring{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(1.7)}}@keyframes twinkle{0%,20%{opacity:0;transform:scale(.1)}45%{opacity:1;transform:scale(2)}100%{opacity:0;transform:translateY(-30px) scale(.2)}}@keyframes targetRing{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+@media(max-width:1180px){.app-wrap{padding:10px 12px 22px}.layout{grid-template-columns:195px minmax(350px,1fr) 235px;gap:9px}.side,.right-panel{padding:13px 10px}.board-panel{padding:10px}.board-choice{padding:7px 8px}.brand h1{font-size:23px}}
+@media(max-width:970px){.layout{grid-template-columns:minmax(170px,1fr) minmax(390px,1.7fr)}.right-panel{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:15px}.right-panel .log-section{border-left:1px solid #c3ab7e2e;padding-left:15px}.log-list{max-height:180px}.board-svg{max-height:none}.board-shadow{max-width:520px}}
+@media(max-width:700px){.app-wrap{padding:8px 8px 25px}.header{min-height:56px;margin-bottom:6px}.brand-seal{width:40px;height:40px;font-size:20px}.brand h1{font-size:20px}.brand small{font-size:9px}.head-chip{display:none}.header-btn{padding:7px 8px;font-size:11px}.layout{display:flex;flex-direction:column;gap:9px}.layout>.panel{width:100%}.player-panel{padding:10px}.turn-hero{padding:8px 12px;margin-bottom:9px}.turn-hero .eyebrow{display:none}.turn-name{font-size:14px}.turn-sub{margin-top:3px;font-size:10px}.side-section-title{margin:0 0 8px}.players-list{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.player-card{padding:7px}.avatar{width:29px;height:29px;font-size:18px;border-radius:8px}.player-main{gap:5px}.player-name{font-size:11px}.player-status{font-size:9px}.on-turn{right:5px;top:5px;padding:2px 4px;font-size:8px}.pawns{margin-top:4px;margin-left:34px}.pawn-mini{width:9px;height:9px}.player-panel .subpanel{margin-top:9px;padding-top:8px}.rack-title{margin-bottom:7px}.rack-piece{padding:6px 0}.player-panel .tips-block{display:none}.board-panel{padding:10px 9px}.board-heading strong{font-size:13px}.board-heading small{font-size:9px}.board-choice{font-size:10px;padding:7px 8px}.board-svg{max-height:none}.board-shadow{max-width:520px}.board-cap{font-size:9px}.throw-sandbox{min-height:115px}.mat-svg{height:110px}.throw-actions{margin-top:6px}.power-row{padding:9px 2px 0}.right-panel{display:block;padding:15px}.right-panel .log-section{border-left:0;border-top:1px solid #c3ab7e2e;padding:13px 0 0;margin-top:10px}.log-list{max-height:210px}.footer-copy{margin-top:11px}}
+@media(max-width:370px){.brand small{display:none}.brand h1{font-size:18px}.header-btn{font-size:10px;padding:7px 5px}.board-choice{font-size:9px;padding:6px}.board-top{gap:5px}.board-shadow{padding:4px}.turn-sub{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+.ambient-leaves{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}.ambient-leaf{position:absolute;top:-8%;left:var(--left);width:13px;height:17px;opacity:0;background:linear-gradient(145deg,#e8b079,#ac5461);clip-path:polygon(50% 0,63% 30%,95% 15%,77% 50%,100% 65%,58% 66%,49% 100%,38% 65%,3% 69%,24% 45%,8% 18%,39% 29%);filter:drop-shadow(0 0 4px #d88072);animation:fallingLeaves var(--duration) linear infinite;animation-delay:var(--delay)}.ambient-leaf:nth-child(3n){background:#d39c51;width:11px;height:14px}.ambient-leaf:nth-child(4n){background:#c66c69;filter:blur(.2px)}.arrival-burst circle{transform-box:fill-box;transform-origin:center;animation:burstRing .7s ease-out both}.arrival-burst circle:nth-child(2){animation-delay:.08s}.arrival-burst text{animation:burstText .8s ease-out both}.piece-handle.animated>ellipse:first-child{animation:shadowPulse .25s infinite alternate}
+@keyframes fallingLeaves{0%{opacity:0;transform:translate(-50px,-60px) rotate(0deg)}6%{opacity:.5}46%{transform:translate(60px,43vh) rotate(260deg)}94%{opacity:.37}100%{opacity:0;transform:translate(-35px,108vh) rotate(660deg)}}
+@keyframes burstRing{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(2.1)}}@keyframes burstText{0%{opacity:0;transform:translateY(9px) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translateY(-26px) scale(1.08)}}@keyframes shadowPulse{from{transform:scaleX(.7)}to{transform:scaleX(1.1)}}
+@media(min-width:971px) and (max-height:940px){.board-shadow{max-width:480px}.board-top{margin-bottom:7px}.board-panel{padding-top:9px}.board-cap{margin-top:6px}.map-sep{margin:9px 0}.throw-sandbox{min-height:108px;margin-top:7px}.mat-svg{height:108px}.throw-actions{margin-top:8px}.throw-actions button{min-height:38px}.power-row{padding:8px 2px 0}.footer-copy{margin-top:8px}}
+
+/* theme-cinematic.css */
+/* DALBIT YUT 2.0 — sunset hanok cinematic theme.
+ * Layered on top of styles.css; engine and manual movement remain unchanged.
+ */
+:root{
+  --gold:#f5c778;--gold-bright:#ffebb3;--copper:#c17c42;
+  --espresso:#1b1010;--wine:#762324;--cream:#fff0ca;
+  --scene-ink:#21191c;--wood:#563020;
+}
+html,body,#root{min-height:100%;}
+body{
+ color:#fff0d3;
+ background-color:#180f16;
+ background-image:linear-gradient(180deg,rgba(34,12,14,.08) 0%,rgba(25,11,14,.2) 45%,rgba(24,9,12,.25) 100%),url('hanok-sunset-atmosphere.webp');
+ background-size:cover;background-position:center;background-attachment:fixed;
+}
+.app-shell{
+ background:linear-gradient(180deg,rgba(32,12,16,.1),rgba(19,9,13,.33) 65%,rgba(13,8,12,.46));
+ isolation:isolate;
+}
+.app-shell:before{
+ position:fixed;inset:0;z-index:-1;
+ background:radial-gradient(ellipse at 50% 19%,rgba(255,185,99,.15),transparent 55%),
+ linear-gradient(90deg,rgba(15,9,13,.42) 0%,rgba(18,10,14,.06) 27%,rgba(18,10,14,.06) 72%,rgba(15,9,13,.44) 100%);
+}
+.app-shell:after{content:'';position:absolute;pointer-events:none;top:0;left:0;right:0;height:9px;
+ background:linear-gradient(180deg,#190e0b 0,#633724 55%,#2c1916 100%);
+ box-shadow:0 3px 0 #f3c37b33,0 7px 26px #24110dae;z-index:1;}
+.app-wrap{max-width:1750px;padding:10px clamp(12px,1.7vw,28px) 15px;}
+.header{min-height:82px;margin:2px 5px 12px;align-items:flex-start;}
+.brand{display:block;min-width:260px;}
+.brand-mark{position:relative;display:flex;align-items:flex-start;gap:8px;margin-bottom:-2px;}
+.brand-mark strong{
+ color:#fff1c8;font-family:'Nanum Myeongjo','Batang','Georgia',serif;
+ font-weight:900;font-size:43px;line-height:1.1;letter-spacing:-.095em;
+ text-shadow:0 3px 0 #57371d,0 6px 13px #0009,0 0 26px #e3b47855;
+ transform:skew(-6deg);display:block;
+}
+.brand-mark .brand-seal{
+ display:inline-grid;place-items:center;width:25px;height:39px;margin-top:7px;
+ padding:2px 5px;border:1px solid #f2b488;border-radius:3px;
+ background:#a7292b;color:#fff0d2;font-family:serif;font-size:11px;line-height:1.1;
+ box-shadow:inset 0 0 0 2px #7c1017,0 3px 11px #0008;
+ writing-mode:vertical-rl;letter-spacing:1px;
+}
+.brand-sub{margin:6px 0 0 24px;color:#f5cf88;text-shadow:0 2px 6px #0009;font-size:12px;letter-spacing:.03em;font-weight:760;}
+.header-right{padding:6px 0 0;gap:11px;}
+.head-chip{background:linear-gradient(#382218cc,#201417dd);border:1px solid #b9936188;color:#f6d59e;border-radius:23px;box-shadow:inset 0 1px #f9ca7f22;font-size:11px;}
+.header-btn.icon-button{
+ width:40px;height:40px;border-radius:50%;padding:0;
+ border:2px solid #dba75a;color:#ffe5a7;
+ background:radial-gradient(circle at 40% 20%,#554032,#17151a 70%);
+ box-shadow:inset 0 0 0 2px #070a10,0 3px 10px #0009,0 0 10px #ffda8144;
+ font-size:22px;display:grid;place-items:center;
+}
+.header-btn.icon-button:hover{border-color:#ffebba;box-shadow:0 0 20px #fbb85c88;transform:translateY(-1px);}
+/* Decorative lanterns frame the scene but never intercept game interactions. */
+.lantern-decor{position:fixed;z-index:0;top:63px;width:36px;height:64px;border:3px solid #684020;border-radius:3px;
+ background:linear-gradient(90deg,transparent 39%,#4e231bcc 40% 45%,transparent 46% 56%,#4e231bcc 57% 61%,transparent 62%),
+ radial-gradient(ellipse,#ffe4a1 12%,#ffbe69 60%,#d97839 100%);
+ box-shadow:0 0 20px #f7a94b93,0 0 55px #ffbb6c65,inset 0 0 7px #ffe7a8;
+ pointer-events:none;filter:drop-shadow(0 8px 5px #0008);opacity:.88;
+ animation:lanternSway 6s ease-in-out infinite;transform-origin:top center;
+}
+.lantern-decor:before{content:'';position:absolute;left:15px;bottom:100%;height:40px;width:3px;background:#6c331f;}
+.lantern-decor:after{content:'';position:absolute;left:15px;top:100%;height:32px;width:4px;border-radius:4px;background:linear-gradient(#b73723,#ffb953,#b72d21);}
+.lantern-decor-left{left:2%;}.lantern-decor-right{right:2%;animation-delay:-1.9s;}
+@keyframes lanternSway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.layout{grid-template-columns:minmax(232px,278px) minmax(475px,1fr) minmax(255px,302px);gap:14px;align-items:start;}
+.panel{border-radius:11px;border:2px solid #bc834eaa;background:linear-gradient(145deg,#22171cf2,#140f13ed 65%,#2a1715ec);
+ box-shadow:0 0 0 2px #1c0f0caa,0 0 0 3px #e0b66c45,0 15px 38px #09050ad9,
+ inset 0 1px 0 #f2bc7e39,inset 0 0 24px #05040977;
+ backdrop-filter:blur(13px);
+}
+.player-panel{padding:16px 12px 14px;}
+.side-section-title{color:#f5ce8a;letter-spacing:.09em;font-size:12px;margin:3px 3px 12px;text-shadow:0 1px 5px #000;}
+.side-section-title span{color:#d4b886;letter-spacing:0;font-size:10px;}
+.turn-hero{
+ padding:11px 13px 12px;margin-bottom:13px;
+ background:linear-gradient(120deg,#65412c90,#251718b5 80%);border:1px solid #dba45a96;border-radius:9px;
+ box-shadow:inset 0 1px #ffdc9d40,0 5px 13px #0006;
+}
+.turn-hero .eyebrow{font-size:9px;color:#e5ad69;letter-spacing:.19em;margin-bottom:6px;}
+.turn-name{font-size:19px;font-weight:900;color:#fff0d5;font-family:'Nanum Myeongjo','Batang',serif;}
+.turn-dot{background:#ffb66c;box-shadow:0 0 8px #ffbb80,0 0 20px #ffc365cc;}
+.turn-sub{color:#e0c8b1;font-size:11px;line-height:1.5;margin-top:7px;}
+.players-list{gap:9px;}
+.player-card{
+ --player-accent:#e8ad5b;
+ border-radius:10px;padding:9px 9px 10px 9px;position:relative;overflow:hidden;
+ border:1px solid color-mix(in srgb,var(--player-accent) 63%,#6c483f);
+ background:linear-gradient(105deg,#261718f5 0%,#17171bed 65%,#24151bf4);
+ box-shadow:inset 0 1px 0 #f4d7ad25,inset 0 0 23px #060309bf,0 6px 14px #0008;
+ isolation:isolate;min-height:74px;
+}
+.player-card:before,.player-card:after{content:'❖';position:absolute;color:var(--player-accent);font-size:13px;opacity:.65;text-shadow:0 0 10px currentColor;pointer-events:none;}
+.player-card:before{left:2px;top:0}.player-card:after{right:2px;bottom:0;transform:rotate(180deg)}
+.player-card.active{
+ border:2px solid #ffe2a2;background:linear-gradient(105deg,#603522ec 0%,#2a1a18fa 56%,#1f1516f9);
+ box-shadow:0 0 0 1px #ce8235,0 0 20px #e9a34f82,0 0 35px #c37a3c4d,inset 0 1px #fff2bf7c;
+ animation:activeCardBreath 2.8s ease-in-out infinite;
+}
+@keyframes activeCardBreath{50%{box-shadow:0 0 0 1px #f7c37a,0 0 18px #e9a34fb9,0 0 41px #c37a3c88,inset 0 1px #fff2bf99}}
+.player-hanji-pattern{position:absolute;right:29%;top:7px;color:var(--player-accent);opacity:.11;font-size:58px;line-height:1;pointer-events:none;}
+.player-main{gap:9px;min-height:54px;position:relative;z-index:1;}
+.avatar-coin{width:53px;height:53px;flex:none;border-radius:50%;padding:3px;
+ background:conic-gradient(#ffecab,#a66d35,#ffe4a4,#9e6237,#ffecab);
+ box-shadow:inset 0 0 3px #2e1910,0 2px 8px #000b;
+}
+.avatar{width:100%;height:100%;border-radius:50%;border:2px solid #34211c;background:radial-gradient(circle at 40% 23%,#ffeecc,#c98b4b 76%,#7c4630);font-size:27px;display:grid;place-items:center;}
+.player-1 .avatar{background:radial-gradient(circle at 45% 26%,#e8effd,#7a92b4 80%,#333b67)}
+.player-2 .avatar{background:radial-gradient(circle at 45% 26%,#e8edab,#9d914f 80%,#534721)}
+.player-3 .avatar{background:radial-gradient(circle at 45% 26%,#d2eaf9,#6189a6 80%,#334c74)}
+.player-identity{min-width:0;flex:1;}
+.player-name{font-size:13px;color:#fff0d8!important;font-weight:900;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+.player-role{color:#bba79a;font-size:9px;margin-top:2px;}
+.pawns{margin:7px 0 0;display:flex;gap:6px;}
+.pawn-mini{position:relative;width:14px;height:15px;border:0;border-radius:48% 48% 35% 35%;
+ background:linear-gradient(150deg,#fff7dc44,transparent 54%),var(--piece);
+ box-shadow:inset 1px 1px 2px #fff8,0 2px 0 #231518,0 2px 5px #000b;
+}
+.pawn-mini:before{content:'';position:absolute;left:3px;top:-4px;width:8px;height:9px;border-radius:50%;background:linear-gradient(135deg,#fff8,transparent 50%),var(--piece);box-shadow:inset 0 1px #fff8,0 -1px #261718;}
+.pawn-mini.done{opacity:.28;filter:grayscale(.9)}
+.player-right{align-self:stretch;margin-left:auto;flex:none;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;padding:1px 0;}
+.on-turn{position:static;display:inline-block;border-radius:20px;padding:5px 7px;color:#392213;background:linear-gradient(#fff0be,#efac4c);
+ box-shadow:0 0 15px #f5ad48a1,0 2px 3px #0009;font-size:9px;font-weight:900;border:1px solid #fce8b3;white-space:nowrap;}
+.player-flag{font-size:23px;line-height:1;color:#e7c69d;}
+.player-status{font-size:9px;color:#e7caa4;white-space:nowrap;}
+.player-panel .subpanel{border-top:1px solid #deb5784b;margin-top:14px;padding-top:12px;}
+.rack-title{font-size:12px;color:#f6d494;}
+.rack-piece{background:linear-gradient(#38231ef2,#20161bf2);border:1px solid #bd895778;border-radius:9px;padding:7px 0;min-height:62px;}
+.rack-piece.pickable{border-color:#ffdf8a;box-shadow:inset 0 0 10px #e7a04e66,0 0 14px #e7a04e8c;background:linear-gradient(#68402a,#2d211c)}
+.rack-piece.selected{background:linear-gradient(#fce6ad,#c48b45);box-shadow:0 0 13px #ffc86f}
+.rack-token{font-size:20px;display:block;color:var(--piece);text-shadow:0 2px 3px #000,0 0 7px #ffc37a;}
+.rack-piece>small{color:#eac9a4;margin-top:3px;}
+.rack-piece.selected>small{color:#4d3528}
+.tiny-guide b{background:#503727;border:1px solid #dbad77;color:#ffe4ae;}
+.tips{color:#d2b89f}
+/* Lacquer-and-brass frame with warm hand-painted parchment. */
+.board-panel{padding:12px 14px 11px;background:linear-gradient(160deg,#25181af7,#171219e8 60%,#34201cf6);}
+.board-top{margin:3px 4px 11px;}
+.board-heading strong{font-size:15px;color:#ffe0a0;text-shadow:0 2px 6px #000;}
+.board-heading small{color:#d3bb9e;margin-top:3px;font-size:10px;}
+.board-switch{border:1px solid #ab733f94;border-radius:22px;background:#160d10e8;padding:3px;}
+.board-choice{border-radius:18px;color:#e3c4a0;font-size:10px;padding:8px 10px;}
+.board-choice.active{background:linear-gradient(#ffe6b2,#dca15e);color:#4d2d1f;box-shadow:inset 0 1px #fff7d3,0 0 12px #e5b26b88}
+.board-shadow{
+ position:relative;max-width:590px;padding:8px;border-radius:6px;
+ background:linear-gradient(133deg,#fbd899 0%,#674023 8%,#b47a48 14%,#3f291d 20%,#704329 86%,#e9b371 95%,#6d3b21 100%);
+ box-shadow:0 0 0 2px #27130c,0 0 0 4px #ddae6b99,0 0 0 6px #3c1b17,0 15px 25px #08050ad9,0 26px 34px #0c07139a,inset 0 0 0 2px #ffd8a466;
+}
+.board-shadow:before,.board-shadow:after{content:'❖';position:absolute;z-index:2;color:#edc687;font-size:22px;text-shadow:0 0 5px #000;pointer-events:none;top:-3px;}
+.board-shadow:before{left:1px;}.board-shadow:after{right:1px;}
+.board-cloth{background:linear-gradient(135deg,#f0d9ad,#ffe9bf 48%,#e1c699 100%);border:3px solid #5d301c;border-radius:4px;}
+.board-cloth:after{content:'';position:absolute;inset:2px;border:1px solid #ad7345a2;pointer-events:none;border-radius:2px;}
+.board-svg{max-height:min(47vh,502px);}
+.frame-charm{position:absolute;z-index:2;pointer-events:none;top:44%;font-size:24px;color:#dca05e;text-shadow:0 1px 4px #301507;}
+.frame-charm-left{left:1px}.frame-charm-right{right:1px}
+.board-ink-scenes{filter:sepia(.45);}
+.board-landmark{filter:drop-shadow(1px 2px 2px #58371e8a);}
+.route-line{stroke:#473027;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 0 #fff4d7);}
+.route-inner{stroke:#4e392b;stroke-width:3;stroke-dasharray:none;filter:drop-shadow(0 1px 0 #fff0d9)}
+.node-circle{fill:#fff0ce;stroke:#342725;stroke-width:2.2;filter:drop-shadow(0 1px 1px #a68150)}
+.node-circle.fork{fill:#edbd67;stroke:#674325;stroke-width:3;}
+.node-circle.goal{fill:#8cbd7c;stroke:#2e493b;stroke-width:3.3;}
+.node-circle.center{fill:#3a2928;stroke:#d6a461;stroke-width:3.5;}
+.node-circle.inner{fill:#e7d0a0;stroke:#4e4237;stroke-width:2;}
+.board-label{fill:#786248;stroke:#f5e3c0;stroke-width:4;font-size:10.5px;}
+.board-cap{color:#f0d4a0;gap:9px;font-size:10px;max-width:580px;}
+.board-cap span:first-child{color:#f7d08b;}
+.movement-trail{
+ stroke:#ffdf8c;stroke-width:9;fill:none;opacity:.8;
+ stroke-dasharray:9 6;filter:drop-shadow(0 0 6px #fff0ac) drop-shadow(0 0 13px #ffc66c);
+ animation:routeGlitter 2s linear infinite;
+}
+@keyframes routeGlitter{to{stroke-dashoffset:-60}}
+.board-target{cursor:pointer;filter:drop-shadow(0 0 9px #ffcf67) drop-shadow(0 0 4px #fff3c7);}
+.board-target .target-waves{animation:targetRing 1.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+.board-target .target-outer{animation:targetRing 1.6s ease-in-out infinite;transform-origin:center;transform-box:fill-box;}
+.piece-handle.available .piece-halo{animation:pieceSelectGlow 1.25s infinite;}
+.piece-handle.selected .piece-halo{stroke:#ffcd73;stroke-width:4;animation:pieceSelectGlow .95s infinite;}
+.piece-handle.animated{filter:drop-shadow(0 -10px 4px #ffdea899);animation:pieceJump .23s ease-in-out alternate infinite;transform-box:fill-box;transform-origin:center;}
+@keyframes pieceSelectGlow{0%,100%{opacity:.5;filter:drop-shadow(0 0 3px #ebac49)}50%{opacity:1;filter:drop-shadow(0 0 13px #ffc66f)}}
+@keyframes pieceJump{to{filter:drop-shadow(0 0 11px #ffc86e)}}
+.arrival-burst text{font-size:16px;font-weight:900;}
+/* The visible throw scene lives DIRECTLY beneath the board. */
+.map-sep{background:linear-gradient(90deg,transparent,#e9bd7aa1,transparent);margin:10px 0 10px;}
+.throw-top{padding:0 5px;}
+.throw-title{font-family:'Nanum Myeongjo','Batang',serif;font-size:14px;color:#ffe4af;font-weight:900;}
+.throw-desc{font-size:10px;color:#c9b199;}
+.cinematic-throw{
+ isolation:isolate;min-height:169px;position:relative;overflow:hidden;margin-top:8px;border:2px solid #b17b49;
+ border-radius:46% 46% 15px 15px / 20% 20% 15px 15px;
+ background:radial-gradient(ellipse at 50% 74%,#b06e3299 0%,#68401f70 34%,#311d18ce 66%,#191018e7 98%),
+ repeating-linear-gradient(0deg,#bb864829 0px,#e5a96522 2px,#401e121b 3px,#2a130f30 4px);
+ box-shadow:inset 0 0 30px #160b0bef,inset 0 5px 9px #ffe1a324,0 0 13px #dbad6657;
+}
+.cinematic-throw:before{content:'';position:absolute;inset:3px;z-index:-1;border:1px dashed #e0b37088;border-radius:40% 40% 13px 13px/22% 22% 13px 13px;pointer-events:none;}
+.cinematic-throw:after{content:'';position:absolute;z-index:0;pointer-events:none;left:14%;right:14%;bottom:3px;height:35px;border-radius:50%;
+ background:radial-gradient(ellipse,#ffcc6e81,transparent 70%);filter:blur(10px);}
+.mat-svg{position:relative;z-index:2;height:164px;display:block;width:100%;overflow:visible;}
+.throw-mat-boundary{filter:drop-shadow(0 0 2px #f8c87875);}
+.throw-energy-circle{transform-origin:325px 75px;animation:energyRotate 23s linear infinite;}
+@keyframes energyRotate{to{transform:rotate(360deg)}}
+.mat-sticks g.yutstick{filter:drop-shadow(0 0 6px #ffb5658a);}
+.mat-sticks.throwing g.yutstick{animation:yutTossCinematic 1250ms cubic-bezier(.16,.6,.21,1) both;transform-box:fill-box;transform-origin:center;animation-delay:var(--delay);}
+@keyframes yutTossCinematic{
+ 0%{opacity:0;transform:translate(0,-235px) rotate(-650deg) scale(.6);filter:drop-shadow(0 0 3px #fff1bb)}
+ 30%{opacity:1;transform:translate(11px,-112px) rotate(-380deg) scale(1.08);filter:drop-shadow(0 0 12px #ffe49e)}
+ 66%{transform:translate(-5px,-26px) rotate(38deg) scale(1.06)}
+ 78%{transform:translate(2px,-6px) rotate(-14deg)}
+ 86%{transform:translate(-1px,-20px) rotate(7deg)}
+ 100%{transform:translate(0,0) rotate(0) scale(1);filter:drop-shadow(0 0 4px #ffc56e)}
+}
+.throw-etched-cloud{position:absolute;z-index:2;top:35%;color:#f8cc7a55;pointer-events:none;font-size:45px;line-height:1;filter:drop-shadow(0 0 7px #ffc57d66)}
+.throw-etched-cloud-left{left:2%}.throw-etched-cloud-right{right:2%;transform:scaleX(-1)}
+.throw-stage-caption{position:absolute;z-index:3;left:0;right:0;bottom:6px;display:flex;justify-content:center;align-items:center;gap:14px;
+ color:#e8ba79;font-size:10px;letter-spacing:.04em;font-weight:850;text-shadow:0 1px 4px #180d0b;pointer-events:none;}
+.throw-stage-caption>span:first-child,.throw-stage-caption>span:last-child{font-size:12px;color:#ffdda6}
+.cinematic-throw.is-throwing{animation:throwScreenShake 1.35s ease-out;}
+@keyframes throwScreenShake{0%,55%,100%{transform:translate(0)}64%{transform:translate(-1.5px,1px)}68%{transform:translate(2px,-1px)}73%{transform:translate(-2px,1px)}79%{transform:translate(1px,0)}}
+.cinematic-throw.is-invalid{box-shadow:inset 0 0 24px #c642376b,0 0 17px #f1464d68;border-color:#f0725b;}
+.throw-ripple{z-index:1;border-color:#ffdb8c;box-shadow:0 0 12px #ffdd8b,0 0 30px #ffbd55;}
+.sparkles{z-index:4}.spark{top:var(--spark-y)!important;left:var(--spark-x)!important;width:5px;height:5px;background:#fff2aa;box-shadow:0 0 8px #ffda85,0 0 20px #ffc56c;}
+.throwing .spark{animation:twinkle 1.3s both!important;animation-delay:var(--spark-delay)!important;}
+.result-orb{
+ z-index:6;right:2.5%;top:27%;min-width:82px;min-height:82px;padding:6px;
+ background:radial-gradient(circle at 40% 35%,#fff8cf 0%,#f4c567 40%,#a5622f 100%);
+ border:3px double #fff1ba;border-radius:50%;color:#542519;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+ box-shadow:0 0 0 3px #c2823999,0 0 23px #ffc66e,0 0 44px #ffce7191, inset 0 0 10px #ffe5a1;
+}
+.result-orb strong{font-family:'Nanum Myeongjo','Batang',serif;font-size:30px;line-height:1.2;}
+.result-orb .result-small{font-family:'Malgun Gothic',system-ui,sans-serif;font-size:8px;font-weight:900;white-space:nowrap;letter-spacing:.01em;}
+.result-orb.nak{background:radial-gradient(circle,#ffe6d4,#b9443a 70%,#6e1c23);color:#fff3e3;border-color:#ffd2ae;}
+.throw-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin:9px auto 0;max-width:710px;}
+.primary-action{
+ min-height:45px;border:2px solid #f9d59a;border-radius:10px;
+ background:linear-gradient(180deg,#c93238 0%,#aa1e28 58%,#6b1521 100%);
+ color:#ffe2ab;font-family:'Nanum Myeongjo','Malgun Gothic',serif;font-size:15px;font-weight:900;
+ text-shadow:0 2px 2px #54161d;box-shadow:inset 0 2px #ffc6ac4f,inset 0 -3px #541321,0 4px 0 #411016,0 7px 15px #000a,0 0 13px #d05f2f63;
+}
+.throw-main-button{display:flex;align-items:center;justify-content:center;gap:13px;letter-spacing:.04em;}
+.throw-icon{font-size:23px;line-height:1;color:#ffe7a8;transform:rotate(-22deg);}
+.button-ornament{font-size:15px;line-height:1;color:#ffc886;}
+.primary-action:not(:disabled):hover{background:linear-gradient(#e84746,#b52d32 70%,#781a26);box-shadow:0 5px 0 #48151d,0 0 24px #ffaf7088;}
+.sub-action{color:#f9cc91;border:1px solid #b48957a3;background:linear-gradient(#44291e,#241821);box-shadow:inset 0 1px #fce7a428;}
+.power-row{max-width:710px;margin:auto;color:#d1ae8d;font-size:10px;}
+.power-row strong{color:#ffe1a7}.power-row input{accent-color:#f6bb63;}
+/* Manual selection is now a glowing, numbered interactive sequence. */
+.right-panel{padding:15px 13px;background:linear-gradient(155deg,#26161bf4,#151115f6 65%,#24151af5);}
+.phase-badge{color:#ffe1ab;border:1px solid #e4b46b9c;background:linear-gradient(#64402b,#3e2723);border-radius:22px;padding:7px 12px;letter-spacing:.05em;}
+.step-title{color:#fff0d4;font-family:'Nanum Myeongjo','Malgun Gothic',serif;font-size:20px;margin:0 0 7px;}
+.step-desc{color:#d9bfa5;font-size:11px;margin:0 0 12px;}
+.move-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 17px;}
+.move-step{min-height:47px;padding:6px 2px;text-align:center;border-radius:7px;border:1px solid #93754f8c;background:#21181ac7;color:#b9a38f;display:flex;flex-direction:column;justify-content:center;gap:3px;}
+.move-step small{font-family:Georgia,serif;font-size:10px;color:#d2ad77;}
+.move-step b{font-size:10px;white-space:nowrap;}
+.move-step.is-current{border-color:#ffe3a1;background:linear-gradient(#6e472f,#33231e);color:#ffebc3;box-shadow:0 0 13px #d8a35c88,inset 0 1px #f3d39680;}
+.move-step.is-current small{color:#ffe1a0;}
+.move-step.is-done{border-color:#82b48b;background:#22362a;color:#d1eed0;}
+.results-caption{color:#eed1a9}.results-caption span:last-child{color:#bdb6aa}
+.roll-pill{background:linear-gradient(#42302b,#291d23);color:#ffe1af;border:1px solid #af845394;min-height:39px;border-radius:9px;}
+.roll-pill.active{background:linear-gradient(#ffe4a4,#dca15b);border-color:#fff0cb;color:#4f2b22;box-shadow:0 0 16px #f8bb6499;}
+.roll-pill.active small{color:#63412a;}
+.no-rolls{color:#b9a38b;}
+.manual-block{border:1px solid #94714b99;background:linear-gradient(#3b281fa1,#251c1ddd);box-shadow:inset 0 1px #ffd39126;border-radius:10px;padding:13px;}
+.manual-block.is-ready{border-color:#e5bb70;background:linear-gradient(#594128bb,#30211eec);box-shadow:0 0 17px #d69a4d37,inset 0 1px #ffe1a354;}
+.manual-title{font-size:12px;color:#ffe0a7;}
+.route-buttons{gap:7px;}
+.route-btn{background:linear-gradient(#453025,#2c2120);border:1px solid #b88b53;color:#f1cf96;border-radius:7px;padding:9px 11px;}
+.route-btn.active{border-color:#ffe9b5;background:linear-gradient(#ffe5ae,#d7a060);color:#4b2b1b;box-shadow:0 0 11px #f2b967a3;}
+.target-help{font-size:11px;color:#e1c6a6;}
+.log-section{margin-top:15px;border-top:1px solid #cc9b6147;padding-top:12px;}
+.log-list{max-height:333px;gap:6px;}
+.log-line{border:1px solid #98704d59;border-radius:9px;padding:9px 7px;background:linear-gradient(90deg,#3a292498,#201719b8);align-items:center;color:#d7c2b0;}
+.log-icon{width:32px;height:32px;border-radius:50%;font-size:20px;border:2px solid #bf9a6c;background:radial-gradient(#62402c,#211921);}
+.log-line b{color:#ffe0ad;font-size:11px;}
+.log-content{flex:1;min-width:0;}
+.log-content span{display:block;font-size:10px;line-height:1.5;}
+.footer-copy{color:#e2b88c;font-size:9px;letter-spacing:.16em;text-shadow:0 2px 5px #000;}
+/* Modal and result continue in the same palette. */
+.modal{border:2px solid #dba45b;border-radius:12px;background:linear-gradient(#392520,#181215 85%);}
+.modal h2{color:#ffe4ae}.modal p{color:#dec5a7}
+.setting-btn{background:#32241f;border:1px solid #a67749;color:#f3d8ac;}
+.setting-btn.active{background:#e4bb78;color:#482d21;}
+.toast{background:linear-gradient(#ffe4a6,#e7b773);color:#452719;border:2px solid #fbedc1;}
+@media(max-width:1190px){
+ .app-wrap{padding:10px 10px 18px}.layout{grid-template-columns:220px minmax(380px,1fr) 245px;gap:10px;}
+ .side,.right-panel{padding:12px 10px}.board-panel{padding:10px 11px}.avatar-coin{width:44px;height:44px}.avatar{font-size:23px}.player-main{gap:6px}.board-shadow{max-width:520px}
+ .brand-mark strong{font-size:36px}.header{min-height:70px}
+}
+@media(max-width:970px){
+ .layout{grid-template-columns:minmax(175px,.85fr) minmax(380px,1.6fr);}
+ .right-panel{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+ .right-panel .log-section{margin-top:0;border-top:0;border-left:1px solid #b684563e;padding:0 0 0 13px;}
+ .log-list{max-height:255px}.board-svg{max-height:47vh;}
+}
+@media(max-width:700px){
+ body{background-attachment:scroll;}
+ .app-wrap{padding:7px 8px 22px}.header{min-height:73px;margin:4px 1px 8px;align-items:center;}
+ .brand{min-width:0}.brand-mark strong{font-size:31px}.brand-mark .brand-seal{height:29px;width:20px;font-size:9px;margin-top:3px}.brand-sub{margin:5px 0 0 7px;font-size:10px;}
+ .head-chip{display:none}.header-right{padding:0;gap:6px}.header-btn.icon-button{width:34px;height:34px;font-size:17px}
+ .lantern-decor{opacity:.4;width:20px;height:30px;top:60px;}.lantern-decor:before{left:9px;height:14px}.lantern-decor:after{left:9px;height:13px}
+ .layout{display:flex;flex-direction:column;gap:11px}.layout>.panel{width:100%;}
+ /* Board must remain near the top on mobile, while players are still available beneath. */
+ .board-panel{order:1;padding:11px 9px}.player-panel{order:2;padding:12px 9px}.right-panel{order:3;display:block;padding:13px 11px;}
+ .player-panel .turn-hero{padding:8px 12px}.player-panel .turn-hero .eyebrow{display:none}.turn-name{font-size:15px}.turn-sub{font-size:10px}
+ .players-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.player-card{min-height:80px;padding:8px 5px;}
+ .avatar-coin{width:39px;height:39px}.avatar{font-size:21px}.player-main{gap:5px}.player-name{font-size:11px}.player-role{font-size:8px}.player-status{font-size:8px}.player-right{justify-content:space-between}.on-turn{font-size:7px;padding:4px 5px}.player-flag{font-size:16px}
+ .pawns{gap:4px;margin-top:7px}.pawn-mini{width:10px;height:11px}.pawn-mini:before{left:2px;width:6px;height:7px;top:-3px}
+ .board-heading strong{font-size:13px}.board-heading small{font-size:9px}.board-choice{font-size:9px;padding:7px 8px}
+ .board-shadow{max-width:520px;padding:6px}.board-svg{max-height:none;}
+ .board-cap{font-size:9px}.map-sep{margin:10px 0 9px}
+ .throw-title{font-size:13px}.throw-desc{font-size:9px}
+ .cinematic-throw{min-height:154px}.mat-svg{height:149px}.throw-etched-cloud{font-size:25px}
+ .result-orb{min-width:64px;min-height:64px;right:1%;top:30%}.result-orb strong{font-size:22px}.result-orb .result-small{font-size:7px}
+ .throw-actions{gap:6px}.primary-action{font-size:14px;min-height:42px}.sub-action{font-size:10px;padding:8px}
+ .right-panel .log-section{margin-top:14px;border-top:1px solid #c3ab7e2e;border-left:0;padding:14px 0 0;}.log-list{max-height:240px}
+ .footer-copy{font-size:8px;line-height:1.8;}
+}
+@media(max-width:370px){
+ .brand-mark strong{font-size:25px}.brand-sub{font-size:9px}.header-btn.icon-button{width:29px;height:29px}
+ .player-card{padding:7px 4px}.avatar-coin{width:34px;height:34px}.avatar{font-size:17px}.player-name{font-size:10px}.player-role{display:none}.player-status{font-size:7px}.pawns{margin-top:8px}
+ .throw-stage-caption{font-size:8px;gap:5px}.result-orb{right:-2%;}
+}
+@media(prefers-reduced-motion:reduce){.cinematic-throw,.player-card.active,.throw-energy-circle,.lantern-decor,.movement-trail,.piece-handle.animated{animation:none!important}}
+
+/* quality-v1.css */
+/* DALBIT YUT — visual quality gate v1.0
+ * Independent scenic SVG, accessible player cards and legible interactive VFX.
+ * Gameplay remains controlled by the React TypeScript state machine.
+ */
+:root{--quality-gold:#f4c681;--quality-cream:#fff1d4;--quality-copper:#bc7540;--quality-wood:#3c211d}
+html{background:#261a26}
+body{
+ background:#251b2c url('hanok-autumn-scene.svg') center center/cover fixed no-repeat;
+ color:#fff1d8;
+}
+.app-shell{background:linear-gradient(180deg,#130e1d28 0%,#130c1c0e 40%,#170e1e50 100%);min-height:100vh}
+.app-shell:before{
+ background:linear-gradient(90deg,rgba(26,14,23,.38) 0%,rgba(29,16,27,.04) 21%,rgba(29,16,27,.04) 79%,rgba(26,14,23,.42) 100%);
+ z-index:-1;
+}
+.app-shell:after{height:6px;background:linear-gradient(#20121b,#895234 70%,#2b171b);box-shadow:0 2px 0 #ffd28a4a,0 5px 17px #170a11c9}
+.app-wrap{max-width:1720px;padding:13px clamp(14px,1.6vw,28px) 16px}
+.header{min-height:78px;margin:0 4px 10px;align-items:center}
+.brand{display:block;min-width:0}
+.brand-mark strong{font-size:clamp(34px,3vw,47px);letter-spacing:-.07em;font-weight:900;color:#ffedc4;text-shadow:0 2px 0 #703e25,0 6px 16px #160b14,0 0 17px #f6c37a80}
+.brand-sub{font-size:12px;margin:5px 0 0 4px;color:#ffe0a5;font-weight:800;text-shadow:0 1px 4px #1d0d16}
+.brand-mark .brand-seal{margin-top:6px}
+.head-chip{padding:10px 14px;font-size:12px;border:1px solid #e4aa67;background:#2b1b24df}
+.header-btn.icon-button{width:44px;height:44px;font-size:21px;background:linear-gradient(155deg,#503423,#201821)}
+.header-btn:focus-visible,.board-choice:focus-visible,.rack-piece:focus-visible,.primary-action:focus-visible,.sub-action:focus-visible,.roll-pill:focus-visible,.route-btn:focus-visible,.setting-btn:focus-visible{outline:3px solid #fff0ac;outline-offset:3px}
+.lantern-decor{display:none}/* Scene already has physical lanterns. Do not duplicate them. */
+.ambient-leaf{opacity:.35;filter:drop-shadow(0 0 3px #5b1c24)}
+.layout{grid-template-columns:minmax(246px,268px) minmax(520px,1fr) minmax(260px,282px);gap:14px;align-items:start}
+.panel{border-radius:12px;border:1px solid #e0aa68cf;background:linear-gradient(158deg,#2c1b22f2,#1c151bf5 65%,#2a1a1bf5);box-shadow:0 0 0 2px #2a1718dd,0 0 0 3px #f1c17d4d,0 15px 38px #100812b9,inset 0 1px 0 #ffdda65e,inset 0 0 25px #12091052;backdrop-filter:blur(5px)}
+.panel:before{content:'';position:absolute;inset:5px;border:1px solid #e6b97920;pointer-events:none;border-radius:8px}
+.player-panel,.right-panel,.board-panel{position:relative}
+.side-section-title{font-size:13px;letter-spacing:.03em;color:#ffe3ae;font-weight:900;margin-bottom:12px}
+.side-section-title span{font-size:11px;color:#e5c8a6;letter-spacing:0}
+.player-panel{padding:15px 12px}
+.turn-hero{background:linear-gradient(120deg,#7a452fda,#382523d9 67%,#2a1e23ed);border:1px solid #f7c886;border-radius:10px;padding:11px 13px;margin-bottom:13px;box-shadow:inset 0 1px #ffebc262,0 5px 13px #150b0f77}
+.turn-name{font-size:20px;color:#fff3d6}
+.turn-sub{font-size:12px;line-height:1.5;color:#ffe3be;margin-top:6px}
+.turn-hero .eyebrow{font-size:10px;color:#f8cf93}
+.players-list{gap:10px}
+.player-card{min-height:91px;border-radius:12px;padding:11px 9px;background:linear-gradient(110deg,#29191ef5,#1a1820f5 62%,#2a1a20f5);border:1px solid color-mix(in srgb,var(--player-accent) 70%,#917051);box-shadow:0 5px 13px #0007,inset 0 1px #fce5b32b}
+.player-card.active{background:linear-gradient(110deg,#794122ec,#422920f5 64%,#2b1b20f5);border:2px solid #ffdea2;box-shadow:0 0 0 2px #ab6d36,0 0 21px #ebad6c88,0 8px 18px #14090db3,inset 0 1px #ffefca99}
+.player-hanji-pattern{right:16%;top:7px;opacity:.07}
+.player-main{gap:9px;min-height:65px;align-items:center}
+.avatar-coin{width:61px;height:61px;border-radius:50%;padding:4px;box-shadow:inset 0 1px #fff8d0,0 3px 8px #09090bc2,0 0 0 1px #7b4223}
+.avatar{font-size:31px;border:2px solid #47291f}
+.player-name{font-size:15px;line-height:1.25;color:#fff5dc!important}
+.player-role{font-size:11px;color:#dfc4ad;margin-top:3px}
+.pawns{gap:7px;margin-top:10px}
+.pawn-mini{width:15px;height:16px}
+.pawn-mini:before{left:3.5px;width:9px;height:10px}
+.on-turn{font-size:10px;padding:5px 9px;color:#3b2016;border:1px solid #fff0bd;background:linear-gradient(#fff3c2,#f2af59)}
+.player-flag{font-size:19px;color:#d5b58d}
+.player-status{font-size:11px;color:#f3d7b2}
+.player-progress{height:4px;border-radius:8px;background:#5d3b37;overflow:hidden;margin-top:8px;border:1px solid #f9d6a22a}
+.player-progress-fill{height:100%;background:linear-gradient(90deg,var(--player-accent),#ffedb9);border-radius:8px;transition:width .3s}
+.player-tag{font-size:10px;color:#ffebb9;background:#5d403b87;border:1px solid #d2a16c57;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.player-panel .subpanel{margin-top:14px;padding-top:13px}
+.rack-title{font-size:13px;color:#ffdea5}
+.rack-piece{min-height:67px;border:1px solid #b98a5d;border-radius:10px;background:linear-gradient(#50332d,#241a21)}
+.rack-piece.pickable{background:linear-gradient(#946037,#392721);border:2px solid #ffdfa0;box-shadow:0 0 16px #eeb56b83,inset 0 1px #fff0ca57}
+.rack-token{font-size:23px}
+.rack-piece>small{font-size:11px;color:#ffe0ae}
+.tiny-guide b{font-size:12px}.tips{font-size:11px;color:#e3ccac}
+/* The parchment board is a separate functional vector layer, not part of the background. */
+.board-panel{padding:12px 15px 12px;background:linear-gradient(155deg,#302022f5,#221920ed 64%,#39231ff5)}
+.board-top{margin:2px 3px 11px}
+.board-heading strong{font-size:16px;color:#ffe3a1}
+.board-heading small{font-size:11px;color:#f0d1a8}
+.board-switch{background:#21151ade;border-color:#c99659}
+.board-choice{font-size:11px;min-height:35px}
+.board-shadow{max-width:548px;padding:10px;border-radius:8px;background:repeating-linear-gradient(2deg,#b9823920 0 1px,transparent 1px 5px),linear-gradient(135deg,#b68948,#51321f 9%,#2b1d17 44%,#654029 86%,#bd9255);box-shadow:0 0 0 1px #20150f,0 0 0 2px #d5ab66,0 0 0 5px #38251b,0 16px 25px #160a12b3,inset 0 1px 0 #ffe6b085,inset 0 -2px 0 #160e0a}
+.board-shadow:before,.board-shadow:after{content:none}
+.board-cloth{border:1px solid #e1b56c;border-radius:5px;background:#3e281d;box-shadow:inset 0 0 0 1px #1d120d}
+.board-cloth:after{inset:1px;border:1px solid #f9d89c52;border-radius:4px}
+.board-svg{max-height:min(49vh,490px);width:100%;display:block}
+.board-cap{font-size:11px;color:#f9daac;margin-top:11px}
+.board-cap span:first-child{color:#ffdfa0}
+.board-ink-scenes,.board-landmark,.route-line,.route-inner,.node-circle{filter:none}
+.route-inlay{fill:none;stroke:#fff7df;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:.78;pointer-events:none}
+.route-line{stroke:#644b34;stroke-width:2.8}.route-inner{stroke:#856849;stroke-width:2.5}
+.node-circle{fill:url(#nodeIvory);stroke:#795b38;stroke-width:1.15}
+.node-circle.fork{fill:url(#nodeAmber);stroke:#74502b;stroke-width:1.5}
+.node-circle.goal{fill:url(#nodeJade);stroke:#345b49;stroke-width:1.5}
+.node-circle.center{fill:url(#nodeObsidian);stroke:#deb66f;stroke-width:1.7}
+.node-circle.inner{fill:url(#nodeIvory);stroke:#8e744e;stroke-width:1.15}
+.node-engraving{fill:none;stroke:#fff8e5;stroke-width:.7;opacity:.8;pointer-events:none}
+.node-circle.center+.node-engraving{stroke:#e1b56e;opacity:.5}
+.board-craft-detail{pointer-events:none}
+.board-signature{font-family:Georgia,'Nanum Myeongjo',serif;fill:#795e3c;text-anchor:middle;letter-spacing:2.8px;font-size:6.5px}
+.board-label{font-size:10.3px}
+.board-target{cursor:pointer;filter:drop-shadow(0 0 12px #f7c55d) drop-shadow(0 0 5px #fff6b5)}
+.board-target .target-outer{animation:targetRing 1.45s ease-in-out infinite}
+.target-waypoint{pointer-events:none;filter:drop-shadow(0 0 7px #f7d17d)}
+.selected-piece-label{pointer-events:none;filter:drop-shadow(0 2px 3px #5b3926b5)}
+.selected-piece-label text{font-weight:900;paint-order:stroke;stroke:#34201b;stroke-width:2.7px;fill:#fff0c2}
+.modal .setup-composition{margin:10px 0 0;padding:9px 11px;border:1px solid #e1b56c55;border-radius:8px;background:#dba25310;color:#ffe1a3;font-size:12px;font-weight:800;line-height:1.5}
+.watch-entry{min-height:44px;color:#ffe4aa;border-color:#dba35d;background:linear-gradient(135deg,#60432b,#2a1b22);white-space:nowrap}
+.spectator-controls .primary-action{min-height:44px;font-size:15px}
+.spectator-controls .sub-action{min-width:90px}
+.spectator-note .target-help{color:#efd9b6}
+.step-impact{pointer-events:none;transform-box:fill-box;transform-origin:center;animation:arrivalGoldPulse .24s ease-out both}
+@keyframes arrivalGoldPulse{from{opacity:.8;transform:scale(.5)}to{opacity:0;transform:scale(1.6)}}
+.piece-handle.available .piece-halo{stroke-width:4;stroke:#ffc568;animation:pieceSelectGlow 1s infinite}
+.piece-handle.selected .piece-halo{stroke:#ffe097;stroke-width:5;animation:pieceSelectGlow .85s infinite}
+.piece-handle.animated{animation:pieceJump .24s ease-in-out infinite alternate}
+.map-sep{height:1px;margin:11px 0 10px;background:linear-gradient(90deg,transparent,#edb97fdd 20%,#edb97fdd 80%,transparent)}
+/* Woven throw mat, independent 4 sticks, restrained physical sparkle. */
+.throw-title{font-size:15px;color:#ffe8b7}
+.throw-desc{font-size:11px;color:#e9c6a5}
+.cinematic-throw{margin-top:8px;min-height:152px;border:3px solid #ae7544;border-radius:50% 50% 15px 15px / 23% 23% 15px 15px;background:
+ radial-gradient(ellipse at 50% 38%,#8b582fa6 0%,#533520ca 55%,#24171bed 96%),
+ repeating-linear-gradient(0deg,#eab87730 0 2px,#43231a1b 2px 5px,#daa56e30 5px 7px),
+ repeating-linear-gradient(90deg,#37231a55 0 2px,#b1855766 2px 5px,#3c231b55 5px 7px);
+ box-shadow:inset 0 0 22px #1a0c0cc9,inset 0 4px 8px #fff2bf3a,0 0 0 2px #2e1b16,0 8px 17px #0008}
+.cinematic-throw:before{inset:5px;border:2px dotted #edc79093;z-index:0}
+.mat-svg{height:148px;overflow:visible}
+.throw-etched-cloud{font-size:31px;color:#ffdc9852}
+.throw-stage-caption{font-size:11px;color:#ffe0b2;bottom:7px;font-weight:800}
+.cinematic-throw.is-throwing .sparkles{opacity:1}
+.mat-sticks g.yutstick{filter:drop-shadow(0 5px 3px #190c10a6) drop-shadow(0 0 4px #ffd88e44)}
+.mat-sticks.throwing g.yutstick{animation-duration:1350ms}
+.throw-main-button{min-height:52px;font-size:18px;letter-spacing:.06em;background:linear-gradient(180deg,#e85c49 0%,#bb2e32 55%,#8e1d2d 100%);border:2px solid #ffd7a3;border-radius:12px;box-shadow:inset 0 2px #fff4c270,inset 0 -3px #68121d,0 4px 0 #48111a,0 7px 14px #0008}
+.throw-main-button:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 6px 0 #48111a,0 0 19px #fca35b99}
+.throw-icon{font-size:28px}
+.throw-actions{gap:10px;margin-top:10px}
+.sub-action{font-size:12px;min-width:84px;border-color:#dbad74;color:#ffe1b9}
+.power-row{font-size:11px;color:#f5d6b4;padding-top:10px}
+.power-row strong{font-size:12px;color:#ffdea3}
+.result-orb{z-index:7;box-shadow:0 0 23px #efab57b8,inset 0 0 12px #fff4bf}
+.result-orb strong{font-size:34px}
+/* Right controls: readable steps and approachable options. */
+.right-panel{padding:17px 14px;background:linear-gradient(165deg,#2c1b22f5,#17141af8 65%,#33211df5)}
+.phase-badge{font-size:12px;min-height:31px}
+.step-title{font-size:21px;line-height:1.36;color:#fff1d1}
+.step-desc{font-size:12px;color:#e7c7a9}
+.move-steps{gap:8px;margin-bottom:15px}
+.move-step{min-height:53px;padding:7px 3px;gap:4px;border-radius:9px}
+.move-step b{font-size:11px}
+.move-step small{font-size:11px}
+.results-caption{font-size:12px;color:#ffe4ba}
+.no-rolls{font-size:12px;color:#ddbea0;line-height:1.4}
+.roll-pill{min-height:46px;font-size:14px;padding:9px 11px}
+.roll-pill small{font-size:11px}
+.manual-block{border-radius:12px;padding:13px}
+.manual-title{font-size:14px;color:#ffe6b8}
+.target-help{font-size:12px;color:#e8cfb1;line-height:1.55}
+.route-btn{font-size:12px;min-height:44px;padding:10px 12px}
+.log-section{border-top-color:#deb78373;padding-top:14px}
+.log-line{padding:10px 8px;gap:9px}
+.log-icon{width:36px;height:36px;font-size:21px}
+.log-line b{font-size:12px}
+.log-content span{font-size:11px;color:#e4cdb3;line-height:1.55}
+.footer-copy{color:#f4d2a8;opacity:.93}
+/* Honor accessibility and viewport constraints. */
+@media(min-width:971px) and (max-height:940px){
+ .header{min-height:68px;margin-bottom:9px}
+ .board-svg{max-height:min(49vh,464px)}
+ .board-shadow{max-width:508px}
+ .board-panel{padding:10px 14px}
+ .throw-mat-boundary{filter:none}
+ .cinematic-throw{min-height:116px;margin-top:7px}
+ .mat-svg{height:117px}
+ .throw-main-button{min-height:44px;font-size:16px}
+ .throw-actions{margin-top:8px}
+ .board-cap{margin-top:7px}
+ .map-sep{margin:7px 0}
+}
+@media(max-width:1220px){
+ .layout{grid-template-columns:218px minmax(410px,1fr) 236px;gap:10px}
+ .player-panel,.right-panel{padding:12px 10px}
+ .avatar-coin{width:48px;height:48px}.avatar{font-size:25px}
+ .player-card{min-height:77px;padding:8px 7px}
+ .player-name{font-size:13px}.player-role{font-size:10px}
+ .on-turn{padding:4px 5px;font-size:9px}
+ .board-shadow{max-width:520px}
+}
+@media(max-width:970px){
+ .layout{grid-template-columns:minmax(175px,1fr) minmax(380px,1.9fr)}
+ .right-panel{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+ .right-panel .log-section{border-left:1px solid #d09d663e;border-top:0;margin-top:0;padding:0 0 0 15px}
+ .board-shadow{max-width:540px}.board-svg{max-height:none}
+}
+@media(max-width:700px){
+ body{background-attachment:scroll;background-position:center top}
+ .header{gap:8px}.header-right{gap:4px}.watch-entry{padding:7px 6px;font-size:11px;min-height:44px}
+ .app-shell:before{background:linear-gradient(#2415205e,#23131f43)}
+ .app-wrap{padding:7px 8px 25px}
+ .header{min-height:65px;margin:0 1px 9px}
+ .brand-mark strong{font-size:30px}
+ .brand-sub{font-size:10px}
+ .header-btn.icon-button{width:36px;height:36px;font-size:18px}
+ .layout{display:flex;flex-direction:column;gap:12px}
+ .board-panel{order:1;padding:10px 9px}
+ .player-panel{order:2;padding:13px 10px}
+ .right-panel{order:3;display:block;padding:15px 12px}
+ .board-shadow{max-width:none;padding:6px}
+ .board-svg{max-height:none;width:100%}
+ .board-top{margin-bottom:9px}
+ .board-cap{font-size:10px;gap:5px;flex-wrap:wrap}
+ .throw-title{font-size:14px}.throw-desc{font-size:10px}
+ .cinematic-throw{min-height:139px}
+ .mat-svg{height:134px}
+ .throw-stage-caption{font-size:9px;gap:8px}
+ .throw-main-button{font-size:16px;min-height:50px}
+ .player-panel .turn-sub{font-size:11px}
+ .players-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .player-card{min-height:82px;padding:8px 5px}
+ .player-main{gap:5px;min-height:60px}
+ .avatar-coin{width:39px;height:39px;padding:3px}
+ .avatar{font-size:21px}
+ .player-name{font-size:12px}.player-role{font-size:10px}
+ .player-status{font-size:9px}.on-turn{font-size:8px;padding:4px 5px}
+ .player-progress{height:3px;margin-top:4px}
+ .pawns{margin-top:6px;gap:4px}.pawn-mini{width:10px;height:11px}.pawn-mini:before{width:6px;height:7px;left:2px;top:-3px}
+ .right-panel .log-section{border-left:0;border-top:1px solid #deb78373;padding:13px 0 0;margin-top:15px}
+ .board-target .invisible-hit{stroke-width:2}
+ .power-row{font-size:11px}
+}
+@media(max-width:370px){
+ .brand-mark strong{font-size:26px}
+ .player-card{padding:7px 4px}.player-name{font-size:11px}
+ .player-progress{display:none}
+ .throw-stage-caption{font-size:8px;gap:5px}
+ .throw-title{font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.ambient-leaf,.player-card.active,.throw-energy-circle,.movement-trail,.mat-sticks.throwing g.yutstick,.board-target .target-outer{animation:none!important}}
+/* Height-aware compositions: the board, throwing mat, and primary throw action
+   all remain in a single desktop viewport at 900p and 768p. */
+@media(min-width:971px) and (max-height:940px){
+ .header{min-height:58px;margin:0 4px 6px}
+ .brand-mark strong{font-size:36px}.brand-sub{font-size:10px;margin-top:3px}
+ .app-wrap{padding-top:7px;padding-bottom:7px}
+ .board-top{margin-bottom:6px}
+ .board-shadow{max-width:484px;padding:8px}
+ .board-svg{max-height:42vh}
+ .board-cap{margin-top:5px;font-size:10px}
+ .map-sep{margin:6px 0}
+ .throw-title{font-size:14px}
+ .throw-desc{font-size:10px}
+ .cinematic-throw{min-height:112px;margin-top:6px}
+ .mat-svg{height:108px}
+ .throw-actions{margin-top:7px}
+ .throw-main-button{min-height:44px}
+ .power-row{padding-top:7px}
+ .footer-copy{margin:5px 0 0}
+}
+@media(min-width:971px) and (max-height:800px){
+ .board-svg{max-height:38vh}
+ .board-shadow{max-width:450px;padding:7px}
+ .board-top{margin-bottom:5px}
+ .board-cap{margin-top:3px}
+ .throw-desc{font-size:9px}
+ .cinematic-throw{min-height:96px;margin-top:5px}
+ .mat-svg{height:93px}
+ .throw-main-button{min-height:40px}
+ .power-row{padding-top:5px}
+ .board-panel{padding:8px 11px}
+}
+@media(min-width:971px) and (min-height:840px) and (max-height:940px){
+ .board-shadow{max-width:538px}
+ .board-svg{max-height:47vh}
+}
+@media(min-width:971px) and (max-height:800px){
+ .header{min-height:49px}
+ .board-svg{max-height:35vh}
+ .throw-actions{margin-top:5px}
+}
+@media(min-width:971px) and (max-height:800px){
+ .player-panel .tips-block{display:none}
+}
+@media(max-width:700px){
+ .board-choice{min-height:44px}
+ .header-btn.icon-button{width:44px;height:44px}
+ .piece-hit-area{cursor:pointer}
+}
+/* Keep all four sticks visible inside the mat while they spin and descend. */
+.mat-sticks.throwing g.yutstick{animation:yutTossQuality 1360ms cubic-bezier(.15,.64,.22,1) both;animation-delay:var(--delay)}
+@keyframes yutTossQuality{
+ 0%{opacity:.25;transform:translate(0,36px) rotate(-420deg) scale(.72);filter:drop-shadow(0 5px 3px #110910)}
+ 20%{opacity:1;transform:translate(-12px,-24px) rotate(-290deg) scale(1.02);filter:drop-shadow(0 3px 8px #ffda94)}
+ 42%{opacity:1;transform:translate(9px,-49px) rotate(-165deg) scale(1.08);filter:drop-shadow(0 8px 12px #f2b66a)}
+ 66%{transform:translate(-4px,-18px) rotate(-56deg) scale(1.03)}
+ 79%{transform:translate(2px,5px) rotate(20deg) scale(1.01)}
+ 89%{transform:translate(0,-9px) rotate(-9deg)}
+ 100%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.mat-sticks.throwing g.yutstick{animation:none!important}}
+
+/* Throw v2: transform/opacity only, every stick lands before the 1450ms settle (1150ms + max 210ms stagger).
+   flight = linear drift from the launch point + decelerating spin; arc = parabola height, bounce and tumble. */
+.mat-sticks.throwing g.yutstick{animation:none!important}
+.mat-sticks g.stick-flight,.mat-sticks g.stick-arc{transform-origin:0 0}
+.mat-sticks.throwing g.stick-flight{animation:yutFlight 1150ms both;animation-delay:var(--delay)}
+.mat-sticks.throwing g.stick-arc{animation:yutArc 1150ms both;animation-delay:var(--delay)}
+.mat-sticks.throwing .stick-shadow{animation:yutShadow 1150ms both;animation-delay:var(--delay);transform-box:fill-box;transform-origin:center}
+@keyframes yutFlight{
+ 0%{opacity:0;transform:translate(var(--fx),var(--fy)) rotate(-600deg);animation-timing-function:cubic-bezier(.3,.55,.45,1)}
+ 7%{opacity:1}
+ 72%,100%{opacity:1;transform:translate(0,0) rotate(0deg)}
+}
+@keyframes yutArc{
+ 0%{transform:translateY(0) rotate(0deg) scale(1,.7);animation-timing-function:cubic-bezier(.33,.66,.6,1)}
+ 18%{transform:translateY(-44px) rotate(0deg) scale(1,-.85);animation-timing-function:cubic-bezier(.4,0,.6,1)}
+ 36%{transform:translateY(-60px) rotate(0deg) scale(1,.8);animation-timing-function:cubic-bezier(.4,0,.6,1)}
+ 54%{transform:translateY(-38px) rotate(0deg) scale(1,-.75);animation-timing-function:cubic-bezier(.4,0,1,.6)}
+ 72%{transform:translateY(0) rotate(5deg) scale(1.04,.9);animation-timing-function:cubic-bezier(0,.4,.6,1)}
+ 81%{transform:translateY(-10px) rotate(-3deg) scale(1,1);animation-timing-function:cubic-bezier(.4,0,1,.6)}
+ 89%{transform:translateY(0) rotate(1.5deg) scale(1.02,.96);animation-timing-function:cubic-bezier(0,.4,.6,1)}
+ 94%{transform:translateY(-2.5px) rotate(-.5deg) scale(1,1);animation-timing-function:ease-in}
+ 100%{transform:translateY(0) rotate(0deg) scale(1,1)}
+}
+@keyframes yutShadow{
+ 0%{opacity:0;transform:scale(.35)}
+ 36%{opacity:.12;transform:scale(.55)}
+ 72%{opacity:.36;transform:scale(1.06)}
+ 81%{opacity:.26;transform:scale(.88)}
+ 89%,100%{opacity:.36;transform:scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.mat-sticks.throwing g.stick-flight,.mat-sticks.throwing g.stick-arc,.mat-sticks.throwing .stick-shadow{animation:none!important}}
+
+
+/* ---- spiral preview only ---- */
+.preview-ribbon{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:30;display:flex;gap:10px;align-items:center;padding:7px 9px 7px 15px;border-radius:999px;border:1px solid #e0aa68cf;background:#22151bec;box-shadow:0 8px 22px #0009;font-size:11.5px;color:#f4dcb4;white-space:nowrap}
+.preview-ribbon b{color:#ffe3ae}
+.preview-ribbon a{color:#2d1a10;background:linear-gradient(#fff3c2,#f2af59);border-radius:999px;padding:5px 11px;font-weight:900;text-decoration:none}
+.board-choice.concept{border-style:dashed}
+.spiral-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.spiral-facts div{border:1px solid #d2a16c57;border-radius:9px;padding:7px 6px;background:#5d403b33;text-align:center}
+.spiral-facts small{display:block;font-size:10px;color:#dfc4ad}
+.spiral-facts b{font-size:17px;color:#fff0cb}
+.gate-legend{display:grid;gap:5px;margin-top:10px;font-size:11px;color:#efd8b8}
+.gate-legend span{display:flex;align-items:center;gap:7px}
+.gate-legend i{width:11px;height:11px;border-radius:50%;border:1.5px solid #f1cf8d;flex:none}
+.app-wrap{padding-bottom:58px}@media(max-width:700px){.preview-ribbon{font-size:10.5px;bottom:8px}.preview-ribbon span{display:none}}
+</style>
+</head>
+<body>
+<div id="root"><div class="app-shell">
+ <div class="ambient-leaves" aria-hidden="true"><i class="ambient-leaf" style="--left:6%;--delay:0s;--duration:14s"></i><i class="ambient-leaf" style="--left:14%;--delay:-1.6s;--duration:16s"></i><i class="ambient-leaf" style="--left:22%;--delay:-3.2s;--duration:18s"></i><i class="ambient-leaf" style="--left:30%;--delay:-4.800000000000001s;--duration:20s"></i><i class="ambient-leaf" style="--left:38%;--delay:-6.4s;--duration:22s"></i><i class="ambient-leaf" style="--left:46%;--delay:-8s;--duration:14s"></i><i class="ambient-leaf" style="--left:54%;--delay:-9.600000000000001s;--duration:16s"></i><i class="ambient-leaf" style="--left:62%;--delay:-11.200000000000001s;--duration:18s"></i><i class="ambient-leaf" style="--left:70%;--delay:-12.8s;--duration:20s"></i><i class="ambient-leaf" style="--left:78%;--delay:-14.4s;--duration:22s"></i><i class="ambient-leaf" style="--left:86%;--delay:-16s;--duration:14s"></i><i class="ambient-leaf" style="--left:94%;--delay:-17.6s;--duration:16s"></i></div>
+ <div class="app-wrap">
+  <header class="header">
+   <div class="brand"><div class="brand-mark"><strong>달빛 윷마당</strong><span class="brand-seal">시안</span></div><div class="brand-sub">한옥 마루에서 즐기는 우리들의 한 판</div></div>
+   <div class="header-right"><span class="head-chip">제 6 턴</span><a class="header-btn watch-entry" href="map-concepts/index.html" style="text-decoration:none">지도첩</a><button class="header-btn icon-button" aria-label="소리">♫</button><button class="header-btn icon-button" aria-label="설정">⚙</button></div>
+  </header>
+  <main class="layout">
+   <aside class="panel side player-panel">
+    <div class="side-section-title">지금은 누구 차례?<span>나 + AI 2명</span></div>
+    <div class="turn-hero"><div class="eyebrow">CURRENT TURN</div><div class="turn-name"><span class="turn-dot" style="background:#eca14d"></span>나</div><div class="turn-sub">첫모 자리에 멈춘 말이 돌담 협문을 통과할 수 있어요.</div></div>
+    <div class="side-section-title">참가자<span>각 4개의 말</span></div>
+    <div class="players-list"><div class="player-card active player-0" style="--player-accent:#eca14d">
+   <div class="player-hanji-pattern" aria-hidden="true">✿</div>
+   <div class="player-main">
+    <div class="avatar-coin"><div class="avatar">🐕</div></div>
+    <div class="player-identity"><div class="player-name">나</div><div class="player-role">내 플레이어</div>
+     <div class="pawns"><span class="pawn-mini" style="--piece:#eca14d" title="이동 중"></span><span class="pawn-mini" style="--piece:#eca14d" title="이동 중"></span><span class="pawn-mini" style="--piece:#eca14d" title="이동 중"></span><span class="pawn-mini" style="--piece:#eca14d" title="대기"></span></div>
+     <div class="player-progress" aria-label="0개 완주"><div class="player-progress-fill" style="width:0%"></div></div></div>
+    <div class="player-right"><span class="on-turn">● 내 차례</span><div class="player-status">대기 1개</div></div>
+   </div></div><div class="player-card player-1" style="--player-accent:#6daefb">
+   <div class="player-hanji-pattern" aria-hidden="true">✿</div>
+   <div class="player-main">
+    <div class="avatar-coin"><div class="avatar">🐰</div></div>
+    <div class="player-identity"><div class="player-name">청월 AI</div><div class="player-role">인공지능 상대</div>
+     <div class="pawns"><span class="pawn-mini" style="--piece:#6daefb" title="이동 중"></span><span class="pawn-mini" style="--piece:#6daefb" title="이동 중"></span><span class="pawn-mini" style="--piece:#6daefb" title="대기"></span><span class="pawn-mini" style="--piece:#6daefb" title="대기"></span></div>
+     <div class="player-progress" aria-label="0개 완주"><div class="player-progress-fill" style="width:0%"></div></div></div>
+    <div class="player-right"><span class="player-tag">AI</span><div class="player-status">대기 2개</div></div>
+   </div></div><div class="player-card player-2" style="--player-accent:#55c77f">
+   <div class="player-hanji-pattern" aria-hidden="true">✿</div>
+   <div class="player-main">
+    <div class="avatar-coin"><div class="avatar">🐯</div></div>
+    <div class="player-identity"><div class="player-name">초록 AI</div><div class="player-role">인공지능 상대</div>
+     <div class="pawns"><span class="pawn-mini" style="--piece:#55c77f" title="이동 중"></span><span class="pawn-mini" style="--piece:#55c77f" title="이동 중"></span><span class="pawn-mini" style="--piece:#55c77f" title="대기"></span><span class="pawn-mini done" style="--piece:#55c77f" title="완주"></span></div>
+     <div class="player-progress" aria-label="1개 완주"><div class="player-progress-fill" style="width:25%"></div></div></div>
+    <div class="player-right"><span class="player-tag">AI</span><div class="player-status">1/4 완주</div></div>
+   </div></div></div>
+    <div class="subpanel"><div class="rack-title"><b>출발 대기 말</b><span>1개</span></div><div class="rack"><button class="rack-piece pickable" aria-label="대기 말 4 선택"><span class="rack-token" style="--piece:#eca14d">♟</span><small>4번 말</small></button></div></div>
+    <div class="subpanel tips-block"><div class="side-section-title">나선정원 규칙</div>
+     <div class="tiny-guide"><b>1</b><p class="tips">출발 어귀에서 돌담길을 따라 안쪽으로 감아 듭니다.</p></div>
+     <div class="tiny-guide"><b>2</b><p class="tips">5·10·15·20번 모 자리에 정확히 멈추면 협문이 열립니다.</p></div>
+     <div class="tiny-guide"><b>3</b><p class="tips">중심 달빛정자에 닿으면 완주합니다.</p></div>
+    </div>
+   </aside>
+   <section class="panel board-panel">
+    <div class="board-top"><div class="board-heading"><strong>✿ 돌담 나선정원</strong><small>3중 나선 돌담길 · 모 자리 협문 지름길 · 중심 완주</small></div>
+     <div class="board-switch"><button class="board-choice">기본판</button><button class="board-choice">팔각형</button><button class="board-choice">이중 링</button><button class="board-choice concept active" aria-pressed="true">나선정원</button></div></div>
+    <div class="board-shadow"><div class="board-cloth"><div class="frame-charm frame-charm-left" aria-hidden="true">❖</div><div class="frame-charm frame-charm-right" aria-hidden="true">❖</div>
+<svg class="board-svg" viewBox="0 0 500 470" shape-rendering="geometricPrecision" role="img" aria-label="돌담 나선정원 윷판 미리보기">
+<defs>
+  <radialGradient id="paperFill" cx=".36" cy=".26" r=".85"><stop offset="0" stop-color="#fff9e9"/><stop offset=".6" stop-color="#f1e2c2"/><stop offset="1" stop-color="#d6bd92"/></radialGradient>
+  <linearGradient id="boardWood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c4930"/><stop offset=".35" stop-color="#38251a"/><stop offset=".7" stop-color="#583b27"/><stop offset="1" stop-color="#261c15"/></linearGradient>
+  <linearGradient id="boardBrass" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#fff0bd"/><stop offset=".25" stop-color="#d1a35b"/><stop offset=".5" stop-color="#9a7039"/><stop offset=".73" stop-color="#e9cc8e"/><stop offset="1" stop-color="#8a5d2e"/></linearGradient>
+  <radialGradient id="nodeIvory" cx=".32" cy=".24" r=".85"><stop offset="0" stop-color="#fffcf0"/><stop offset=".65" stop-color="#f4e5c5"/><stop offset="1" stop-color="#c6aa77"/></radialGradient>
+  <radialGradient id="nodeAmber" cx=".3" cy=".22" r=".9"><stop offset="0" stop-color="#fff0b9"/><stop offset=".6" stop-color="#e2b464"/><stop offset="1" stop-color="#986630"/></radialGradient>
+  <radialGradient id="nodeJade" cx=".3" cy=".2" r=".9"><stop offset="0" stop-color="#a4c6a2"/><stop offset=".55" stop-color="#58816a"/><stop offset="1" stop-color="#2d5042"/></radialGradient>
+  <radialGradient id="nodeObsidian" cx=".32" cy=".22" r=".85"><stop offset="0" stop-color="#73543e"/><stop offset=".55" stop-color="#443326"/><stop offset="1" stop-color="#2b231e"/></radialGradient>
+  <radialGradient id="tokenEnamel" cx=".28" cy=".18" r=".9"><stop offset="0" stop-color="#ffffff" stop-opacity=".55"/><stop offset=".48" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#23170c" stop-opacity=".35"/></radialGradient>
+  <radialGradient id="mossCourt" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9fb58f" stop-opacity=".55"/><stop offset="1" stop-color="#9fb58f" stop-opacity="0"/></radialGradient>
+  <pattern id="grain" width="37" height="31" patternUnits="userSpaceOnUse"><path d="M2 7l5-1m11 17 7-2M29 5l3 1M8 28l4-1" stroke="#94764b" stroke-width=".4" opacity=".16"/><path d="M3 8l5-1m11 17 7-2M7 17l9-1" stroke="#fffef0" stroke-width=".65" opacity=".6"/><circle cx="31" cy="18" r=".45" fill="#856842" opacity=".16"/></pattern>
+  <pattern id="boardEdgeGrain" width="80" height="12" patternUnits="userSpaceOnUse"><path d="M0 3Q20 0 40 3T80 3M0 9Q20 6 40 9T80 9" fill="none" stroke="#d5aa6a" stroke-width=".45" opacity=".17"/></pattern>
+</defs>
+<rect x="2" y="2" width="496" height="466" rx="7" fill="url(#boardWood)"/>
+<rect x="2" y="2" width="496" height="466" rx="7" fill="url(#boardEdgeGrain)"/>
+<rect x="7" y="7" width="486" height="456" rx="5" fill="none" stroke="#edcd8c" stroke-width=".65" opacity=".7"/>
+<rect x="16" y="16" width="468" height="438" rx="3" fill="url(#boardBrass)" stroke="#241c13" stroke-width="1.2"/>
+<rect x="21" y="21" width="458" height="428" rx="2" fill="url(#paperFill)" stroke="#fff2ca" stroke-width="1"/>
+<rect x="21" y="21" width="458" height="428" rx="2" fill="url(#grain)"/>
+<g class="board-craft-detail" aria-hidden="true"><g transform="translate(16 16) rotate(0)"><path d="M0 29V0h29v5H5v24Z" fill="url(#boardBrass)" stroke="#624522" stroke-width=".6"/><path d="M9 27V9h18M13 23V13h10" fill="none" stroke="#a17b43" stroke-width=".7"/><circle cx="2.5" cy="2.5" r="1" fill="#fff3c6"/></g><g transform="translate(484 16) rotate(90)"><path d="M0 29V0h29v5H5v24Z" fill="url(#boardBrass)" stroke="#624522" stroke-width=".6"/><path d="M9 27V9h18M13 23V13h10" fill="none" stroke="#a17b43" stroke-width=".7"/><circle cx="2.5" cy="2.5" r="1" fill="#fff3c6"/></g><g transform="translate(484 454) rotate(180)"><path d="M0 29V0h29v5H5v24Z" fill="url(#boardBrass)" stroke="#624522" stroke-width=".6"/><path d="M9 27V9h18M13 23V13h10" fill="none" stroke="#a17b43" stroke-width=".7"/><circle cx="2.5" cy="2.5" r="1" fill="#fff3c6"/></g><g transform="translate(16 454) rotate(270)"><path d="M0 29V0h29v5H5v24Z" fill="url(#boardBrass)" stroke="#624522" stroke-width=".6"/><path d="M9 27V9h18M13 23V13h10" fill="none" stroke="#a17b43" stroke-width=".7"/><circle cx="2.5" cy="2.5" r="1" fill="#fff3c6"/></g></g>
+
+<!-- 이끼 안뜰 + 수묵 장식 (경로 가독성을 해치지 않는 낮은 농도) -->
+<g class="board-ink-scenes" aria-hidden="true">
+  <ellipse cx="250" cy="236" rx="78" ry="62" fill="url(#mossCourt)"/>
+  <g fill="none" stroke="#7d6955" stroke-width="1.2" opacity=".3">
+    <path d="M196 386q14-10 28 0 12-8 24 0M300 388q12-9 24 0 10-7 20 0"/>
+    <path d="M118 108q10-14 24-4 9-12 23-2M322 106q12-12 25-2 11-10 22 0"/>
+  </g>
+</g>
+
+<!-- 돌담: 외곽 담장(출발 어귀가 열림) + 회랑 사이 나선 담장 -->
+<g fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M470 404 L470 26 L30 26 L30 444 L403 444" stroke="#7e7262" stroke-width="13" opacity=".42" />
+  <path d="M470 404 L470 26 L30 26 L30 444 L403 444" stroke="#cbbd9f" stroke-width="9" stroke-dasharray="11 3" opacity=".75" />
+  <path d="M470 404 L470 26 L30 26 L30 444 L403 444" stroke="#8f826d" stroke-width="9" stroke-dasharray="1 13" stroke-dashoffset="-6" opacity=".55" />
+  <path d="M403 444 L403 93 L97 93 L97 377 L333 377 L333 163 L167 163 L167 307 L263 307 L263 262" stroke="#7e7262" stroke-width="13" opacity=".42" />
+  <path d="M403 444 L403 93 L97 93 L97 377 L333 377 L333 163 L167 163 L167 307 L263 307 L263 262" stroke="#cbbd9f" stroke-width="9" stroke-dasharray="11 3" opacity=".75" />
+  <path d="M403 444 L403 93 L97 93 L97 377 L333 377 L333 163 L167 163 L167 307 L263 307 L263 262" stroke="#8f826d" stroke-width="9" stroke-dasharray="1 13" stroke-dashoffset="-6" opacity=".55" />
+</g>
+<g aria-hidden="true"><rect x="266" y="85" width="26" height="16" fill="#f2e3c3"/><rect x="258" y="88" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M256.5 89h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/><rect x="290" y="88" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M288.5 89h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/></g><g aria-hidden="true"><rect x="92" y="339" width="16" height="26" fill="#f2e3c3"/><rect x="95" y="331" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M93.5 332h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/><rect x="95" y="363" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M93.5 364h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/></g><g aria-hidden="true"><rect x="325" y="235" width="16" height="26" fill="#f2e3c3"/><rect x="328" y="227" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M326.5 228h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/><rect x="328" y="259" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M326.5 260h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/></g><g aria-hidden="true"><rect x="162" y="270" width="16" height="26" fill="#f2e3c3"/><rect x="165" y="262" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M163.5 263h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/><rect x="165" y="294" width="10" height="10" rx="1.5" fill="#8a7a63" stroke="#4d3f2f" stroke-width=".8"/><path d="M163.5 295h13" stroke="#3f4a46" stroke-width="3" stroke-linecap="round"/></g>
+
+<!-- 이동로: 정통판과 같은 상아 인레이 + 먹선 -->
+<path d="M438 412 L438 82 L437.8 78.2 L437.3 74.7 L436.5 71.5 L435.3 68.7 L433.8 66.2 L432 64 L429.8 62.2 L427.3 60.7 L424.5 59.5 L421.3 58.7 L417.8 58.2 L414 58 L86 58 L82.2 58.2 L78.7 58.7 L75.5 59.5 L72.7 60.7 L70.2 62.2 L68 64 L66.2 66.2 L64.7 68.7 L63.5 71.5 L62.7 74.7 L62.2 78.2 L62 82 L62 388 L62.2 391.8 L62.7 395.3 L63.5 398.5 L64.7 401.3 L66.2 403.8 L68 406 L70.2 407.8 L72.7 409.3 L75.5 410.5 L78.7 411.3 L82.2 411.8 L86 412 L344 412 L347.8 411.8 L351.3 411.3 L354.5 410.5 L357.3 409.3 L359.8 407.8 L362 406 L363.8 403.8 L365.3 401.3 L366.5 398.5 L367.3 395.3 L367.8 391.8 L368 388 L368 152 L367.8 148.2 L367.3 144.7 L366.5 141.5 L365.3 138.7 L363.8 136.2 L362 134 L359.8 132.2 L357.3 130.7 L354.5 129.5 L351.3 128.7 L347.8 128.2 L344 128 L156 128 L152.2 128.2 L148.7 128.7 L145.5 129.5 L142.7 130.7 L140.2 132.2 L138 134 L136.2 136.2 L134.7 138.7 L133.5 141.5 L132.7 144.7 L132.2 148.2 L132 152 L132 318 L132.2 321.8 L132.7 325.3 L133.5 328.5 L134.7 331.3 L136.2 333.8 L138 336 L140.2 337.8 L142.7 339.3 L145.5 340.5 L148.7 341.3 L152.2 341.8 L156 342 L274 342 L277.8 341.8 L281.3 341.3 L284.5 340.5 L287.3 339.3 L289.8 337.8 L292 336 L293.8 333.8 L295.3 331.3 L296.5 328.5 L297.3 325.3 L297.8 321.8 L298 318 L298 222 L297.8 218.2 L297.3 214.7 L296.5 211.5 L295.3 208.7 L293.8 206.2 L292 204 L289.8 202.2 L287.3 200.7 L284.5 199.5 L281.3 198.7 L277.8 198.2 L274 198 L221 198 L218 198.1 L215.2 198.5 L212.7 199.2 L210.4 200.1 L208.5 201.3 L206.8 202.8 L205.3 204.5 L204.1 206.4 L203.2 208.7 L202.5 211.2 L202.1 214 L202 217 L202 217 L202.1 220 L202.5 222.8 L203.2 225.3 L204.1 227.6 L205.3 229.5 L206.8 231.3 L208.5 232.7 L210.4 233.9 L212.7 234.8 L215.2 235.5 L218 235.9 L221 236 L250 236" class="route-inlay"/>
+<path d="M278.9 58 L279 93 L283 128" class="route-inlay"/><path d="M62 354.1 L100 352 L188.3 342" class="route-inlay"/><path d="M368 253.7 L333 248 L298 241" class="route-inlay"/><path d="M132 288.4 L170 283 L250 236" class="route-inlay"/>
+<path d="M438 412 L438 82 L437.8 78.2 L437.3 74.7 L436.5 71.5 L435.3 68.7 L433.8 66.2 L432 64 L429.8 62.2 L427.3 60.7 L424.5 59.5 L421.3 58.7 L417.8 58.2 L414 58 L86 58 L82.2 58.2 L78.7 58.7 L75.5 59.5 L72.7 60.7 L70.2 62.2 L68 64 L66.2 66.2 L64.7 68.7 L63.5 71.5 L62.7 74.7 L62.2 78.2 L62 82 L62 388 L62.2 391.8 L62.7 395.3 L63.5 398.5 L64.7 401.3 L66.2 403.8 L68 406 L70.2 407.8 L72.7 409.3 L75.5 410.5 L78.7 411.3 L82.2 411.8 L86 412 L344 412 L347.8 411.8 L351.3 411.3 L354.5 410.5 L357.3 409.3 L359.8 407.8 L362 406 L363.8 403.8 L365.3 401.3 L366.5 398.5 L367.3 395.3 L367.8 391.8 L368 388 L368 152 L367.8 148.2 L367.3 144.7 L366.5 141.5 L365.3 138.7 L363.8 136.2 L362 134 L359.8 132.2 L357.3 130.7 L354.5 129.5 L351.3 128.7 L347.8 128.2 L344 128 L156 128 L152.2 128.2 L148.7 128.7 L145.5 129.5 L142.7 130.7 L140.2 132.2 L138 134 L136.2 136.2 L134.7 138.7 L133.5 141.5 L132.7 144.7 L132.2 148.2 L132 152 L132 318 L132.2 321.8 L132.7 325.3 L133.5 328.5 L134.7 331.3 L136.2 333.8 L138 336 L140.2 337.8 L142.7 339.3 L145.5 340.5 L148.7 341.3 L152.2 341.8 L156 342 L274 342 L277.8 341.8 L281.3 341.3 L284.5 340.5 L287.3 339.3 L289.8 337.8 L292 336 L293.8 333.8 L295.3 331.3 L296.5 328.5 L297.3 325.3 L297.8 321.8 L298 318 L298 222 L297.8 218.2 L297.3 214.7 L296.5 211.5 L295.3 208.7 L293.8 206.2 L292 204 L289.8 202.2 L287.3 200.7 L284.5 199.5 L281.3 198.7 L277.8 198.2 L274 198 L221 198 L218 198.1 L215.2 198.5 L212.7 199.2 L210.4 200.1 L208.5 201.3 L206.8 202.8 L205.3 204.5 L204.1 206.4 L203.2 208.7 L202.5 211.2 L202.1 214 L202 217 L202 217 L202.1 220 L202.5 222.8 L203.2 225.3 L204.1 227.6 L205.3 229.5 L206.8 231.3 L208.5 232.7 L210.4 233.9 L212.7 234.8 L215.2 235.5 L218 235.9 L221 236 L250 236" class="route-line" fill="none"/>
+<path d="M278.9 58 L279 93 L283 128" class="route-inner" fill="none" stroke-dasharray="5 4"/><path d="M62 354.1 L100 352 L188.3 342" class="route-inner" fill="none" stroke-dasharray="5 4"/><path d="M368 253.7 L333 248 L298 241" class="route-inner" fill="none" stroke-dasharray="5 4"/><path d="M132 288.4 L170 283 L250 236" class="route-inner" fill="none" stroke-dasharray="5 4"/>
+<path d="M-4-4L1 0-4 4" fill="none" stroke="#7a5c3c" stroke-width="2" opacity=".6" transform="translate(438 160) rotate(-90)"/><path d="M-4-4L1 0-4 4" fill="none" stroke="#7a5c3c" stroke-width="2" opacity=".6" transform="translate(69.7 105.8) rotate(99.4)"/><path d="M-4-4L1 0-4 4" fill="none" stroke="#7a5c3c" stroke-width="2" opacity=".6" transform="translate(265.2 412) rotate(0)"/><path d="M-4-4L1 0-4 4" fill="none" stroke="#7a5c3c" stroke-width="2" opacity=".6" transform="translate(132 238) rotate(90)"/><path d="M-4-4L1 0-4 4" fill="none" stroke="#7a5c3c" stroke-width="2" opacity=".6" transform="translate(293.3 289.8) rotate(-84.4)"/>
+
+<!-- 출발 어귀 · 모 협문 · 달빛정자 -->
+<g class="board-landmark"><ellipse cx="438" cy="415" rx="24" ry="23" fill="#593c21" opacity=".22"/>
+  <circle cx="438" cy="412" r="23" fill="url(#boardBrass)" stroke="#73502e" stroke-width="1"/>
+  <circle cx="438" cy="412" r="20.5" fill="#3a2c23" stroke="#fff0bc" stroke-width=".8"/>
+  <circle cx="438" cy="412" r="17.5" fill="#3f7053" stroke="#e1bd7a" stroke-width="1"/>
+  <circle cx="438" cy="412" r="17" fill="url(#tokenEnamel)"/>
+  <circle cx="457" cy="412" r=".55" fill="#efd599"/><circle cx="454.5" cy="421.5" r=".55" fill="#efd599"/><circle cx="447.5" cy="428.5" r=".55" fill="#efd599"/><circle cx="438" cy="431" r=".55" fill="#efd599"/><circle cx="428.5" cy="428.5" r=".55" fill="#efd599"/><circle cx="421.5" cy="421.5" r=".55" fill="#efd599"/><circle cx="419" cy="412" r=".55" fill="#efd599"/><circle cx="421.5" cy="402.5" r=".55" fill="#efd599"/><circle cx="428.5" cy="395.5" r=".55" fill="#efd599"/><circle cx="438" cy="393" r=".55" fill="#efd599"/><circle cx="447.5" cy="395.5" r=".55" fill="#efd599"/><circle cx="454.5" cy="402.5" r=".55" fill="#efd599"/></g>
+<g class="board-landmark"><ellipse cx="278.9" cy="61" rx="25" ry="24" fill="#593c21" opacity=".22"/>
+  <circle cx="278.9" cy="58" r="24" fill="url(#boardBrass)" stroke="#73502e" stroke-width="1"/>
+  <circle cx="278.9" cy="58" r="21.5" fill="#3a2c23" stroke="#fff0bc" stroke-width=".8"/>
+  <circle cx="278.9" cy="58" r="18.5" fill="#a33c3d" stroke="#e1bd7a" stroke-width="1"/>
+  <circle cx="278.9" cy="58" r="18" fill="url(#tokenEnamel)"/>
+  <circle cx="298.9" cy="58" r=".55" fill="#efd599"/><circle cx="296.2" cy="68" r=".55" fill="#efd599"/><circle cx="288.9" cy="75.3" r=".55" fill="#efd599"/><circle cx="278.9" cy="78" r=".55" fill="#efd599"/><circle cx="268.9" cy="75.3" r=".55" fill="#efd599"/><circle cx="261.6" cy="68" r=".55" fill="#efd599"/><circle cx="258.9" cy="58" r=".55" fill="#efd599"/><circle cx="261.6" cy="48" r=".55" fill="#efd599"/><circle cx="268.9" cy="40.7" r=".55" fill="#efd599"/><circle cx="278.9" cy="38" r=".55" fill="#efd599"/><circle cx="288.9" cy="40.7" r=".55" fill="#efd599"/><circle cx="296.2" cy="48" r=".55" fill="#efd599"/></g><g class="board-landmark"><ellipse cx="62" cy="357.1" rx="25" ry="24" fill="#593c21" opacity=".22"/>
+  <circle cx="62" cy="354.1" r="24" fill="url(#boardBrass)" stroke="#73502e" stroke-width="1"/>
+  <circle cx="62" cy="354.1" r="21.5" fill="#3a2c23" stroke="#fff0bc" stroke-width=".8"/>
+  <circle cx="62" cy="354.1" r="18.5" fill="#395987" stroke="#e1bd7a" stroke-width="1"/>
+  <circle cx="62" cy="354.1" r="18" fill="url(#tokenEnamel)"/>
+  <circle cx="82" cy="354.1" r=".55" fill="#efd599"/><circle cx="79.3" cy="364.1" r=".55" fill="#efd599"/><circle cx="72" cy="371.4" r=".55" fill="#efd599"/><circle cx="62" cy="374.1" r=".55" fill="#efd599"/><circle cx="52" cy="371.4" r=".55" fill="#efd599"/><circle cx="44.7" cy="364.1" r=".55" fill="#efd599"/><circle cx="42" cy="354.1" r=".55" fill="#efd599"/><circle cx="44.7" cy="344.1" r=".55" fill="#efd599"/><circle cx="52" cy="336.8" r=".55" fill="#efd599"/><circle cx="62" cy="334.1" r=".55" fill="#efd599"/><circle cx="72" cy="336.8" r=".55" fill="#efd599"/><circle cx="79.3" cy="344.1" r=".55" fill="#efd599"/></g><g class="board-landmark"><ellipse cx="368" cy="256.7" rx="25" ry="24" fill="#593c21" opacity=".22"/>
+  <circle cx="368" cy="253.7" r="24" fill="url(#boardBrass)" stroke="#73502e" stroke-width="1"/>
+  <circle cx="368" cy="253.7" r="21.5" fill="#3a2c23" stroke="#fff0bc" stroke-width=".8"/>
+  <circle cx="368" cy="253.7" r="18.5" fill="#b7833c" stroke="#e1bd7a" stroke-width="1"/>
+  <circle cx="368" cy="253.7" r="18" fill="url(#tokenEnamel)"/>
+  <circle cx="388" cy="253.7" r=".55" fill="#efd599"/><circle cx="385.3" cy="263.7" r=".55" fill="#efd599"/><circle cx="378" cy="271" r=".55" fill="#efd599"/><circle cx="368" cy="273.7" r=".55" fill="#efd599"/><circle cx="358" cy="271" r=".55" fill="#efd599"/><circle cx="350.7" cy="263.7" r=".55" fill="#efd599"/><circle cx="348" cy="253.7" r=".55" fill="#efd599"/><circle cx="350.7" cy="243.7" r=".55" fill="#efd599"/><circle cx="358" cy="236.4" r=".55" fill="#efd599"/><circle cx="368" cy="233.7" r=".55" fill="#efd599"/><circle cx="378" cy="236.4" r=".55" fill="#efd599"/><circle cx="385.3" cy="243.7" r=".55" fill="#efd599"/></g><g class="board-landmark"><ellipse cx="132" cy="291.4" rx="25" ry="24" fill="#593c21" opacity=".22"/>
+  <circle cx="132" cy="288.4" r="24" fill="url(#boardBrass)" stroke="#73502e" stroke-width="1"/>
+  <circle cx="132" cy="288.4" r="21.5" fill="#3a2c23" stroke="#fff0bc" stroke-width=".8"/>
+  <circle cx="132" cy="288.4" r="18.5" fill="#3f7053" stroke="#e1bd7a" stroke-width="1"/>
+  <circle cx="132" cy="288.4" r="18" fill="url(#tokenEnamel)"/>
+  <circle cx="152" cy="288.4" r=".55" fill="#efd599"/><circle cx="149.3" cy="298.4" r=".55" fill="#efd599"/><circle cx="142" cy="305.7" r=".55" fill="#efd599"/><circle cx="132" cy="308.4" r=".55" fill="#efd599"/><circle cx="122" cy="305.7" r=".55" fill="#efd599"/><circle cx="114.7" cy="298.4" r=".55" fill="#efd599"/><circle cx="112" cy="288.4" r=".55" fill="#efd599"/><circle cx="114.7" cy="278.4" r=".55" fill="#efd599"/><circle cx="122" cy="271.1" r=".55" fill="#efd599"/><circle cx="132" cy="268.4" r=".55" fill="#efd599"/><circle cx="142" cy="271.1" r=".55" fill="#efd599"/><circle cx="149.3" cy="278.4" r=".55" fill="#efd599"/></g>
+<g class="board-landmark">
+  <circle cx="250" cy="236" r="31" fill="none" stroke="#b38a51" stroke-width="1" stroke-dasharray="3 4"/>
+  <circle cx="250" cy="236" r="26" fill="url(#boardBrass)" stroke="#73502e"/>
+  <circle cx="250" cy="236" r="23" fill="url(#nodeObsidian)" stroke="#deb66f" stroke-width="1.6"/>
+  <g transform="translate(250 232) scale(.62)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-26 21h52" stroke="#e8c98a" stroke-width="3"/><path d="M-17 18v-22M17 18v-22" stroke="#e8c98a" stroke-width="3.4"/>
+    <path d="M-31 -6Q-15 -12 0 -24q15 12 31 18L22 -2H-22Z" fill="#f2d79a" stroke="#fff3cc" stroke-width="1.4"/>
+  </g>
+</g>
+<g><circle cx="438" cy="412" r="20" fill="none" stroke="#7fb9a1" stroke-width="1" stroke-dasharray="3 4"/>
+  <ellipse cx="438" cy="414" rx="15.8" ry="15" fill="#593c21" opacity=".2"/>
+  <circle cx="438" cy="412" r="15.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle goal" cx="438" cy="412" r="14"/>
+  <circle class="node-engraving" cx="438" cy="412" r="12"/>
+  
+  <text x="438" y="416" text-anchor="middle" font-size="10" font-weight="900" fill="#f4f3cf">출</text></g><g>
+  <ellipse cx="438" cy="313.2" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="438" cy="311.2" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="438" cy="311.2" r="9"/>
+  <circle class="node-engraving" cx="438" cy="311.2" r="7"/>
+  
+  </g><g>
+  <ellipse cx="438" cy="212.4" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="438" cy="210.4" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="438" cy="210.4" r="9"/>
+  <circle class="node-engraving" cx="438" cy="210.4" r="7"/>
+  
+  </g><g>
+  <ellipse cx="438" cy="111.6" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="438" cy="109.6" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="438" cy="109.6" r="9"/>
+  <circle class="node-engraving" cx="438" cy="109.6" r="7"/>
+  
+  </g><g>
+  <ellipse cx="379.7" cy="60" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="379.7" cy="58" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="379.7" cy="58" r="9"/>
+  <circle class="node-engraving" cx="379.7" cy="58" r="7"/>
+  
+  </g><g>
+  <ellipse cx="278.9" cy="60" rx="14.8" ry="14" fill="#593c21" opacity=".2"/>
+  <circle cx="278.9" cy="58" r="14.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle fork" cx="278.9" cy="58" r="13"/>
+  <circle class="node-engraving" cx="278.9" cy="58" r="11"/>
+  <circle cx="278.9" cy="58" r="3.5" fill="#ba7142"/>
+  </g><g>
+  <ellipse cx="178.1" cy="60" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="178.1" cy="58" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="178.1" cy="58" r="9"/>
+  <circle class="node-engraving" cx="178.1" cy="58" r="7"/>
+  
+  </g><g>
+  <ellipse cx="77.4" cy="61" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="77.4" cy="59" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="77.4" cy="59" r="9"/>
+  <circle class="node-engraving" cx="77.4" cy="59" r="7"/>
+  
+  </g><g>
+  <ellipse cx="62" cy="154.5" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="62" cy="152.5" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="62" cy="152.5" r="9"/>
+  <circle class="node-engraving" cx="62" cy="152.5" r="7"/>
+  
+  </g><g>
+  <ellipse cx="62" cy="255.3" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="62" cy="253.3" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="62" cy="253.3" r="9"/>
+  <circle class="node-engraving" cx="62" cy="253.3" r="7"/>
+  
+  </g><g>
+  <ellipse cx="62" cy="356.1" rx="14.8" ry="14" fill="#593c21" opacity=".2"/>
+  <circle cx="62" cy="354.1" r="14.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle fork" cx="62" cy="354.1" r="13"/>
+  <circle class="node-engraving" cx="62" cy="354.1" r="11"/>
+  <circle cx="62" cy="354.1" r="3.5" fill="#ba7142"/>
+  </g><g>
+  <ellipse cx="114" cy="414" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="114" cy="412" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="114" cy="412" r="9"/>
+  <circle class="node-engraving" cx="114" cy="412" r="7"/>
+  
+  </g><g>
+  <ellipse cx="214.8" cy="414" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="214.8" cy="412" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="214.8" cy="412" r="9"/>
+  <circle class="node-engraving" cx="214.8" cy="412" r="7"/>
+  
+  </g><g>
+  <ellipse cx="315.6" cy="414" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="315.6" cy="412" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="315.6" cy="412" r="9"/>
+  <circle class="node-engraving" cx="315.6" cy="412" r="7"/>
+  
+  </g><g>
+  <ellipse cx="368" cy="356.5" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="368" cy="354.5" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="368" cy="354.5" r="9"/>
+  <circle class="node-engraving" cx="368" cy="354.5" r="7"/>
+  
+  </g><g>
+  <ellipse cx="368" cy="255.7" rx="14.8" ry="14" fill="#593c21" opacity=".2"/>
+  <circle cx="368" cy="253.7" r="14.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle fork" cx="368" cy="253.7" r="13"/>
+  <circle class="node-engraving" cx="368" cy="253.7" r="11"/>
+  <circle cx="368" cy="253.7" r="3.5" fill="#ba7142"/>
+  </g><g>
+  <ellipse cx="368" cy="154.9" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="368" cy="152.9" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="368" cy="152.9" r="9"/>
+  <circle class="node-engraving" cx="368" cy="152.9" r="7"/>
+  
+  </g><g>
+  <ellipse cx="283" cy="130" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="283" cy="128" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="283" cy="128" r="9"/>
+  <circle class="node-engraving" cx="283" cy="128" r="7"/>
+  
+  </g><g>
+  <ellipse cx="182.2" cy="130" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="182.2" cy="128" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="182.2" cy="128" r="9"/>
+  <circle class="node-engraving" cx="182.2" cy="128" r="7"/>
+  
+  </g><g>
+  <ellipse cx="132" cy="189.6" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="132" cy="187.6" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="132" cy="187.6" r="9"/>
+  <circle class="node-engraving" cx="132" cy="187.6" r="7"/>
+  
+  </g><g>
+  <ellipse cx="132" cy="290.4" rx="14.8" ry="14" fill="#593c21" opacity=".2"/>
+  <circle cx="132" cy="288.4" r="14.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle fork" cx="132" cy="288.4" r="13"/>
+  <circle class="node-engraving" cx="132" cy="288.4" r="11"/>
+  <circle cx="132" cy="288.4" r="3.5" fill="#ba7142"/>
+  </g><g>
+  <ellipse cx="188.3" cy="344" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="188.3" cy="342" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="188.3" cy="342" r="9"/>
+  <circle class="node-engraving" cx="188.3" cy="342" r="7"/>
+  
+  </g><g>
+  <ellipse cx="288.5" cy="340.6" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="288.5" cy="338.6" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="288.5" cy="338.6" r="9"/>
+  <circle class="node-engraving" cx="288.5" cy="338.6" r="7"/>
+  
+  </g><g>
+  <ellipse cx="298" cy="243" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="298" cy="241" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="298" cy="241" r="9"/>
+  <circle class="node-engraving" cx="298" cy="241" r="7"/>
+  
+  </g><g>
+  <ellipse cx="231.2" cy="200" rx="10.8" ry="10" fill="#593c21" opacity=".2"/>
+  <circle cx="231.2" cy="198" r="10.5" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle normal" cx="231.2" cy="198" r="9"/>
+  <circle class="node-engraving" cx="231.2" cy="198" r="7"/>
+  
+  </g>
+<g>
+  <ellipse cx="279" cy="95" rx="9.3" ry="8.5" fill="#593c21" opacity=".2"/>
+  <circle cx="279" cy="93" r="9" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle inner" cx="279" cy="93" r="7.5"/>
+  <circle class="node-engraving" cx="279" cy="93" r="5.5"/>
+  
+  </g><g>
+  <ellipse cx="100" cy="354" rx="9.3" ry="8.5" fill="#593c21" opacity=".2"/>
+  <circle cx="100" cy="352" r="9" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle inner" cx="100" cy="352" r="7.5"/>
+  <circle class="node-engraving" cx="100" cy="352" r="5.5"/>
+  
+  </g><g>
+  <ellipse cx="333" cy="250" rx="9.3" ry="8.5" fill="#593c21" opacity=".2"/>
+  <circle cx="333" cy="248" r="9" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle inner" cx="333" cy="248" r="7.5"/>
+  <circle class="node-engraving" cx="333" cy="248" r="5.5"/>
+  
+  </g><g>
+  <ellipse cx="170" cy="285" rx="9.3" ry="8.5" fill="#593c21" opacity=".2"/>
+  <circle cx="170" cy="283" r="9" fill="url(#boardBrass)" stroke="#9d7845" stroke-width=".6"/>
+  <circle class="node-circle inner" cx="170" cy="283" r="7.5"/>
+  <circle class="node-engraving" cx="170" cy="283" r="5.5"/>
+  
+  </g>
+
+<g class="board-label">
+  <text x="438" y="378" text-anchor="middle" class="board-label">출발 어귀</text>
+  <text x="308.9" y="62" text-anchor="start" class="board-label">첫모 ①</text>
+  <text x="66" y="392.1" text-anchor="start" class="board-label">뒷모 ②</text>
+  <text x="397" y="257.7" text-anchor="start" class="board-label">찌모 ③</text>
+  <text x="132" y="258.4" text-anchor="middle" class="board-label">넷모 ④</text>
+  <text x="250" y="281" text-anchor="middle" class="board-label">달빛정자 · 완주</text>
+</g>
+
+<!-- 선택한 경로: 번호 경유점 + 금빛 목적지 -->
+<path d="M278.9 58 L279 93 L283 128 L182.2 128" class="movement-trail"/>
+<g class="target-waypoint"><circle cx="279" cy="93" r="9.5" fill="#644124" stroke="#ffe1a0" stroke-width="1.5"/><text x="279" y="96.4" text-anchor="middle" font-weight="900" font-size="10" fill="#fff2c7">1</text></g><g class="target-waypoint"><circle cx="283" cy="128" r="9.5" fill="#644124" stroke="#ffe1a0" stroke-width="1.5"/><text x="283" y="131.4" text-anchor="middle" font-weight="900" font-size="10" fill="#fff2c7">2</text></g>
+<g class="piece-handle" transform="translate(438 210.4)">
+  <ellipse class="piece-floor-shadow" cx="0" cy="16" rx="17" ry="6" fill="#2d1a10" opacity=".34"/>
+  <circle class="piece-halo" cx="0" cy="0" r="23" fill="none" stroke="#604129" stroke-width="1.5"/>
+  <rect x="-13" y="-1" width="26" height="17" rx="8" fill="#43281c" stroke="#2b180e" stroke-width="1.2"/>
+  <rect x="-12" y="-4" width="24" height="17" rx="8" fill="#eca14d" stroke="#fff4dd" stroke-width="1.2"/>
+  <ellipse cx="0" cy="7" rx="13" ry="7.5" fill="#eca14d" stroke="#4b2b20" stroke-width="1.3"/>
+  <ellipse cx="0" cy="-8" rx="11" ry="10" fill="#eca14d" stroke="#fff0d1" stroke-width="2"/>
+  <ellipse cx="0" cy="-8" rx="10" ry="9" fill="url(#tokenEnamel)"/>
+  <ellipse cx="-3.3" cy="-10" rx="4.8" ry="3" fill="#fff9df" opacity=".65"/>
+  <circle cx="0" cy="-8" r="2.5" fill="#fff1cf" opacity=".6"/>
+  
+  
+</g><g class="piece-handle" transform="translate(114 412)">
+  <ellipse class="piece-floor-shadow" cx="0" cy="16" rx="17" ry="6" fill="#2d1a10" opacity=".34"/>
+  <circle class="piece-halo" cx="0" cy="0" r="23" fill="none" stroke="#604129" stroke-width="1.5"/>
+  <rect x="-13" y="-1" width="26" height="17" rx="8" fill="#43281c" stroke="#2b180e" stroke-width="1.2"/>
+  <rect x="-12" y="-4" width="24" height="17" rx="8" fill="#6daefb" stroke="#fff4dd" stroke-width="1.2"/>
+  <ellipse cx="0" cy="7" rx="13" ry="7.5" fill="#6daefb" stroke="#4b2b20" stroke-width="1.3"/>
+  <ellipse cx="0" cy="-8" rx="11" ry="10" fill="#6daefb" stroke="#fff0d1" stroke-width="2"/>
+  <ellipse cx="0" cy="-8" rx="10" ry="9" fill="url(#tokenEnamel)"/>
+  <ellipse cx="-3.3" cy="-10" rx="4.8" ry="3" fill="#fff9df" opacity=".65"/>
+  <circle cx="0" cy="-8" r="2.5" fill="#fff1cf" opacity=".6"/>
+  
+  
+</g><g class="piece-handle" transform="translate(315.6 412)">
+  <ellipse class="piece-floor-shadow" cx="0" cy="16" rx="17" ry="6" fill="#2d1a10" opacity=".34"/>
+  <circle class="piece-halo" cx="0" cy="0" r="23" fill="none" stroke="#604129" stroke-width="1.5"/>
+  <rect x="-13" y="-1" width="26" height="17" rx="8" fill="#43281c" stroke="#2b180e" stroke-width="1.2"/>
+  <rect x="-12" y="-4" width="24" height="17" rx="8" fill="#6daefb" stroke="#fff4dd" stroke-width="1.2"/>
+  <ellipse cx="0" cy="7" rx="13" ry="7.5" fill="#6daefb" stroke="#4b2b20" stroke-width="1.3"/>
+  <ellipse cx="0" cy="-8" rx="11" ry="10" fill="#6daefb" stroke="#fff0d1" stroke-width="2"/>
+  <ellipse cx="0" cy="-8" rx="10" ry="9" fill="url(#tokenEnamel)"/>
+  <ellipse cx="-3.3" cy="-10" rx="4.8" ry="3" fill="#fff9df" opacity=".65"/>
+  <circle cx="0" cy="-8" r="2.5" fill="#fff1cf" opacity=".6"/>
+  
+  
+</g><g class="piece-handle" transform="translate(288.5 338.6)">
+  <ellipse class="piece-floor-shadow" cx="0" cy="16" rx="17" ry="6" fill="#2d1a10" opacity=".34"/>
+  <circle class="piece-halo" cx="0" cy="0" r="23" fill="none" stroke="#604129" stroke-width="1.5"/>
+  <rect x="-13" y="-1" width="26" height="17" rx="8" fill="#43281c" stroke="#2b180e" stroke-width="1.2"/>
+  <rect x="-12" y="-4" width="24" height="17" rx="8" fill="#55c77f" stroke="#fff4dd" stroke-width="1.2"/>
+  <ellipse cx="0" cy="7" rx="13" ry="7.5" fill="#55c77f" stroke="#4b2b20" stroke-width="1.3"/>
+  <ellipse cx="0" cy="-8" rx="11" ry="10" fill="#55c77f" stroke="#fff0d1" stroke-width="2"/>
+  <ellipse cx="0" cy="-8" rx="10" ry="9" fill="url(#tokenEnamel)"/>
+  <ellipse cx="-3.3" cy="-10" rx="4.8" ry="3" fill="#fff9df" opacity=".65"/>
+  <circle cx="0" cy="-8" r="2.5" fill="#fff1cf" opacity=".6"/>
+  
+  
+</g><g class="piece-handle" transform="translate(62 152.5)">
+  <ellipse class="piece-floor-shadow" cx="0" cy="16" rx="17" ry="6" fill="#2d1a10" opacity=".34"/>
+  <circle class="piece-halo" cx="0" cy="0" r="23" fill="none" stroke="#604129" stroke-width="1.5"/>
+  <rect x="-13" y="-1" width="26" height="17" rx="8" fill="#43281c" stroke="#2b180e" stroke-width="1.2"/>
+  <rect x="-12" y="-4" width="24" height="17" rx="8" fill="#55c77f" stroke="#fff4dd" stroke-width="1.2"/>
+  <ellipse cx="0" cy="7" rx="13" ry="7.5" fill="#55c77f" stroke="#4b2b20" stroke-width="1.3"/>
+  <ellipse cx="0" cy="-8" rx="11" ry="10" fill="#55c77f" stroke="#fff0d1" stroke-width="2"/>
+  <ellipse cx="0" cy="-8" rx="10" ry="9" fill="url(#tokenEnamel)"/>
+  <ellipse cx="-3.3" cy="-10" rx="4.8" ry="3" fill="#fff9df" opacity=".65"/>
+  <circle cx="0" cy="-8" r="2.5" fill="#fff1cf" opacity=".6"/>
+  
+  
+</g>
+<g class="piece-handle selected" transform="translate(278.9 58)">
+  <ellipse class="piece-floor-shadow" cx="0" cy="16" rx="17" ry="6" fill="#2d1a10" opacity=".34"/>
+  <circle class="piece-halo" cx="0" cy="0" r="23" fill="none" stroke="#ffe4a1" stroke-width="4" stroke-dasharray="7 4"/>
+  <rect x="-13" y="-1" width="26" height="17" rx="8" fill="#43281c" stroke="#2b180e" stroke-width="1.2"/>
+  <rect x="-12" y="-4" width="24" height="17" rx="8" fill="#eca14d" stroke="#fff4dd" stroke-width="1.2"/>
+  <ellipse cx="0" cy="7" rx="13" ry="7.5" fill="#eca14d" stroke="#4b2b20" stroke-width="1.3"/>
+  <ellipse cx="0" cy="-8" rx="11" ry="10" fill="#eca14d" stroke="#fff0d1" stroke-width="2"/>
+  <ellipse cx="0" cy="-8" rx="10" ry="9" fill="url(#tokenEnamel)"/>
+  <ellipse cx="-3.3" cy="-10" rx="4.8" ry="3" fill="#fff9df" opacity=".65"/>
+  <circle cx="0" cy="-8" r="2.5" fill="#fff1cf" opacity=".6"/>
+  <g><circle cx="15" cy="-14" r="10.5" fill="#33251d" stroke="#ffdd94" stroke-width="1.8"/><text x="15" y="-10" text-anchor="middle" font-size="11" font-weight="900" fill="#ffe7b9">2</text></g>
+  <g class="selected-piece-label"><rect x="-27" y="-40" width="54" height="19" rx="8" fill="#55301c" stroke="#ffdc8f" stroke-width="1.4"/><text x="0" y="-27" text-anchor="middle" font-size="11">선택한 말</text></g>
+</g>
+<g class="board-target" role="button" tabindex="0" aria-label="강조 표시된 목적지로 이동">
+  <circle class="target-waves" cx="182.2" cy="128" r="30" fill="#ffe4a3" opacity=".2"/>
+  <circle class="target-outer" cx="182.2" cy="128" r="23" fill="#f8d58f" stroke="#fff4cc" stroke-width="2.7" stroke-dasharray="5 4"/>
+  <circle cx="182.2" cy="128" r="17" fill="#5c3c27" stroke="#ffc864" stroke-width="2.2"/>
+  <text x="182.2" y="132.5" text-anchor="middle" font-size="10.5" font-weight="900" fill="#fff1c8">이동</text>
+</g>
+</svg>
+    </div></div>
+    <div class="board-cap"><span>✦ 모 자리(5·10·15·20)에 정확히 정차하면 협문 지름길</span><span>말 선택 → 황금색 목적지 클릭</span></div>
+    <div class="map-sep"></div>
+    <div class="throw-top"><div><div class="throw-title">✦ 달빛 멍석 · 윷 던지기</div><div class="throw-desc">네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙</div></div><div style="font-size:11px;color:#eac78f;font-weight:850">말 이동 중</div></div>
+<div class="throw-sandbox cinematic-throw">
+  <div class="throw-etched-cloud throw-etched-cloud-left" aria-hidden="true">☁</div>
+  <div class="throw-etched-cloud throw-etched-cloud-right" aria-hidden="true">☁</div>
+  <div class="throw-ripple"></div>
+  <svg class="mat-svg mat-sticks" viewBox="0 0 690 160" preserveAspectRatio="xMidYMid meet" aria-label="멍석 위의 윷가락 네 개">
+   <defs>
+    <radialGradient id="matGlow" cx="50%" cy="55%" r="60%"><stop offset="0" stop-color="#a27649" stop-opacity=".55"/><stop offset=".7" stop-color="#5b3522" stop-opacity=".53"/><stop offset="1" stop-color="#211710" stop-opacity=".24"/></radialGradient>
+    <linearGradient id="yutWoodFace" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff2bc"/><stop offset=".27" stop-color="#eaba77"/><stop offset=".65" stop-color="#bc7d44"/><stop offset="1" stop-color="#8e512b"/></linearGradient>
+    <linearGradient id="yutWoodBack" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ffe6ac"/><stop offset=".4" stop-color="#eec48a"/><stop offset="1" stop-color="#b67f4c"/></linearGradient>
+   </defs>
+   <ellipse cx="329" cy="85" rx="268" ry="60" fill="#261510" opacity=".38"/>
+   <rect x="65" y="7" width="520" height="136" rx="56" class="throw-mat-boundary" fill="url(#matGlow)" stroke="#d2a86b" stroke-width="3.3" stroke-dasharray="4 4"/>
+   <rect x="73" y="15" width="504" height="120" rx="50" fill="none" stroke="#ffe0aa" stroke-width="1.1" opacity=".65"/>
+   <ellipse cx="325" cy="75" rx="194" ry="54" fill="none" stroke="#f6cb79" stroke-width="1.3" stroke-dasharray="4 11" opacity=".58"/>
+   <ellipse cx="325" cy="75" rx="164" ry="44" fill="none" stroke="#f5c66b" stroke-width="1.7" opacity=".48" class="throw-energy-circle"/>
+   <ellipse cx="325" cy="76" rx="133" ry="39" fill="none" stroke="#ffe1a0" stroke-width="1.3" stroke-dasharray="7 7" opacity=".43"/>
+   <text x="108" y="78" class="mat-label">DALBIT</text><text x="546" y="78" text-anchor="end" class="mat-label">YUT</text>
+   <g class="sticks-shadow"><g transform="translate(226 78)" class="yutstick">
+   <g transform="rotate(-20)"><ellipse class="stick-shadow" cx="3" cy="14" rx="43" ry="9" fill="#24130d" opacity=".36"/></g>
+   <g class="stick-flight"><g class="stick-arc"><g transform="rotate(-20)">
+    <rect x="-44" y="-12" width="88" height="27" rx="10" fill="#3e1b13" stroke="#ffe5a2" stroke-width="1.5"/>
+    <path d="M-41 -8L-37 -14H33L41 -8H-41Z" fill="#f5c985" stroke="#ffe5b3" stroke-width="1"/>
+    <rect x="-41" y="-10" width="82" height="23" rx="8" fill="url(#yutWoodFace)" stroke="#fce2a5" stroke-width="1.2"/>
+    <path d="M-36 -5Q-9 -7 37 -4M-36 5Q0 3 34 6M-20 -9Q-24 2 -18 12M13 -9Q17 -1 13 12" stroke="#7a3b20" opacity=".22" stroke-width="1.3" fill="none"/>
+    <g stroke="#502b21" stroke-width="2.7" stroke-linecap="round"><path d="M-27 -5l8 10 M-19 -5l-8 10"/><path d="M-11 -5l8 10 M-3 -5l-8 10"/><path d="M5 -5l8 10 M13 -5l-8 10"/></g>
+    <path d="M-31 -7L23 -7" fill="none" stroke="#fff8d7" stroke-width="1.3" opacity=".56"/>
+    <circle cx="33" cy="0" r="3.6" fill="#b64b39" stroke="#f8e2a8" stroke-width="1"/>
+   </g></g></g></g><g transform="translate(299 88)" class="yutstick">
+   <g transform="rotate(-1)"><ellipse class="stick-shadow" cx="3" cy="14" rx="43" ry="9" fill="#24130d" opacity=".36"/></g>
+   <g class="stick-flight"><g class="stick-arc"><g transform="rotate(-1)">
+    <rect x="-44" y="-12" width="88" height="27" rx="10" fill="#3e1b13" stroke="#ffe5a2" stroke-width="1.5"/>
+    <path d="M-41 -8L-37 -14H33L41 -8H-41Z" fill="#f5c985" stroke="#ffe5b3" stroke-width="1"/>
+    <rect x="-41" y="-10" width="82" height="23" rx="8" fill="url(#yutWoodFace)" stroke="#fce2a5" stroke-width="1.2"/>
+    <path d="M-36 -5Q-9 -7 37 -4M-36 5Q0 3 34 6M-20 -9Q-24 2 -18 12M13 -9Q17 -1 13 12" stroke="#7a3b20" opacity=".22" stroke-width="1.3" fill="none"/>
+    <g stroke="#502b21" stroke-width="2.7" stroke-linecap="round"><path d="M-27 -5l8 10 M-19 -5l-8 10"/><path d="M-11 -5l8 10 M-3 -5l-8 10"/><path d="M5 -5l8 10 M13 -5l-8 10"/></g>
+    <path d="M-31 -7L23 -7" fill="none" stroke="#fff8d7" stroke-width="1.3" opacity=".56"/>
+    
+   </g></g></g></g><g transform="translate(372 78)" class="yutstick">
+   <g transform="rotate(18)"><ellipse class="stick-shadow" cx="3" cy="14" rx="43" ry="9" fill="#24130d" opacity=".36"/></g>
+   <g class="stick-flight"><g class="stick-arc"><g transform="rotate(18)">
+    <rect x="-44" y="-12" width="88" height="27" rx="10" fill="#3e1b13" stroke="#ffe5a2" stroke-width="1.5"/>
+    <path d="M-41 -8L-37 -14H33L41 -8H-41Z" fill="#f5c985" stroke="#ffe5b3" stroke-width="1"/>
+    <rect x="-41" y="-10" width="82" height="23" rx="8" fill="url(#yutWoodFace)" stroke="#fce2a5" stroke-width="1.2"/>
+    <path d="M-36 -5Q-9 -7 37 -4M-36 5Q0 3 34 6M-20 -9Q-24 2 -18 12M13 -9Q17 -1 13 12" stroke="#7a3b20" opacity=".22" stroke-width="1.3" fill="none"/>
+    <g stroke="#502b21" stroke-width="2.7" stroke-linecap="round"><path d="M-27 -5l8 10 M-19 -5l-8 10"/><path d="M-11 -5l8 10 M-3 -5l-8 10"/><path d="M5 -5l8 10 M13 -5l-8 10"/></g>
+    <path d="M-31 -7L23 -7" fill="none" stroke="#fff8d7" stroke-width="1.3" opacity=".56"/>
+    
+   </g></g></g></g><g transform="translate(445 88)" class="yutstick">
+   <g transform="rotate(37)"><ellipse class="stick-shadow" cx="3" cy="14" rx="43" ry="9" fill="#24130d" opacity=".36"/></g>
+   <g class="stick-flight"><g class="stick-arc"><g transform="rotate(37)">
+    <rect x="-44" y="-12" width="88" height="27" rx="10" fill="#3e1b13" stroke="#ffe5a2" stroke-width="1.5"/>
+    <path d="M-41 -8L-37 -14H33L41 -8H-41Z" fill="#f5c985" stroke="#ffe5b3" stroke-width="1"/>
+    <rect x="-41" y="-10" width="82" height="23" rx="8" fill="url(#yutWoodBack)" stroke="#fce2a5" stroke-width="1.2"/>
+    <path d="M-36 -5Q-9 -7 37 -4M-36 5Q0 3 34 6M-20 -9Q-24 2 -18 12M13 -9Q17 -1 13 12" stroke="#7a3b20" opacity=".22" stroke-width="1.3" fill="none"/>
+    <path d="M-24 0H23" stroke="#8b532e" stroke-width="2.7" stroke-linecap="round"/>
+    <path d="M-31 -7L23 -7" fill="none" stroke="#fff8d7" stroke-width="1.3" opacity=".56"/>
+    
+   </g></g></g></g></g>
+  </svg>
+  <div class="throw-stage-caption" aria-hidden="true"><span>✦</span><span>윷 결과를 확인하고 내 말을 선택하세요</span><span>✦</span></div>
+  <div class="result-orb visible" aria-live="polite"><span class="result-small">윷 결과</span><strong>걸</strong><span class="result-small">말을 이동하세요</span></div>
+</div>
+    <div class="throw-actions"><button class="primary-action throw-main-button" disabled><span class="throw-icon">♢</span>말을 이동해 주세요<span class="button-ornament">❖</span></button><button class="sub-action" disabled>낙 시연</button></div>
+   </section>
+   <aside class="panel right-panel">
+    <div class="action-section"><div class="phase-badge">✦ 직접 말 이동</div>
+     <h2 class="step-title">이동 경로를 선택하세요</h2><p class="step-desc">결과 선택 → 말 선택 → 목적지 클릭</p>
+     <div class="move-steps"><div class="move-step is-done"><small>01</small><b>윷 결과</b></div><div class="move-step"><small>02</small><b>말 선택</b></div><div class="move-step is-current"><small>03</small><b>도착점</b></div></div>
+     <div class="results-caption"><span>사용할 윷 결과</span><span>2개 남음</span></div>
+     <div class="results"><button class="roll-pill active">걸<small>3칸</small></button><button class="roll-pill">개<small>2칸</small></button></div>
+     <div class="manual-block is-ready"><div class="manual-title">✦ 이동 경로를 선택하세요</div>
+      <div class="route-buttons"><button class="route-btn">바깥 돌담길 유지</button><button class="route-btn active">① 첫모문 진입</button></div>
+      <p class="target-help">첫모문을 지나 안쪽 회랑 18번 자리로 이동합니다. 윷판의 금빛 도착점을 누르세요.</p>
+      <button class="primary-action" style="width:100%;min-height:44px;font-size:13px;margin-top:11px">✦ 걸 · 선택한 말 이동 확정</button></div>
+     <div class="spiral-facts"><div><small>기본 경로</small><b>25</b><small>칸</small></div><div><small>최단 경로</small><b>12</b><small>칸</small></div><div><small>협문</small><b>4</b><small>곳</small></div></div>
+     <div class="gate-legend"><span><i style="background:#a33c3d"></i>첫모문 · 5번 → 17번 <small style="color:#cdb08c">(외곽 돌담문)</small></span><span><i style="background:#395987"></i>뒷모문 · 10번 → 21번 <small style="color:#cdb08c">(이끼 중문)</small></span><span><i style="background:#b7833c"></i>찌모문 · 15번 → 23번 <small style="color:#cdb08c">(안뜰 협문)</small></span><span><i style="background:#3f7053"></i>넷모문 · 20번 → 정자 <small style="color:#cdb08c">(정자 다리)</small></span></div>
+    </div>
+    <div class="log-section"><div class="side-section-title">게임 기록<span>LIVE</span></div><div class="log-list"><div class="log-line"><div class="log-icon">🐕</div><div class="log-content"><b>나</b><span>모! 첫모(5)에 정확히 정차 · 한 번 더 던집니다.</span></div></div><div class="log-line"><div class="log-icon">🐯</div><div class="log-content"><b>초록 AI</b><span>넷모문을 지나 달빛정자에 완주했습니다.</span></div></div><div class="log-line"><div class="log-icon">🐰</div><div class="log-content"><b>청월 AI</b><span>외곽 돌담길 13번 자리로 이동했습니다.</span></div></div><div class="log-line"><div class="log-icon">✦</div><div class="log-content"><b>알림</b><span>돌담 나선정원 윷놀이가 시작되었습니다.</span></div></div></div></div>
+   </aside>
+  </main>
+  <div class="footer-copy">DALBIT YUT · 돌담 나선정원 시안 · 실제 게임 규칙/그래프에는 아직 적용되지 않은 정적 미리보기</div>
+ </div>
+</div></div>
+<div class="preview-ribbon"><b>미리보기</b><span>정적 시안 화면입니다 · 버튼은 동작하지 않습니다</span><a href="map-concepts/index.html">← 지도첩</a></div>
+</body>
+</html>
