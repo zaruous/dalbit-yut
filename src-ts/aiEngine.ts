@@ -2,7 +2,7 @@ import * as E from './gameEngine.js';
 import * as M from './mapEngine.js';
 import type {GameState, GamePiece, MoveOption, MoveResolution} from './gameEngine.js';
 
-const graphs={S:M.makeGraph('S'),A:M.makeGraph('A'),B:M.makeGraph('B')};
+const graphs={S:M.makeGraph('S'),A:M.makeGraph('A'),B:M.makeGraph('B'),G:M.makeGraph('G')};
 const distances=new Map<string,number>();
 
 /** Shortest forward distance, including choices at future junction stops. */

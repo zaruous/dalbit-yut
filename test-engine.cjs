@@ -118,7 +118,7 @@ stack=r.game;stack.current=0;stack.phase='move';stack.rolls=[{id:'s',value:1}];
 r=E.resolveMove(stack,E.moveOptions(stack,'p0-0','s')[0]);
 check(r.meta.moved===2,'Stack travels together');
 let games=0;
-for(const board of ['S','A','B'])for(const count of [2,3,4])for(let seed=0;seed<25;seed++){
+for(const board of ['S','A','B','G'])for(const count of [2,3,4])for(let seed=0;seed<25;seed++){
  let state=E.createGame({mode:'local',count,board}),steps=0;
  while(state.winner===null&&steps++<4500){
   if(state.phase==='roll')state=E.throwResult(state,E.rollSticks(true),false);
@@ -134,6 +134,22 @@ for(const board of ['S','A','B'])for(const count of [2,3,4])for(let seed=0;seed<
  assert(state.winner!==null,'Game did not finish: '+board+'/'+count+'/'+seed+'/'+steps);
  games++;
 }
-console.log('OK: '+checks+' assertions across '+games+' completed games, maps S, A and B');
+const gGraph=M.makeGraph('G');
+check(M.validateGraph(gGraph).length===0,'Spiral graph G validates cleanly');
+check(gGraph.outerIds.length===25&&Object.keys(gGraph.xy).length===30,'Spiral graph has 25 outer, 4 gates, and 1 center');
+let gPiece=M.initialState();
+gPiece=M.movePiece(gGraph,gPiece,5);
+check(gPiece.node==='O5','Five steps reach O5 on G');
+check(M.movePiece(gGraph,gPiece,2,'shortcut').node==='O17','Shortcut from O5 passes G0 to O17');
+check(M.movePiece(gGraph,gPiece,1,'outer').node==='O6','Outer choice from O5 goes to O6');
+gPiece=M.movePiece(gGraph,gPiece,2,'shortcut');
+gPiece=M.movePiece(gGraph,gPiece,3);
+check(gPiece.node==='O20','Three steps from O17 reach O20');
+gPiece=M.movePiece(gGraph,gPiece,2,'shortcut');
+check(gPiece.node==='C','Shortcut from O20 passes G3 to center C');
+check(M.movePiece(gGraph,gPiece,1).node==='FIN','One step from C finishes on G');
+const gBack=M.movePiece(gGraph,M.movePiece(gGraph,M.initialState(),1),-1);
+check(gBack.node==='C'&&M.movePiece(gGraph,gBack,-1).node==='O24','Backdo from O1 reaches C then O24 on G');
+console.log('OK: '+checks+' assertions across '+games+' completed games, maps S, A, B and G');
 require('./test-standard.cjs');
 require('./test-ai.cjs');

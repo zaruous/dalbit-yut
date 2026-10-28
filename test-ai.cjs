@@ -61,7 +61,7 @@ for(const count of [2,3,4]){
 let games=0,randomState=1234567;
 Math.random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};
 try{
- for(const board of ['S','A','B'])for(const count of [2,3,4])for(let seed=0;seed<4;seed++){
+ for(const board of ['S','A','B','G'])for(const count of [2,3,4])for(let seed=0;seed<4;seed++){
   let game=E.createGame({board,count,mode:'spectate'}),steps=0;
   while(game.winner===null&&steps++<3000){
    if(game.phase==='roll'){game=E.throwResult(game,E.rollSticks(true),false);continue;}

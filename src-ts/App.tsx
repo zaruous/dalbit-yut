@@ -15,10 +15,26 @@ const FRAG=(children)=>h('div',null,children);
 const cx=(...names)=>names.filter(Boolean).join(' ');
 function coords(g: M.BoardGraph,id: string): M.Point{
  if(id==='WAIT')return g.xy.O0;
- if(id==='FIN')return {x:432,y:406};
+ if(id==='FIN')return g.type==='G'?g.xy.C:{x:432,y:406};
  return g.xy[id]||g.xy.O0;
 }
 function poly(g: M.BoardGraph,nodes: string[]): string{return nodes.map((id,i)=>{const p=coords(g,id);return `${i===0?'M':'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`}).join(' ');}
+function ptsD(pts: ([number,number]|M.Point)[]): string{return pts.map((p,i)=>{const x=Array.isArray(p)?p[0]:p.x,y=Array.isArray(p)?p[1]:p.y;return `${i===0?'M':'L'}${x.toFixed(1)} ${y.toFixed(1)}`;}).join(' ');}
+function wallGroup(d: string,key: string){
+ return h('g',{key,fill:'none',strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true},
+  h('path',{d,stroke:'#7e7262',strokeWidth:13,opacity:.42}),
+  h('path',{d,stroke:'#cbbd9f',strokeWidth:9,strokeDasharray:'11 3',opacity:.75}),
+  h('path',{d,stroke:'#8f826d',strokeWidth:9,strokeDasharray:'1 13',strokeDashoffset:-6,opacity:.55})
+ );
+}
+function gateArch(pt: M.Point,horizontal: boolean,key: string){
+ const [dx,dy]=horizontal?[16,0]:[0,16];
+ const pillar=(px: number,py: number,k: string)=>h('g',{key:k},h('rect',{x:px-5,y:py-5,width:10,height:10,rx:1.5,fill:'#8a7a63',stroke:'#4d3f2f',strokeWidth:.8}),h('path',{d:`M${px-6.5} ${py-4}h13`,stroke:'#3f4a46',strokeWidth:3,strokeLinecap:'round'}));
+ return h('g',{key,'aria-hidden':true},
+  h('rect',{x:pt.x-(horizontal?13:8),y:pt.y-(horizontal?8:13),width:horizontal?26:16,height:horizontal?16:26,fill:'#f2e3c3'}),
+  pillar(pt.x-dx,pt.y-dy,'a'),pillar(pt.x+dx,pt.y+dy,'b')
+ );
+}
 function PieceShape(props: any){
  const {x,y,color,number,selected,available,animated,onClick}=props;
  return h('g',{className:cx('piece-handle',selected&&'selected',available&&'available',animated&&'animated'),transform:`translate(${x} ${y})`,onClick,role:onClick?'button':undefined,tabIndex:onClick?0:undefined,'aria-label':onClick?'말 선택':undefined,onKeyDown:onClick?(ev)=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();onClick();}}:undefined},
@@ -37,10 +53,11 @@ function PieceShape(props: any){
  );
 }
 function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving,burst}: any){
- const graph=M.makeGraph(game.config.board),xy=graph.xy;
+ const graph=M.makeGraph(game.config.board),xy=graph.xy,isSpiral=game.config.board==='G';
  const [home,ne,nw,sw]=graph.cornerIds;
- const outer=[...graph.outerIds,'O0'];
- const routes=game.config.board!=='B' ?
+ const outer=isSpiral?[...graph.outerIds,'C']:[...graph.outerIds,'O0'];
+ const spiralTrackD=isSpiral?ptsD(M.roundedPolyline(M.SPIRAL_LAP,24)):poly(graph,outer);
+ const routes=isSpiral?M.SPIRAL_GATES.map(g=>[g.from,g.id,g.to]):game.config.board!=='B' ?
   [[ne,'NE1','NE2','C','SW1','SW2',sw],[nw,'NW1','NW2','C','SE1','SE2',home]]:
   [[ne,...Array.from({length:9},(_,i)=>`I${i}`),'R1',home],[nw,'W0','I4']];
  const isHuman=!game.players[game.current].ai;
@@ -57,9 +74,22 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
  const highlight=chosenOption&&chosenOption.path.length>1?chosenOption.path:null;
  let staticPath=highlight?highlight.map(id=>coords(graph,id)):[];
  let movedGroups=new Set(moving?moving.meta.groupIds:[]);
+ const spiralForkSet=new Set<string>(M.SPIRAL_GATES.map(g=>g.from));
  const nodes=Object.entries(xy).map(([id,pos])=>{
-  const kind=id===home?'goal':id===ne||id===nw?'fork':id==='C'?'center':id.startsWith('I')?'inner':'normal';
-  const big=kind==='goal'?14:kind==='fork'||kind==='center'?13:game.config.board==='S'?9:8;
+  if(isSpiral&&id==='C'){
+   return h('g',{key:id,className:'board-landmark'},
+    h('circle',{cx:pos.x,cy:pos.y,r:31,fill:'none',stroke:'#b38a51',strokeWidth:1,strokeDasharray:'3 4'}),
+    h('circle',{cx:pos.x,cy:pos.y,r:26,fill:'url(#boardBrass)',stroke:'#73502e'}),
+    h('circle',{cx:pos.x,cy:pos.y,r:23,fill:'url(#nodeObsidian)',stroke:'#deb66f',strokeWidth:1.6}),
+    h('g',{transform:`translate(${pos.x} ${pos.y-4}) scale(.62)`,fill:'none',strokeLinecap:'round',strokeLinejoin:'round'},
+     h('path',{d:'M-26 21h52',stroke:'#e8c98a',strokeWidth:3}),
+     h('path',{d:'M-17 18v-22M17 18v-22',stroke:'#e8c98a',strokeWidth:3.4}),
+     h('path',{d:'M-31 -6Q-15 -12 0 -24q15 12 31 18L22 -2H-22Z',fill:'#f2d79a',stroke:'#fff3cc',strokeWidth:1.4})
+    )
+   );
+  }
+  const kind=isSpiral?(id==='O0'?'goal':spiralForkSet.has(id)?'fork':id.startsWith('G')?'inner':'normal'):(id===home?'goal':id===ne||id===nw?'fork':id==='C'?'center':id.startsWith('I')?'inner':'normal');
+  const big=kind==='goal'?14:kind==='fork'||kind==='center'?13:isSpiral?(id.startsWith('G')?7.5:9):game.config.board==='S'?9:8;
   return h('g',{key:id},
     kind==='goal'||kind==='center'?h('circle',{cx:pos.x,cy:pos.y,r:big+6,fill:'none',stroke:kind==='goal'?'#7fb9a1':'#b38a51',strokeWidth:1,strokeDasharray:'3 4'}):null,
     h('ellipse',{cx:pos.x,cy:pos.y+2,rx:big+1.8,ry:big+1,fill:'#593c21',opacity:.2,pointerEvents:'none'}),
@@ -68,7 +98,7 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
     h('circle',{className:'node-engraving',cx:pos.x,cy:pos.y,r:big-2}),
     kind==='fork'?h('circle',{cx:pos.x,cy:pos.y,r:3.5,fill:'#ba7142'}):null,
     kind==='center'?h('text',{x:pos.x,y:pos.y+3.5,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#f5d99d'},'✦'):null,
-    kind==='goal'?h('text',{x:pos.x,y:pos.y+4,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#f4f3cf'},'집'):null
+    kind==='goal'?h('text',{x:pos.x,y:pos.y+4,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#f4f3cf'},isSpiral?'출':'집'):null
   );
  });
  const tokenViews=groups.map((gr,i)=>{
@@ -92,7 +122,16 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
      h('circle',{className:'invisible-hit',cx:to.x,cy:to.y,r:37})
   );
  })():null;
- const decor=h('g',{className:'board-ink-scenes','aria-hidden':true},
+ const decor=isSpiral?h('g',{className:'board-ink-scenes','aria-hidden':true},
+   h('ellipse',{cx:250,cy:236,rx:78,ry:62,fill:'url(#mossCourt)'}),
+   h('g',{fill:'none',stroke:'#7d6955',strokeWidth:1.2,opacity:.3},
+    h('path',{d:'M196 386q14-10 28 0 12-8 24 0M300 388q12-9 24 0 10-7 20 0'}),
+    h('path',{d:'M118 108q10-14 24-4 9-12 23-2M322 106q12-12 25-2 11-10 22 0'})
+   ),
+   wallGroup(ptsD(M.SPIRAL_OUTER_WALL),'outer-wall'),
+   wallGroup(ptsD(M.SPIRAL_WALL),'inner-wall'),
+   ...M.SPIRAL_GATES.map(g=>gateArch(g.via,g.horizontal,`arch-${g.id}`))
+ ):h('g',{className:'board-ink-scenes','aria-hidden':true},
    h('g',{fill:'none',stroke:'#7d6955',opacity:.32,strokeWidth:2.1,strokeLinejoin:'round'},
       h('path',{d:'M56 217q38-62 66-17 30-57 69-11 27-50 64-11M294 190q23-48 55-17 33-64 78-8',strokeWidth:2.3}),
       h('path',{d:'M80 225q70-23 122-3 M298 223q80-26 134-9',strokeWidth:.9,opacity:.6}),
@@ -110,16 +149,18 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
      h('path',{d:'M65 360q8-20 29 0 9-11 19-6M402 359q10-12 21-3 11-13 24-2'})
    )
  );
- const landmarks=[{id:home,color:'#3f7053'},{id:ne,color:'#395987'},{id:nw,color:'#b7833c'},{id:sw,color:'#a33c3d'}].map(land=>{
-   const pt=xy[land.id];return h('g',{key:'landmark'+land.id,className:'board-landmark'},
-    h('ellipse',{cx:pt.x,cy:pt.y+3,rx:25,ry:24,fill:'#593c21',opacity:.22}),
-    h('circle',{cx:pt.x,cy:pt.y,r:24,fill:'url(#boardBrass)',stroke:'#73502e',strokeWidth:1}),
-    h('circle',{cx:pt.x,cy:pt.y,r:21.5,fill:'#3a2c23',stroke:'#fff0bc',strokeWidth:.8}),
-    h('circle',{cx:pt.x,cy:pt.y,r:18.5,fill:land.color,stroke:'#e1bd7a',strokeWidth:1}),
-    h('circle',{cx:pt.x,cy:pt.y,r:18,fill:'url(#tokenEnamel)'}),
-    ...Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return h('circle',{key:i,cx:pt.x+20*Math.cos(a),cy:pt.y+20*Math.sin(a),r:.55,fill:'#efd599'});})
+ const landmarkDefs=isSpiral?[{id:'O0',color:'#3f7053',r:23},...M.SPIRAL_GATES.map(g=>({id:g.from,color:g.color,r:24}))]:[{id:home,color:'#3f7053',r:24},{id:ne,color:'#395987',r:24},{id:nw,color:'#b7833c',r:24},{id:sw,color:'#a33c3d',r:24}];
+ const landmarks=landmarkDefs.map(land=>{
+   const pt=xy[land.id],r=land.r;return h('g',{key:'landmark'+land.id,className:'board-landmark'},
+    h('ellipse',{cx:pt.x,cy:pt.y+3,rx:r+1,ry:r,fill:'#593c21',opacity:.22}),
+    h('circle',{cx:pt.x,cy:pt.y,r,fill:'url(#boardBrass)',stroke:'#73502e',strokeWidth:1}),
+    h('circle',{cx:pt.x,cy:pt.y,r:r-2.5,fill:'#3a2c23',stroke:'#fff0bc',strokeWidth:.8}),
+    h('circle',{cx:pt.x,cy:pt.y,r:r-5.5,fill:land.color,stroke:'#e1bd7a',strokeWidth:1}),
+    h('circle',{cx:pt.x,cy:pt.y,r:r-6,fill:'url(#tokenEnamel)'}),
+    ...Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return h('circle',{key:i,cx:pt.x+(r-4)*Math.cos(a),cy:pt.y+(r-4)*Math.sin(a),r:.55,fill:'#efd599'});})
    );
  });
+ const spiralArrows=isSpiral?[2,7,12,19,22].map(i=>{const a=xy[`O${i}`],b=xy[`O${i+1}`],ang=Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI;return h('path',{key:`arr-${i}`,d:'M-4-4L1 0-4 4',fill:'none',stroke:'#7a5c3c',strokeWidth:2,opacity:.6,transform:`translate(${(a.x+b.x)/2} ${(a.y+b.y)/2}) rotate(${ang})`});}):[];
  return h('svg',{className:'board-svg',viewBox:'0 0 500 470',shapeRendering:'geometricPrecision',role:'img','aria-label':game.config.board==='S'?'기본 사각형 윷판':`${graph.title} 윷판`},
   h('defs',null,
    h('radialGradient',{id:'paperFill',cx:'.36',cy:'.26',r:'.85'},h('stop',{offset:0,stopColor:'#fff9e9'}),h('stop',{offset:.6,stopColor:'#f1e2c2'}),h('stop',{offset:1,stopColor:'#d6bd92'})),
@@ -130,6 +171,7 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
    h('radialGradient',{id:'nodeJade',cx:'.3',cy:'.2',r:'.9'},h('stop',{offset:0,stopColor:'#a4c6a2'}),h('stop',{offset:.55,stopColor:'#58816a'}),h('stop',{offset:1,stopColor:'#2d5042'})),
    h('radialGradient',{id:'nodeObsidian',cx:'.32',cy:'.22',r:'.85'},h('stop',{offset:0,stopColor:'#73543e'}),h('stop',{offset:.55,stopColor:'#443326'}),h('stop',{offset:1,stopColor:'#2b231e'})),
    h('radialGradient',{id:'tokenEnamel',cx:'.28',cy:'.18',r:'.9'},h('stop',{offset:0,stopColor:'#ffffff',stopOpacity:.55}),h('stop',{offset:.48,stopColor:'#ffffff',stopOpacity:0}),h('stop',{offset:1,stopColor:'#23170c',stopOpacity:.35})),
+   h('radialGradient',{id:'mossCourt',cx:'.5',cy:'.5',r:'.5'},h('stop',{offset:0,stopColor:'#9fb58f',stopOpacity:.55}),h('stop',{offset:1,stopColor:'#9fb58f',stopOpacity:0})),
    h('pattern',{id:'grain',width:37,height:31,patternUnits:'userSpaceOnUse'},
     h('path',{d:'M2 7l5-1m11 17 7-2M29 5l3 1M8 28l4-1',stroke:'#94764b',strokeWidth:.4,opacity:.16}),
     h('path',{d:'M3 8l5-1m11 17 7-2M7 17l9-1',stroke:'#fffef0',strokeWidth:.65,opacity:.6}),
@@ -142,23 +184,31 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
   h('rect',{x:16,y:16,width:468,height:438,rx:3,fill:'url(#boardBrass)',stroke:'#241c13',strokeWidth:1.2}),
   h('rect',{x:21,y:21,width:458,height:428,rx:2,fill:'url(#paperFill)',stroke:'#fff2ca',strokeWidth:1}),
   h('rect',{x:21,y:21,width:458,height:428,rx:2,fill:'url(#grain)'}),
-  h('rect',{x:28,y:28,width:444,height:414,rx:1,fill:'none',stroke:'#aa8b5c',strokeWidth:.65,opacity:.65}),
+  !isSpiral?h('rect',{x:28,y:28,width:444,height:414,rx:1,fill:'none',stroke:'#aa8b5c',strokeWidth:.65,opacity:.65}):null,
   h('g',{className:'board-craft-detail','aria-hidden':true},
    ...[{x:16,y:16,r:0},{x:484,y:16,r:90},{x:484,y:454,r:180},{x:16,y:454,r:270}].map((c,i)=>h('g',{key:i,transform:`translate(${c.x} ${c.y}) rotate(${c.r})`},
     h('path',{d:'M0 29V0h29v5H5v24Z',fill:'url(#boardBrass)',stroke:'#624522',strokeWidth:.6}),
     h('path',{d:'M9 27V9h18M13 23V13h10',fill:'none',stroke:'#a17b43',strokeWidth:.7}),
     h('circle',{cx:2.5,cy:2.5,r:1,fill:'#fff3c6'}))),
-   h('text',{className:'board-signature',x:250,y:39},'月 · 光'),
-   h('text',{className:'board-signature',x:250,y:435},'DALBIT · YUT')
+   !isSpiral?h('text',{className:'board-signature',x:250,y:39},'月 · 光'):null,
+   !isSpiral?h('text',{className:'board-signature',x:250,y:435},'DALBIT · YUT'):null
   ),
   decor,
   ...landmarks,
-  h('path',{d:poly(graph,outer),className:'route-inlay'}),
+  h('path',{d:spiralTrackD,className:'route-inlay'}),
   ...routes.map((r,i)=>h('path',{d:poly(graph,r),key:'inlay'+i,className:'route-inlay'})),
-  h('path',{d:poly(graph,outer),className:'route-line'}),
-  ...routes.map((r,i)=>h('path',{d:poly(graph,r),key:'route'+i,className:'route-inner'})),
+  h('path',{d:spiralTrackD,className:'route-line'}),
+  ...routes.map((r,i)=>h('path',{d:poly(graph,r),key:'route'+i,className:'route-inner',strokeDasharray:isSpiral?'5 4':undefined})),
+  ...spiralArrows,
   ...nodes,
-  h('g',{className:'board-label'},
+  isSpiral?h('g',{className:'board-label'},
+   h('text',{x:xy.O0.x,y:xy.O0.y-34,textAnchor:'middle',className:'board-label'},'출발 어귀'),
+   h('text',{x:xy.O5.x+30,y:xy.O5.y+4,textAnchor:'start',className:'board-label'},'첫모 ①'),
+   h('text',{x:xy.O10.x+4,y:xy.O10.y+38,textAnchor:'start',className:'board-label'},'뒷모 ②'),
+   h('text',{x:xy.O15.x+29,y:xy.O15.y+4,textAnchor:'start',className:'board-label'},'찌모 ③'),
+   h('text',{x:xy.O20.x,y:xy.O20.y-30,textAnchor:'middle',className:'board-label'},'넷모 ④'),
+   h('text',{x:250,y:281,textAnchor:'middle',className:'board-label'},'달빛정자 · 완주')
+  ):h('g',{className:'board-label'},
    h('text',{x:xy[home].x,y:xy[home].y+35,textAnchor:'middle',className:'board-label'},'출발 · 완주'),
    h('text',{x:xy[ne].x,y:xy[ne].y-30,textAnchor:'middle',className:'board-label'},'갈림길 ①'),
    h('text',{x:xy[nw].x,y:xy[nw].y-30,textAnchor:'middle',className:'board-label'},'갈림길 ②'),
@@ -232,9 +282,11 @@ function ThrowMat({sticks,stage,result,watching=false}: {sticks: LandingStick[],
 function initialSticks(): LandingStick[]{return [0,1,2,3].map((i)=>({id:i,x:226+i*73,y:78+(i%2)*10,angle:-20+i*19,front:i%2===0,nak:false,delay:0}));}
 function initialConfig(): GameConfig{
  const query=new URLSearchParams(window.location.search);
+ const boardParam=query.get('board');
+ const board: M.BoardType=boardParam==='A'||boardParam==='B'||boardParam==='G'?boardParam:'S';
  return query.get('watch')==='1'
-  ?{mode:'spectate',count:[2,3,4].includes(Number(query.get('players')))?Number(query.get('players')):4,board:query.get('board')==='A'||query.get('board')==='B'?query.get('board') as M.BoardType:'S',backdo:true}
-  :{mode:'ai',count:2,board:'S',backdo:true};
+  ?{mode:'spectate',count:[2,3,4].includes(Number(query.get('players')))?Number(query.get('players')):4,board,backdo:true}
+  :{mode:'ai',count:2,board,backdo:true};
 }
 const INITIAL_CONFIG=initialConfig();
 
@@ -411,9 +463,9 @@ render(){
    ),
    h('section',{className:'panel board-panel'},
     h('div',{className:'board-top'},h('div',{className:'board-heading'},h('strong',null,`✿ ${graph.title}`),h('small',null,graph.subtitle)),
-     h('div',{className:'board-switch'},...M.BOARD_TYPES.map(key=>h('button',{key,className:cx('board-choice',g.config.board===key&&'active'),'aria-pressed':g.config.board===key,onClick:()=>{if(g.config.board!==key)this.startGame({...g.config,board:key});}},key==='S'?'기본판':key==='A'?'팔각형':'이중 링')))),
+     h('div',{className:'board-switch'},...M.BOARD_TYPES.map(key=>h('button',{key,className:cx('board-choice',g.config.board===key&&'active'),'aria-pressed':g.config.board===key,onClick:()=>{if(g.config.board!==key)this.startGame({...g.config,board:key});}},key==='S'?'기본판':key==='A'?'팔각형':key==='B'?'이중 링':'나선정원')))),
     h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:selectedOpt?.choice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
-    h('div',{className:'board-cap'},h('span',null,'✦ 갈림길에 정확히 정차하면 지름길'),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
+    h('div',{className:'board-cap'},h('span',null,g.config.board==='G'?'✦ 모 자리(5·10·15·20)에 정확히 정차하면 협문 지름길':'✦ 갈림길에 정확히 정차하면 지름길'),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
     h('div',{className:'map-sep'}),
     h('div',{className:'throw-top'},h('div',null,h('div',{className:'throw-title'},'✦ 달빛 멍석 · 윷 던지기'),h('div',{className:'throw-desc'},'네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')),h('div',{style:{fontSize:11,color:'#eac78f',fontWeight:850}},watchPaused?busy?'동작 마무리 중':'관전 일시정지':g.phase==='move'?'말 이동 중':`${g.players[g.current].label} 차례`)),
     h(ThrowMat,{sticks:s.sticks,stage:s.stage,result:s.result,watching}),
@@ -447,7 +499,7 @@ render(){
     h('label',{className:'form-label'},'게임 모드'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[['ai','나 + AI 대전'],['local','함께하기'],['spectate','AI 관전']].map(([value,text])=>h('button',{key:value,className:cx('setting-btn',s.setup.mode===value&&'active'),'aria-pressed':s.setup.mode===value,onClick:()=>this.setState({setup:{...s.setup,mode:value}})},text))),
     h('label',{className:'form-label'},s.setup.mode==='spectate'?'참가 AI 수':s.setup.mode==='ai'?'AI 상대 수':'총 참가 인원'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[2,3,4].map(n=>h('button',{key:n,className:cx('setting-btn',s.setup.count===n&&'active'),'aria-pressed':s.setup.count===n,onClick:()=>this.setState({setup:{...s.setup,count:n}})},s.setup.mode==='spectate'?`AI ${n}명`:s.setup.mode==='ai'?`AI ${n-1}명`:`${n}명`))),
     h('p',{className:'setup-composition',role:'status'},s.setup.mode==='spectate'?`AI ${s.setup.count}명 자동 대전 · 관전 전용`:s.setup.mode==='ai'?`나 1명 + AI ${s.setup.count-1}명 · 총 ${s.setup.count}인 대전`:`사람 ${s.setup.count}명 · 로컬 대전`),
-    h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...M.BOARD_TYPES.map(value=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),'aria-pressed':s.setup.board===value,onClick:()=>this.setState({setup:{...s.setup,board:value}})},M.boardMeta(value).title))),
+    h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(2,1fr)'}},...M.BOARD_TYPES.map(value=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),'aria-pressed':s.setup.board===value,onClick:()=>this.setState({setup:{...s.setup,board:value}})},M.boardMeta(value).title))),
     h('label',{className:'form-label',htmlFor:'music-volume'},`배경음악 · 달빛 노을 머문 툇마루 (${Math.round(s.musicVolume*100)}%)`),
     h('input',{id:'music-volume',type:'range',min:0,max:100,step:1,value:Math.round(s.musicVolume*100),'aria-label':'배경음악 음량',onChange:(ev)=>this.setState({musicVolume:Number(ev.target.value)/100}),style:{width:'100%',accentColor:'#e5c17d'}}),
     h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 직접 말 선택과 목적지 확정이 기본입니다.'),
