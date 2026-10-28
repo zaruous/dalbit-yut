@@ -246,6 +246,7 @@ interface GameUIState {
  selectedChoice: MoveChoice|null;
  settingsOpen: boolean;
  sound: boolean;
+ musicVolume: number;
  aiPaused: boolean;
  stage: 'idle'|'throwing'|'settled';
  sticks: LandingStick[];
@@ -259,11 +260,36 @@ class App extends React.Component {
   aiTimer: ReturnType<typeof setTimeout>|null = null;
   toastTimer: ReturnType<typeof setTimeout>|null = null;
   audioCtx: AudioContext|null = null;
+  music: HTMLAudioElement|null = null;
+  audioUnlocked = false;
   timers: ReturnType<typeof setTimeout>[] = [];
 
-componentDidMount(){this.checkAI();};
-componentDidUpdate(){this.checkAI();};
-componentWillUnmount(){this.destroyed=true;this.timers.forEach(clearTimeout);if(this.aiTimer!==null)clearTimeout(this.aiTimer);};
+componentDidMount(){
+ this.music=document.getElementById('dalbit-bgm') as HTMLAudioElement|null;
+ document.addEventListener('pointerdown',this.unlockAudio,true);
+ document.addEventListener('keydown',this.unlockAudio,true);
+ document.addEventListener('visibilitychange',this.syncMusic);
+ this.checkAI();
+};
+componentDidUpdate(){this.syncMusic();this.checkAI();};
+componentWillUnmount(){
+ this.destroyed=true;this.timers.forEach(clearTimeout);if(this.aiTimer!==null)clearTimeout(this.aiTimer);
+ document.removeEventListener('pointerdown',this.unlockAudio,true);
+ document.removeEventListener('keydown',this.unlockAudio,true);
+ document.removeEventListener('visibilitychange',this.syncMusic);
+ this.music?.pause();
+ if(this.audioCtx)void this.audioCtx.close().catch(()=>{});
+};
+unlockAudio=()=>{
+ this.audioUnlocked=true;this.syncMusic();
+ if(this.state.sound&&this.audioCtx?.state==='suspended')void this.audioCtx.resume().catch(()=>{});
+};
+syncMusic=()=>{
+ const music=this.music;if(!music)return;
+ music.volume=this.state.musicVolume;
+ if(!this.state.sound||!this.audioUnlocked||document.hidden||this.state.musicVolume===0){music.pause();return;}
+ if(music.paused)void music.play().catch(()=>{});
+};
 defer(fn: ()=>void,ms: number){const t=setTimeout(()=>{this.timers=this.timers.filter(x=>x!==t);if(!this.destroyed)fn();},ms);this.timers.push(t);return t;};
 notify(text: string){this.setState({toast:text});if(this.toastTimer!==null)clearTimeout(this.toastTimer);this.toastTimer=this.defer(()=>this.setState({toast:null}),2400);};
 playSound(kind: 'throw'|'nak'|'land'){
@@ -370,7 +396,7 @@ render(){
    h('div',{className:'brand'},h('div',{className:'brand-mark'},h('strong',null,'달빛 윷마당'),h('span',{className:'brand-seal'},'전통')),h('div',{className:'brand-sub'},'한옥 마루에서 즐기는 우리들의 한 판')),
    h('div',{className:'header-right'},h('span',{className:'head-chip'},`제 ${String(g.turn)} 턴`),
     h('button',{className:'header-btn watch-entry',onClick:()=>this.setState({settingsOpen:true,setup:{...g.config,mode:'spectate',count:watching?g.players.length:4}})},watching?'관전 설정':'AI 관전'),
-    h('button',{className:'header-btn icon-button','aria-label':s.sound?'소리 끄기':'소리 켜기',title:s.sound?'소리 끄기':'소리 켜기',onClick:()=>this.setState({sound:!s.sound})},s.sound?'♫':'♬'),
+    h('button',{className:'header-btn icon-button','aria-label':s.sound?'소리 끄기':'소리 켜기','aria-pressed':s.sound,title:s.sound?'소리 끄기':'소리 켜기',onClick:()=>this.setState({sound:!s.sound})},s.sound?'♫':'♬'),
     h('button',{className:'header-btn icon-button','aria-label':'새 게임 설정',title:'새 게임 설정',onClick:()=>this.setState({settingsOpen:true})},'⚙'))
   ),
   h('main',{className:'layout'},
@@ -422,6 +448,8 @@ render(){
     h('label',{className:'form-label'},s.setup.mode==='spectate'?'참가 AI 수':s.setup.mode==='ai'?'AI 상대 수':'총 참가 인원'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[2,3,4].map(n=>h('button',{key:n,className:cx('setting-btn',s.setup.count===n&&'active'),'aria-pressed':s.setup.count===n,onClick:()=>this.setState({setup:{...s.setup,count:n}})},s.setup.mode==='spectate'?`AI ${n}명`:s.setup.mode==='ai'?`AI ${n-1}명`:`${n}명`))),
     h('p',{className:'setup-composition',role:'status'},s.setup.mode==='spectate'?`AI ${s.setup.count}명 자동 대전 · 관전 전용`:s.setup.mode==='ai'?`나 1명 + AI ${s.setup.count-1}명 · 총 ${s.setup.count}인 대전`:`사람 ${s.setup.count}명 · 로컬 대전`),
     h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...M.BOARD_TYPES.map(value=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),'aria-pressed':s.setup.board===value,onClick:()=>this.setState({setup:{...s.setup,board:value}})},M.boardMeta(value).title))),
+    h('label',{className:'form-label',htmlFor:'music-volume'},`배경음악 · 노을 머문 마당 (${Math.round(s.musicVolume*100)}%)`),
+    h('input',{id:'music-volume',type:'range',min:0,max:100,step:1,value:Math.round(s.musicVolume*100),'aria-label':'배경음악 음량',onChange:(ev)=>this.setState({musicVolume:Number(ev.target.value)/100}),style:{width:'100%',accentColor:'#e5c17d'}}),
     h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 직접 말 선택과 목적지 확정이 기본입니다.'),
     h('button',{className:'primary-action',onClick:()=>this.startGame(s.setup)},s.setup.mode==='spectate'?`AI ${s.setup.count}명 관전 시작`:s.setup.mode==='ai'?`나 + AI ${s.setup.count-1}명으로 시작`:`사람 ${s.setup.count}명으로 시작`)
    )):null,
@@ -429,7 +457,7 @@ render(){
  ));
 };
 
-state: GameUIState={game:E.createGame(INITIAL_CONFIG),setup:{...INITIAL_CONFIG},selectedRoll:null,selectedPiece:null,selectedChoice:null,settingsOpen:false,sound:true,aiPaused:false,stage:'idle',sticks:initialSticks(),result:null,moving:null,burst:null,toast:null};
+state: GameUIState={game:E.createGame(INITIAL_CONFIG),setup:{...INITIAL_CONFIG},selectedRoll:null,selectedPiece:null,selectedChoice:null,settingsOpen:false,sound:true,musicVolume:0.3,aiPaused:false,stage:'idle',sticks:initialSticks(),result:null,moving:null,burst:null,toast:null};
 
 }
 const mount=document.getElementById('root');

@@ -5,7 +5,7 @@ const out=path.resolve(root,process.argv[2]||process.env.OUT||'preview.html');
 // Invoke the JS entry point directly: .bin/tsc is a shell shim on Windows.
 const tsc=require.resolve('typescript/bin/tsc');
 execFileSync(process.execPath,[tsc,'-p','tsconfig.static.json'],{cwd:root,stdio:'inherit'});
-const MIME={'.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg'};
+const MIME={'.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.mp3':'audio/mpeg'};
 const dataUri=f=>{const p=path.join(root,'public',f);return fs.existsSync(p)&&MIME[path.extname(f)]?`data:${MIME[path.extname(f)]};base64,${fs.readFileSync(p).toString('base64')}`:null};
 const inlineUrls=css=>css.replace(/url\((['"]?)\/([^'")]+)\1\)/g,(m,q,f)=>{const d=dataUri(f);return d?`url("${d}")`:m});
 const safe=s=>s.replace(/<\/script/gi,'<\\/script');
@@ -23,7 +23,7 @@ const js=['mapEngine.js','gameEngine.js','aiEngine.js','App.js'].map(wrap).join(
 const head=rd('index.html').match(/<head>([\s\S]*?)<\/head>/)[1]
  .replace(/\s*<link rel="stylesheet"[^>]*>/g,'').replace(/\s*<script[^>]*><\/script>/g,'')
  .replace(/href="\/([^"]+)"/g,(m,f)=>{const d=dataUri(f);return d?`href="${d}"`:m});
-const html=`<!doctype html><html lang="ko"><head>${head}<style>${css}</style></head><body><div id="root"></div>
+const html=`<!doctype html><html lang="ko"><head>${head}<style>${css}</style></head><body><audio id="dalbit-bgm" src="${dataUri('audio/hanok-dusk.mp3')}" loop preload="none"></audio><div id="root"></div>
 <script>${safe(rd('public/react.production.min.js'))}</script>
 <script>${safe(rd('public/react-dom.production.min.js'))}</script>
 <script>${safe(js)}</script></body></html>`;
