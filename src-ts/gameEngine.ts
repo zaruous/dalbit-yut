@@ -84,20 +84,35 @@ export function itemUnlockTurn(count: number): number{
  return c*2+1;
 }
 
-function makeItemNodes(board: BoardType,count=3): Record<string, ItemType>{
- const spots=(POUCH_SPOTS[board]||POUCH_SPOTS.S).slice(0,Math.min(6,Math.max(4,count+2)));
- return Object.fromEntries(spots.map((node,i)=>[node,ITEM_TYPES[i%ITEM_TYPES.length]]));
+function shuffled<T>(arr: readonly T[]): T[]{
+ const copy=arr.slice();
+ for(let i=copy.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [copy[i],copy[j]]=[copy[j],copy[i]];
+ }
+ return copy;
+}
+
+function makeItemNodes(board: BoardType,count=3,pieces: GamePiece[]=[]): Record<string, ItemType>{
+ const graph=maps.makeGraph(board);
+ const busy=new Set(pieces.filter(p=>p.node!=='WAIT'&&p.node!=='FIN').map(p=>p.node));
+ const allNodes=Object.keys(graph.xy).filter(id=>id!=='O0'&&!(board==='G'&&id==='C'));
+ const candidates=allNodes.filter(id=>!busy.has(id));
+ const pool=candidates.length>=count+2?candidates:allNodes;
+ const picked=shuffled(pool).slice(0,Math.min(6,Math.max(4,count+2)));
+ const types=shuffled([...ITEM_TYPES,...ITEM_TYPES]);
+ return Object.fromEntries(picked.map((node,i)=>[node,types[i%types.length]]));
 }
 
 export function unlockItemsNow(g: GameState): GameState{
  if(!g.config.itemMode||g.itemsUnlocked)return g;
- const starter: ItemType[]=['key','stone','geumjul','shield'];
+ const starter=shuffled(ITEM_TYPES);
  const players=g.players.map((p,i)=>({
   ...p,
   items:p.items.length<2?[...p.items,{id:newId(),type:starter[i%starter.length]}]:p.items
  }));
- const itemNodes=makeItemNodes(g.config.board,g.config.count);
- return appendLog({...g,players,itemsUnlocked:true,itemNodes},'item',`🎁 중반전 돌입! 참가자 전원에게 전술 패물 1개가 보급되고 윷판에 복주머니 ${Object.keys(itemNodes).length}개가 나타났습니다.`,null);
+ const itemNodes=makeItemNodes(g.config.board,g.config.count,g.pieces);
+ return appendLog({...g,players,itemsUnlocked:true,itemNodes},'item',`🎁 중반전 돌입! 참가자 전원에게 전술 패물 1개가 보급되고 윷판 무작위 거점 ${Object.keys(itemNodes).length}곳에 복주머니가 나타났습니다.`,null);
 }
 
 function createGame(opts: Partial<GameConfig>): GameState{
@@ -177,8 +192,8 @@ function nextTurn(g: GameState,why?: string): GameState{
  if(result.config.itemMode&&!result.itemsUnlocked&&nextTurnNum>=result.itemUnlockTurn){
   result=unlockItemsNow(result);
  }else if(result.config.itemMode&&result.itemsUnlocked&&Object.keys(result.itemNodes).length===0&&(nextTurnNum-1)%result.config.count===0){
-  const refilled=makeItemNodes(result.config.board,result.config.count);
-  result=appendLog({...result,itemNodes:refilled},'item','🎁 새 라운드를 맞아 윷판 위에 복주머니가 다시 채워졌습니다.',null);
+  const refilled=makeItemNodes(result.config.board,result.config.count,result.pieces);
+  result=appendLog({...result,itemNodes:refilled},'item','🎁 새 라운드를 맞아 윷판 무작위 거점에 복주머니가 다시 채워졌습니다.',null);
  }
  return result;
 }

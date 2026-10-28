@@ -192,8 +192,15 @@ shieldGame.phase='move';shieldGame.rolls=[{id:'r-atk',value:3,faces:[true,true,t
 const atkRes=E.resolveMove(shieldGame,E.moveOptions(shieldGame,'p0-0','r-atk')[0]);
 check(atkRes.meta.shieldBlocked&&atkRes.meta.captured===0,'Shield blocks capture');
 check(atkRes.game.pieces[0].node==='O2'&&atkRes.game.pieces[4].node==='O3'&&!atkRes.game.pieces[4].shielded,'Attacker stops at O2 and shield is consumed');
-// 5. Pouch pickup when landing on item node with <2 items
+// 5. Pouch positions are randomized and landing on an item node with <2 items picks it up
+const seenPouchSets=new Set();
+for(let i=0;i<10;i++){
+ const gRand=E.unlockItemsNow(E.createGame({mode:'local',count:2,board:'S',itemMode:true}));
+ seenPouchSets.add(Object.keys(gRand.itemNodes).sort().join(','));
+}
+check(seenPouchSets.size>1,'Item pouch positions are randomized across games');
 let pouchGame=E.unlockItemsNow(E.createGame({mode:'local',count:2,board:'S',itemMode:true}));
+pouchGame.itemNodes={...pouchGame.itemNodes,O3:'key'};
 pouchGame.players[0].items=[];
 pouchGame.phase='move';pouchGame.rolls=[{id:'r-pouch',value:3,faces:[true,true,true,false]}];
 const pouchRes=E.resolveMove(pouchGame,E.moveOptions(pouchGame,'p0-0','r-pouch')[0]);
