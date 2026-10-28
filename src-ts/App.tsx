@@ -92,7 +92,7 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
   }
   const kind=isSpiral?(id==='O0'?'goal':spiralForkSet.has(id)?'fork':id.startsWith('G')?'inner':'normal'):(id===home?'goal':id===ne||id===nw?'fork':id==='C'?'center':id.startsWith('I')?'inner':'normal');
   const big=kind==='goal'?14:kind==='fork'||kind==='center'?13:isSpiral?(id.startsWith('G')?7.5:9):game.config.board==='S'?9:8;
-  const pouchType=game.itemNodes?.[id];
+  const pouchType=game.config.itemMode&&game.itemsUnlocked?game.itemNodes?.[id]:undefined;
   return h('g',{key:id},
     kind==='goal'||kind==='center'?h('circle',{cx:pos.x,cy:pos.y,r:big+6,fill:'none',stroke:kind==='goal'?'#7fb9a1':'#b38a51',strokeWidth:1,strokeDasharray:'3 4'}):null,
     h('ellipse',{cx:pos.x,cy:pos.y+2,rx:big+1.8,ry:big+1,fill:'#593c21',opacity:.2,pointerEvents:'none'}),
@@ -291,9 +291,10 @@ function initialConfig(): GameConfig{
  const query=new URLSearchParams(window.location.search);
  const boardParam=query.get('board');
  const board: M.BoardType=boardParam==='A'||boardParam==='B'||boardParam==='G'?boardParam:'S';
+ const itemMode=query.get('items')==='1';
  return query.get('watch')==='1'
-  ?{mode:'spectate',count:[2,3,4].includes(Number(query.get('players')))?Number(query.get('players')):4,board,backdo:true}
-  :{mode:'ai',count:2,board,backdo:true};
+  ?{mode:'spectate',count:[2,3,4].includes(Number(query.get('players')))?Number(query.get('players')):4,board,backdo:true,itemMode}
+  :{mode:'ai',count:2,board,backdo:true,itemMode};
 }
 const INITIAL_CONFIG=initialConfig();
 
@@ -396,7 +397,7 @@ throwYut(mode: 'safe'|'nak'|'random',ai: boolean){
 };
 activateItem(item: PlayerItem,delta?: -1|1){
  const g=this.state.game,actor=g.players[g.current];
- if(!actor||actor.ai||this.state.moving||this.state.stage==='throwing')return;
+ if(!g.config.itemMode||!g.itemsUnlocked||!actor||actor.ai||this.state.moving||this.state.stage==='throwing')return;
  if(item.type==='geumjul'){
   if(actor.geumjulArmed){this.notify('이미 금줄 부적이 준비되어 있습니다.');return;}
   const next=E.useItem(g,item.id);
@@ -450,11 +451,12 @@ commitMove(option: MoveOption,ai: boolean){
 moveTick(){
  const moving=this.state.moving;if(!moving)return;
  if(moving.step+1<moving.meta.path.length){this.setState({moving:{...moving,step:moving.step+1}},()=>this.defer(()=>this.moveTick(),235));return;}
- const note=moving.meta.shieldBlocked?'🛡️ 호패 방패가 상대 공격을 막아냈습니다!':moving.meta.pickedItem?`🎁 복주머니 획득: ${E.ITEMS[moving.meta.pickedItem].name}!`:moving.meta.captured?'말 잡기! 추가 던지기':moving.meta.joined?'말 업기 성공!':moving.meta.to==='FIN'?'완주했습니다!':'말 이동 완료';
+ const unlockedJustNow=!this.state.game.itemsUnlocked&&moving.resolution.itemsUnlocked;
+ const note=unlockedJustNow?'🎁 중반전 돌입! 전술 패물과 복주머니가 등장했습니다!':moving.meta.shieldBlocked?'🛡️ 호패 방패가 상대 공격을 막아냈습니다!':moving.meta.pickedItem?`🎁 복주머니 획득: ${E.ITEMS[moving.meta.pickedItem].name}!`:moving.meta.captured?'말 잡기! 추가 던지기':moving.meta.joined?'말 업기 성공!':moving.meta.to==='FIN'?'완주했습니다!':'말 이동 완료';
  this.setState({game:moving.resolution,moving:null,stage:'idle',result:null,burst:{node:moving.meta.to,capture:!!moving.meta.captured,joined:!!moving.meta.joined}},()=>{
   this.defer(()=>this.setState({burst:null}),850);
   this.playSound(moving.meta.captured?'nak':'land');
-  if(moving.meta.shieldBlocked||moving.meta.pickedItem||moving.meta.captured||moving.meta.joined||moving.meta.to==='FIN')this.notify(note);
+  if(unlockedJustNow||moving.meta.shieldBlocked||moving.meta.pickedItem||moving.meta.captured||moving.meta.joined||moving.meta.to==='FIN')this.notify(note);
  });
 };
 render(){
@@ -482,7 +484,7 @@ render(){
       h('div',{className:'player-right'},
         p.id===g.current?h('span',{className:'on-turn'},p.ai?'● AI 차례':'● 내 차례'):h('span',{className:'player-tag'},p.ai?'AI':'대기'),
         h('div',{className:'player-status'},done>0?`${done}/4 완주`:`대기 ${ready}개`),
-        p.items.length?h('div',{className:'player-items-mini','aria-label':`보유 패물 ${p.items.length}개`},...p.items.map(it=>h('span',{key:it.id,title:E.ITEMS[it.type].name},E.ITEMS[it.type].icon))):null
+        g.config.itemMode&&p.items.length?h('div',{className:'player-items-mini','aria-label':`보유 패물 ${p.items.length}개`},...p.items.map(it=>h('span',{key:it.id,title:E.ITEMS[it.type].name},E.ITEMS[it.type].icon))):null
       )
     )
   );
@@ -495,26 +497,28 @@ render(){
   return h('button',{key:r.id,className:cx('roll-pill',roll&&roll.id===r.id&&'active'),disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.setState({selectedRoll:r.id,selectedPiece:null,selectedChoice:null})},E.NAMES[r.value],h('small',null,eff===-1?'↶':owner.stoneDelta?`${eff}칸(${owner.stoneDelta>0?'+1':'-1'})`:`${eff}칸`));
  }):h('div',{className:'no-rolls'},g.phase==='roll'?'아직 던진 결과가 없어요.':'윷 던지기 버튼으로 시작하세요.');
  const activeBuffs=[owner.geumjulArmed&&'🌾 금줄 준비됨',owner.keyArmed&&'🔑 돌담 열쇠 활성',owner.stoneDelta!==0&&`🪨 디딤돌(${owner.stoneDelta>0?'+1':'-1'}칸)`].filter(Boolean);
- const itemPouchView=h('div',{className:'tactical-pouch'},
-  h('div',{className:'results-caption'},h('span',null,'전술 패물 주머니'),h('span',null,`${owner.items.length}/2 보유`)),
-  activeBuffs.length?h('div',{className:'active-buffs'},...activeBuffs.map((b,i)=>h('span',{key:i,className:'buff-chip'},b))):null,
-  owner.items.length?h('div',{className:'item-cards'},...owner.items.map(it=>{
-   const meta=E.ITEMS[it.type];
-   if(it.type==='stone'){
-    return h('div',{key:it.id,className:'item-card stone-card',title:meta.summary},
+ const itemPouchView=!g.config.itemMode?null:h('div',{className:'tactical-pouch'},
+  h('div',{className:'results-caption'},h('span',null,'전술 패물 주머니'),h('span',null,g.itemsUnlocked?`${owner.items.length}/2 보유`:`중반 대기 (${g.turn}/${g.itemUnlockTurn}턴)`)),
+  !g.itemsUnlocked?h('div',{className:'no-rolls'},`⏳ ${g.config.count}인 대전 기준 제 ${g.itemUnlockTurn}턴(중반)부터 패물과 복주머니가 등장합니다.`):FRAG([
+   activeBuffs.length?h('div',{name:'buffs',className:'active-buffs'},...activeBuffs.map((b,i)=>h('span',{key:i,className:'buff-chip'},b))):null,
+   owner.items.length?h('div',{className:'item-cards'},...owner.items.map(it=>{
+    const meta=E.ITEMS[it.type];
+    if(it.type==='stone'){
+     return h('div',{key:it.id,className:'item-card stone-card',title:meta.summary},
+      h('span',{className:'item-title'},`${meta.icon} ${meta.name}`),
+      h('div',{className:'stone-actions'},
+       h('button',{className:'stone-btn',disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.activateItem(it,1)},'+1칸'),
+       h('button',{className:'stone-btn',disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.activateItem(it,-1)},'-1칸')
+      )
+     );
+    }
+    const canUse=human&&!s.moving&&(it.type==='geumjul'?!owner.geumjulArmed:it.type==='key'?g.phase==='move'&&!owner.keyArmed:g.pieces.some(p=>p.player===g.current&&p.node!=='WAIT'&&p.node!=='FIN'&&!p.shielded));
+    return h('button',{key:it.id,className:'item-card',disabled:!canUse,onClick:()=>this.activateItem(it),title:meta.summary},
      h('span',{className:'item-title'},`${meta.icon} ${meta.name}`),
-     h('div',{className:'stone-actions'},
-      h('button',{className:'stone-btn',disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.activateItem(it,1)},'+1칸'),
-      h('button',{className:'stone-btn',disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.activateItem(it,-1)},'-1칸')
-     )
+     h('small',null,it.type==='geumjul'?'낙 1회 방어':it.type==='key'?'지나치며 분기':'말 1회 보호')
     );
-   }
-   const canUse=human&&!s.moving&&(it.type==='geumjul'?!owner.geumjulArmed:it.type==='key'?g.phase==='move'&&!owner.keyArmed:g.pieces.some(p=>p.player===g.current&&p.node!=='WAIT'&&p.node!=='FIN'&&!p.shielded));
-   return h('button',{key:it.id,className:'item-card',disabled:!canUse,onClick:()=>this.activateItem(it),title:meta.summary},
-    h('span',{className:'item-title'},`${meta.icon} ${meta.name}`),
-    h('small',null,it.type==='geumjul'?'낙 1회 방어':it.type==='key'?'지나치며 분기':'말 1회 보호')
-   );
-  })):h('div',{className:'no-rolls'},'보유한 패물이 없습니다. 판 위의 복주머니 칸에 정차해 획득하세요.')
+   })):h('div',{className:'no-rolls'},'보유한 패물이 없습니다. 판 위의 복주머니 칸에 정차해 획득하세요.')
+  ])
  );
  return h('div',{className:'app-shell'},
   h('div',{className:'lantern-decor lantern-decor-left','aria-hidden':true}),h('div',{className:'lantern-decor lantern-decor-right','aria-hidden':true}),
@@ -522,10 +526,12 @@ render(){
   h('div',{className:'app-wrap'},
   h('header',{className:'header'},
    h('div',{className:'brand'},h('div',{className:'brand-mark'},h('strong',null,'달빛 윷마당'),h('span',{className:'brand-seal'},'전통')),h('div',{className:'brand-sub'},'한옥 마루에서 즐기는 우리들의 한 판')),
-   h('div',{className:'header-right'},h('span',{className:'head-chip'},`제 ${String(g.turn)} 턴`),
+   h('div',{className:'header-right'},
+    h('span',{className:'head-chip'},`제 ${String(g.turn)} 턴`),
+    h('button',{className:cx('header-btn','watch-entry'),onClick:()=>this.setState({settingsOpen:true,setup:{...g.config}}),title:'일반전 / 아이템전 설정 변경'},g.config.itemMode?'🎁 아이템전':'일반전'),
     h('button',{className:'header-btn watch-entry',onClick:()=>this.setState({settingsOpen:true,setup:{...g.config,mode:'spectate',count:watching?g.players.length:4}})},watching?'관전 설정':'AI 관전'),
     h('button',{className:'header-btn icon-button','aria-label':s.sound?'소리 끄기':'소리 켜기','aria-pressed':s.sound,title:s.sound?'소리 끄기':'소리 켜기',onClick:()=>this.setState({sound:!s.sound})},s.sound?'♫':'♬'),
-    h('button',{className:'header-btn icon-button','aria-label':'새 게임 설정',title:'새 게임 설정',onClick:()=>this.setState({settingsOpen:true})},'⚙'))
+    h('button',{className:'header-btn icon-button','aria-label':'새 게임 설정',title:'새 게임 설정',onClick:()=>this.setState({settingsOpen:true,setup:{...g.config}})},'⚙'))
   ),
   h('main',{className:'layout'},
    h('aside',{className:'panel side player-panel'},
@@ -541,7 +547,7 @@ render(){
     h('div',{className:'board-top'},h('div',{className:'board-heading'},h('strong',null,`✿ ${graph.title}`),h('small',null,graph.subtitle)),
      h('div',{className:'board-switch'},...M.BOARD_TYPES.map(key=>h('button',{key,className:cx('board-choice',g.config.board===key&&'active'),'aria-pressed':g.config.board===key,onClick:()=>{if(g.config.board!==key)this.startGame({...g.config,board:key});}},key==='S'?'기본판':key==='A'?'팔각형':key==='B'?'이중 링':'나선정원')))),
     h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:selectedOpt?.choice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
-    h('div',{className:'board-cap'},h('span',null,g.config.board==='G'?'✦ 모 자리(5·10·15·20) 정차 시 협문 · 복주머니 정차 시 패물 획득':'✦ 갈림길 정차 시 지름길 · 복주머니 정차 시 패물 획득'),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
+    h('div',{className:'board-cap'},h('span',null,g.config.itemMode?(g.config.board==='G'?'✦ 모 자리 정차 시 협문 · 중반 복주머니 정차 시 패물 획득':'✦ 갈림길 정차 시 지름길 · 중반 복주머니 정차 시 패물 획득'):(g.config.board==='G'?'✦ 모 자리(5·10·15·20) 정차 시 협문 지름길 진입':'✦ 갈림길에 정확히 멈추었을 때만 지름길 진입')),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
     h('div',{className:'map-sep'}),
     h('div',{className:'throw-top'},h('div',null,h('div',{className:'throw-title'},'✦ 달빛 멍석 · 윷 던지기'),h('div',{className:'throw-desc'},'네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')),h('div',{style:{fontSize:11,color:'#eac78f',fontWeight:850}},watchPaused?busy?'동작 마무리 중':'관전 일시정지':g.phase==='move'?'말 이동 중':`${g.players[g.current].label} 차례`)),
     h(ThrowMat,{sticks:s.sticks,stage:s.stage,result:s.result,watching}),
@@ -573,13 +579,18 @@ render(){
   s.toast?h('div',{className:'toast',role:'status'},s.toast):null,
   s.settingsOpen?h('div',{className:'modal-backdrop',role:'presentation',onMouseDown:(ev)=>{if(ev.target===ev.currentTarget)this.setState({settingsOpen:false});}},
    h('div',{className:'modal',role:'dialog','aria-modal':true,'aria-label':'게임 설정'},h('div',{style:{color:'#e5c17d',fontSize:12,fontWeight:900}},'새로운 한 판'),h('h2',null,'달빛 아래 윷놀이'),h('p',null,'직접 플레이하거나 AI끼리 대전하는 모습을 관전하세요.'),
-    h('label',{className:'form-label'},'게임 모드'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[['ai','나 + AI 대전'],['local','함께하기'],['spectate','AI 관전']].map(([value,text])=>h('button',{key:value,className:cx('setting-btn',s.setup.mode===value&&'active'),'aria-pressed':s.setup.mode===value,onClick:()=>this.setState({setup:{...s.setup,mode:value}})},text))),
+    h('label',{className:'form-label'},'게임 모드'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[['ai','나 + AI 대전'],['local','함께하기'],['spectate','AI 관전']].map(([value,text])=>h('button',{key:value,className:cx('setting-btn',s.setup.mode===value&&'active'),'aria-pressed':s.setup.mode===value,onClick:()=>this.setState({setup:{...s.setup,mode:value as GameConfig['mode']}})},text))),
     h('label',{className:'form-label'},s.setup.mode==='spectate'?'참가 AI 수':s.setup.mode==='ai'?'AI 상대 수':'총 참가 인원'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[2,3,4].map(n=>h('button',{key:n,className:cx('setting-btn',s.setup.count===n&&'active'),'aria-pressed':s.setup.count===n,onClick:()=>this.setState({setup:{...s.setup,count:n}})},s.setup.mode==='spectate'?`AI ${n}명`:s.setup.mode==='ai'?`AI ${n-1}명`:`${n}명`))),
-    h('p',{className:'setup-composition',role:'status'},s.setup.mode==='spectate'?`AI ${s.setup.count}명 자동 대전 · 관전 전용`:s.setup.mode==='ai'?`나 1명 + AI ${s.setup.count-1}명 · 총 ${s.setup.count}인 대전`:`사람 ${s.setup.count}명 · 로컬 대전`),
+    h('label',{className:'form-label'},'대전 방식'),
+    h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(2,1fr)'}},
+     h('button',{className:cx('setting-btn',!s.setup.itemMode&&'active'),'aria-pressed':!s.setup.itemMode,onClick:()=>this.setState({setup:{...s.setup,itemMode:false}})},'일반전 (전통 윷놀이)'),
+     h('button',{className:cx('setting-btn',s.setup.itemMode&&'active'),'aria-pressed':!!s.setup.itemMode,onClick:()=>this.setState({setup:{...s.setup,itemMode:true}})},'🎁 아이템전 (중반 패물)')
+    ),
+    h('p',{className:'setup-composition',role:'status'},(s.setup.mode==='spectate'?`AI ${s.setup.count}명 자동 대전 · 관전 전용`:s.setup.mode==='ai'?`나 1명 + AI ${s.setup.count-1}명 · 총 ${s.setup.count}인`:`사람 ${s.setup.count}명 · 로컬 대전`)+(s.setup.itemMode?` · 아이템전(제 ${E.itemUnlockTurn(s.setup.count)}턴 중반 등장)`:' · 일반전')),
     h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(2,1fr)'}},...M.BOARD_TYPES.map(value=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),'aria-pressed':s.setup.board===value,onClick:()=>this.setState({setup:{...s.setup,board:value}})},M.boardMeta(value).title))),
     h('label',{className:'form-label',htmlFor:'music-volume'},`배경음악 · 달빛 노을 머문 툇마루 (${Math.round(s.musicVolume*100)}%)`),
     h('input',{id:'music-volume',type:'range',min:0,max:100,step:1,value:Math.round(s.musicVolume*100),'aria-label':'배경음악 음량',onChange:(ev)=>this.setState({musicVolume:Number(ev.target.value)/100}),style:{width:'100%',accentColor:'#e5c17d'}}),
-    h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 직접 말 선택과 목적지 확정이 기본입니다.'),
+    h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 아이템전 선택 시 참가 인원에 따른 중반 턴부터 패물이 등장합니다.'),
     h('button',{className:'primary-action',onClick:()=>this.startGame(s.setup)},s.setup.mode==='spectate'?`AI ${s.setup.count}명 관전 시작`:s.setup.mode==='ai'?`나 + AI ${s.setup.count-1}명으로 시작`:`사람 ${s.setup.count}명으로 시작`)
    )):null,
   g.winner!==null?h('div',{className:'modal-backdrop'},h('div',{className:'modal victory'},h('div',{style:{color:'#f2d098',fontSize:12,textAlign:'center'}},'승부 결정'),h('div',{className:'prize'},'🏆'),h('h2',{style:{textAlign:'center'}},`${g.players[g.winner].label} 승리!`),h('p',{style:{textAlign:'center'}},'네 개의 말을 모두 완주했습니다.'),h('button',{className:'primary-action',onClick:()=>this.startGame(g.config)},'다시 한 판'))):null

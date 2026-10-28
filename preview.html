@@ -1216,10 +1216,10 @@ const ITEMS = {
     shield: { type: 'shield', name: '호패 방패', icon: '🛡️', summary: '이번에 이동해 도착한 내 말(또는 업힌 그룹)에 1회 방어막을 씌웁니다.' }
 };
 const POUCH_SPOTS = {
-    S: ['O3', 'O8', 'O13', 'O18', 'C'],
-    A: ['O3', 'O9', 'O15', 'O21', 'C'],
-    B: ['O3', 'O9', 'O15', 'O21', 'I4'],
-    G: ['O3', 'O8', 'O13', 'O18', 'O22']
+    S: ['O3', 'O8', 'O13', 'O18', 'C', 'O11'],
+    A: ['O3', 'O9', 'O15', 'O21', 'C', 'O13'],
+    B: ['O3', 'O9', 'O15', 'O21', 'I4', 'O13'],
+    G: ['O3', 'O8', 'O13', 'O18', 'O22', 'O11']
 };
 const COLORS = [
     { name: '황금', color: '#eca14d', light: '#ffe4ba', avatar: '🐕' },
@@ -1231,23 +1231,46 @@ const NAMES = { '-1': '빽도', '1': '도', '2': '개', '3': '걸', '4': '윷', 
 const SCORES = { '-1': '↶', '1': 'Ⅰ', '2': 'Ⅱ', '3': 'Ⅲ', '4': 'Ⅳ', '5': 'Ⅴ', '6': 'Ⅵ' };
 let idSeq = 1;
 function newId() { return String(idSeq++); }
-function makeItemNodes(board) {
-    const spots = POUCH_SPOTS[board] || POUCH_SPOTS.S;
+function itemUnlockTurn(count) {
+    const c = Math.min(4, Math.max(2, Number(count ?? 2)));
+    return c * 2 + 1;
+}
+function makeItemNodes(board, count = 3) {
+    const spots = (POUCH_SPOTS[board] || POUCH_SPOTS.S).slice(0, Math.min(6, Math.max(4, count + 2)));
     return Object.fromEntries(spots.map((node, i) => [node, ITEM_TYPES[i % ITEM_TYPES.length]]));
 }
+function unlockItemsNow(g) {
+    if (!g.config.itemMode || g.itemsUnlocked)
+        return g;
+    const starter = ['key', 'stone', 'geumjul', 'shield'];
+    const players = g.players.map((p, i) => ({
+        ...p,
+        items: p.items.length < 2 ? [...p.items, { id: newId(), type: starter[i % starter.length] }] : p.items
+    }));
+    const itemNodes = makeItemNodes(g.config.board, g.config.count);
+    return appendLog({ ...g, players, itemsUnlocked: true, itemNodes }, 'item', `🎁 중반전 돌입! 참가자 전원에게 전술 패물 1개가 보급되고 윷판에 복주머니 ${Object.keys(itemNodes).length}개가 나타났습니다.`, null);
+}
 function createGame(opts) {
-    const config = { mode: opts.mode === 'spectate' ? 'spectate' : opts.mode === 'local' ? 'local' : 'ai', count: Math.min(4, Math.max(2, Number(opts.count ?? 2))), board: opts.board === 'A' || opts.board === 'B' || opts.board === 'G' ? opts.board : 'S', backdo: opts.backdo !== false };
-    const starter = [['key', 'stone'], ['stone', 'shield'], ['geumjul', 'key'], ['shield', 'geumjul']];
+    const count = Math.min(4, Math.max(2, Number(opts.count ?? 2)));
+    const config = {
+        mode: opts.mode === 'spectate' ? 'spectate' : opts.mode === 'local' ? 'local' : 'ai',
+        count,
+        board: opts.board === 'A' || opts.board === 'B' || opts.board === 'G' ? opts.board : 'S',
+        backdo: opts.backdo !== false,
+        itemMode: Boolean(opts.itemMode)
+    };
+    const unlockTurn = itemUnlockTurn(count);
     const players = Array.from({ length: config.count }, (_, i) => ({
         id: i, ...COLORS[i],
         label: config.mode === 'local' ? `플레이어 ${i + 1}` : config.mode === 'ai' && i === 0 ? '나' : `${COLORS[i].name} AI`,
         ai: config.mode === 'spectate' || config.mode === 'ai' && i > 0,
-        items: starter[i % starter.length].map(type => ({ id: newId(), type })),
+        items: [],
         geumjulArmed: false, keyArmed: false, stoneDelta: 0
     }));
     const pieces = players.flatMap(p => Array.from({ length: 4 }, (_, i) => ({ ...maps.initialState(), id: `p${p.id}-${i}`, player: p.id, index: i, shielded: false })));
+    const modeLabel = config.itemMode ? `아이템전(제 ${unlockTurn}턴 중반부터 패물 등장)` : '일반전';
     return { config, players, pieces, current: 0, phase: 'roll', rolls: [], lastRoll: null, winner: null, turn: 1,
-        logs: [{ id: newId(), type: 'system', text: `${maps.boardMeta(config.board).title} 윷놀이가 시작되었습니다.`, player: null }], throwCount: 0, itemNodes: makeItemNodes(config.board) };
+        logs: [{ id: newId(), type: 'system', text: `${maps.boardMeta(config.board).title} · ${modeLabel} 윷놀이가 시작되었습니다.`, player: null }], throwCount: 0, itemsUnlocked: false, itemUnlockTurn: unlockTurn, itemNodes: {} };
 }
 function currentPlayer(g) { return g.players[g.current]; }
 function occupied(piece) { return piece.node !== 'WAIT' && piece.node !== 'FIN'; }
@@ -1314,8 +1337,16 @@ function appendLog(g, type, text, player = null) {
 function nextTurn(g, why) {
     const old = g.current, next = (old + 1) % g.players.length;
     const clearedPlayers = g.players.map((p, i) => i === old ? { ...p, keyArmed: false, stoneDelta: 0 } : p);
-    let result = { ...g, players: clearedPlayers, current: next, phase: 'roll', turn: g.turn + 1, rolls: [], lastRoll: null };
+    const nextTurnNum = g.turn + 1;
+    let result = { ...g, players: clearedPlayers, current: next, phase: 'roll', turn: nextTurnNum, rolls: [], lastRoll: null };
     result = appendLog(result, 'turn', why || `${g.players[old].label} 차례 종료 → ${g.players[next].label} 차례`, next);
+    if (result.config.itemMode && !result.itemsUnlocked && nextTurnNum >= result.itemUnlockTurn) {
+        result = unlockItemsNow(result);
+    }
+    else if (result.config.itemMode && result.itemsUnlocked && Object.keys(result.itemNodes).length === 0 && (nextTurnNum - 1) % result.config.count === 0) {
+        const refilled = makeItemNodes(result.config.board, result.config.count);
+        result = appendLog({ ...result, itemNodes: refilled }, 'item', '🎁 새 라운드를 맞아 윷판 위에 복주머니가 다시 채워졌습니다.', null);
+    }
     return result;
 }
 function normalize(g) {
@@ -1377,6 +1408,8 @@ function throwResult(g, rolled, nak) {
     return normalize(next);
 }
 function useItem(g, itemId, arg) {
+    if (!g.config.itemMode)
+        return g;
     const actor = g.players[g.current];
     if (!actor || g.winner !== null)
         return g;
@@ -1449,7 +1482,7 @@ function resolveMove(g, option) {
     });
     let itemNodes = { ...g.itemNodes };
     let pickedItem = null;
-    const pouchAtDest = finalDest !== 'WAIT' && finalDest !== 'FIN' ? itemNodes[finalDest] : undefined;
+    const pouchAtDest = g.config.itemMode && g.itemsUnlocked && finalDest !== 'WAIT' && finalDest !== 'FIN' ? itemNodes[finalDest] : undefined;
     const cleanedActorItems = actor.items;
     let nextActorItems = cleanedActorItems;
     if (pouchAtDest && cleanedActorItems.length < 2) {
@@ -1472,6 +1505,11 @@ function resolveMove(g, option) {
     state = appendLog(state, winner !== null ? 'win' : shieldBlocked ? 'item' : captured ? 'capture' : finalDest === 'FIN' ? 'finish' : 'move', note);
     if (pickedItem)
         state = appendLog(state, 'item', `🎁 ${actor.label}이(가) 복주머니에서 [${ITEMS[pickedItem].icon} ${ITEMS[pickedItem].name}]을(를) 획득했습니다!`);
+    const progressedPieces = updatedPieces.filter(p => p.node !== 'WAIT').length;
+    const anyPlayerMidFinish = g.players.some(pl => updatedPieces.filter(p => p.player === pl.id && p.node === 'FIN').length >= 2);
+    if (winner === null && state.config.itemMode && !state.itemsUnlocked && (anyPlayerMidFinish || progressedPieces >= state.config.count * 3)) {
+        state = unlockItemsNow(state);
+    }
     if (winner === null)
         state = normalize(state);
     return { game: state, meta: { captured, joined, moved, winner, from: matched.source, to: finalDest, path: finalUpdated.lastPath, player: g.current, groupIds: matched.groupIds, shieldBlocked, pickedItem } };
@@ -1482,13 +1520,13 @@ function scoreOption(g, opt) {
     const shieldedEnemy = g.pieces.filter(p => p.player !== g.current && p.node === dest && p.shielded).length;
     const friend = g.pieces.filter(p => p.player === g.current && p.node === dest).length;
     const piece = g.pieces.find(p => p.id === opt.pieceId);
-    const pouch = g.itemNodes[dest] && g.players[g.current].items.length < 2 ? 45 : 0;
+    const pouch = g.config.itemMode && g.itemsUnlocked && g.itemNodes[dest] && g.players[g.current].items.length < 2 ? 45 : 0;
     return (dest === 'FIN' ? 200 : 0) + enemy * 115 - shieldedEnemy * 40 + friend * 18 + pouch + (opt.choice === 'shortcut' ? 60 : opt.choice === 'finish' ? 60 : 0) +
         (piece.node === 'WAIT' ? 22 : 0) + (opt.path.length * 2) + Math.random() * 18;
 }
 
 
-return {COLORS,NAMES,SCORES,createGame,currentPlayer,sameStack,uniqueMovablePieces,effectivePips,moveOptions,legalActions,rollSticks,generateLanding,throwResult,useItem,resolveMove,scoreOption,nextTurn,normalize,ITEM_TYPES,ITEMS};
+return {COLORS,NAMES,SCORES,createGame,currentPlayer,sameStack,uniqueMovablePieces,effectivePips,moveOptions,legalActions,rollSticks,generateLanding,throwResult,useItem,resolveMove,scoreOption,nextTurn,normalize,ITEM_TYPES,ITEMS,itemUnlockTurn,unlockItemsNow};
 })();
 const __mod_aiEngine=(()=>{'use strict';
 const E=__mod_gameEngine;
@@ -1532,6 +1570,8 @@ function outcomes(backdo) {
 }
 /** Optional tactical item consideration for AI before throwing or moving. */
 function chooseAIItem(g) {
+    if (!g.config.itemMode || !g.itemsUnlocked)
+        return g;
     const actor = g.players[g.current];
     if (!actor || !actor.ai || g.winner !== null || !actor.items.length)
         return g;
@@ -1747,7 +1787,7 @@ function Board({ game, chosenRoll, chosenPiece, chosenChoice, onPiece, onTarget,
         }
         const kind = isSpiral ? (id === 'O0' ? 'goal' : spiralForkSet.has(id) ? 'fork' : id.startsWith('G') ? 'inner' : 'normal') : (id === home ? 'goal' : id === ne || id === nw ? 'fork' : id === 'C' ? 'center' : id.startsWith('I') ? 'inner' : 'normal');
         const big = kind === 'goal' ? 14 : kind === 'fork' || kind === 'center' ? 13 : isSpiral ? (id.startsWith('G') ? 7.5 : 9) : game.config.board === 'S' ? 9 : 8;
-        const pouchType = game.itemNodes?.[id];
+        const pouchType = game.config.itemMode && game.itemsUnlocked ? game.itemNodes?.[id] : undefined;
         return h('g', { key: id }, kind === 'goal' || kind === 'center' ? h('circle', { cx: pos.x, cy: pos.y, r: big + 6, fill: 'none', stroke: kind === 'goal' ? '#7fb9a1' : '#b38a51', strokeWidth: 1, strokeDasharray: '3 4' }) : null, h('ellipse', { cx: pos.x, cy: pos.y + 2, rx: big + 1.8, ry: big + 1, fill: '#593c21', opacity: .2, pointerEvents: 'none' }), h('circle', { cx: pos.x, cy: pos.y, r: big + 1.5, fill: 'url(#boardBrass)', stroke: '#9d7845', strokeWidth: .6, pointerEvents: 'none' }), h('circle', { className: cx('node-circle', kind), cx: pos.x, cy: pos.y, r: big }), h('circle', { className: 'node-engraving', cx: pos.x, cy: pos.y, r: big - 2 }), kind === 'fork' ? h('circle', { cx: pos.x, cy: pos.y, r: 3.5, fill: '#ba7142' }) : null, kind === 'center' ? h('text', { x: pos.x, y: pos.y + 3.5, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#f5d99d' }, '✦') : null, kind === 'goal' ? h('text', { x: pos.x, y: pos.y + 4, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#f4f3cf' }, isSpiral ? '출' : '집') : null, pouchType ? h('g', { className: 'item-pouch-marker', transform: `translate(${pos.x} ${pos.y - 13})`, pointerEvents: 'none' }, h('circle', { cx: 0, cy: 0, r: 8.5, fill: '#5a231b', stroke: '#ffdc8e', strokeWidth: 1.3 }), h('text', { x: 0, y: 3.5, textAnchor: 'middle', fontSize: 9.5 }, E.ITEMS[pouchType].icon)) : null);
     });
     const tokenViews = groups.map((gr, i) => {
@@ -1797,9 +1837,10 @@ function initialConfig() {
     const query = new URLSearchParams(window.location.search);
     const boardParam = query.get('board');
     const board = boardParam === 'A' || boardParam === 'B' || boardParam === 'G' ? boardParam : 'S';
+    const itemMode = query.get('items') === '1';
     return query.get('watch') === '1'
-        ? { mode: 'spectate', count: [2, 3, 4].includes(Number(query.get('players'))) ? Number(query.get('players')) : 4, board, backdo: true }
-        : { mode: 'ai', count: 2, board, backdo: true };
+        ? { mode: 'spectate', count: [2, 3, 4].includes(Number(query.get('players'))) ? Number(query.get('players')) : 4, board, backdo: true, itemMode }
+        : { mode: 'ai', count: 2, board, backdo: true, itemMode };
 }
 const INITIAL_CONFIG = initialConfig();
 class App extends React.Component {
@@ -1944,7 +1985,7 @@ class App extends React.Component {
     ;
     activateItem(item, delta) {
         const g = this.state.game, actor = g.players[g.current];
-        if (!actor || actor.ai || this.state.moving || this.state.stage === 'throwing')
+        if (!g.config.itemMode || !g.itemsUnlocked || !actor || actor.ai || this.state.moving || this.state.stage === 'throwing')
             return;
         if (item.type === 'geumjul') {
             if (actor.geumjulArmed) {
@@ -2039,11 +2080,12 @@ class App extends React.Component {
             this.setState({ moving: { ...moving, step: moving.step + 1 } }, () => this.defer(() => this.moveTick(), 235));
             return;
         }
-        const note = moving.meta.shieldBlocked ? '🛡️ 호패 방패가 상대 공격을 막아냈습니다!' : moving.meta.pickedItem ? `🎁 복주머니 획득: ${E.ITEMS[moving.meta.pickedItem].name}!` : moving.meta.captured ? '말 잡기! 추가 던지기' : moving.meta.joined ? '말 업기 성공!' : moving.meta.to === 'FIN' ? '완주했습니다!' : '말 이동 완료';
+        const unlockedJustNow = !this.state.game.itemsUnlocked && moving.resolution.itemsUnlocked;
+        const note = unlockedJustNow ? '🎁 중반전 돌입! 전술 패물과 복주머니가 등장했습니다!' : moving.meta.shieldBlocked ? '🛡️ 호패 방패가 상대 공격을 막아냈습니다!' : moving.meta.pickedItem ? `🎁 복주머니 획득: ${E.ITEMS[moving.meta.pickedItem].name}!` : moving.meta.captured ? '말 잡기! 추가 던지기' : moving.meta.joined ? '말 업기 성공!' : moving.meta.to === 'FIN' ? '완주했습니다!' : '말 이동 완료';
         this.setState({ game: moving.resolution, moving: null, stage: 'idle', result: null, burst: { node: moving.meta.to, capture: !!moving.meta.captured, joined: !!moving.meta.joined } }, () => {
             this.defer(() => this.setState({ burst: null }), 850);
             this.playSound(moving.meta.captured ? 'nak' : 'land');
-            if (moving.meta.shieldBlocked || moving.meta.pickedItem || moving.meta.captured || moving.meta.joined || moving.meta.to === 'FIN')
+            if (unlockedJustNow || moving.meta.shieldBlocked || moving.meta.pickedItem || moving.meta.captured || moving.meta.joined || moving.meta.to === 'FIN')
                 this.notify(note);
         });
     }
@@ -2060,7 +2102,7 @@ class App extends React.Component {
         const statusDesc = g.phase === 'won' ? `승리: ${g.players[g.winner ?? 0]?.label || ''}` : watching ? (watchPaused ? busy ? '진행 중인 동작을 마친 뒤 멈춥니다.' : '재개를 누르면 같은 상태에서 계속 진행합니다.' : g.logs[0]?.type === 'capture' ? '상대 말을 잡아 추가 던지기를 얻었습니다.' : g.phase === 'roll' && g.lastRoll && (g.lastRoll.value === 4 || g.lastRoll.value === 5) ? `${E.NAMES[g.lastRoll.value]}! 추가로 한 번 더 던집니다.` : 'AI끼리 윷을 던지고 말을 선택해 자동으로 대전합니다.') : g.phase === 'roll' ? '멍석 안에 윷가락이 모두 떨어져야 유효해요.' : '결과 선택 → 말 선택 → 목적지 클릭';
         const players = g.players.map(p => {
             const pcs = g.pieces.filter(x => x.player === p.id), ready = pcs.filter(x => x.node === 'WAIT').length, done = pcs.filter(x => x.node === 'FIN').length;
-            return h('div', { className: cx('player-card', p.id === g.current && 'active', `player-${p.id}`), key: p.id, style: { '--player-accent': p.color } }, h('div', { className: 'player-hanji-pattern', 'aria-hidden': true }, '✿'), h('div', { className: 'player-main' }, h('div', { className: 'avatar-coin' }, h('div', { className: 'avatar' }, p.avatar)), h('div', { className: 'player-identity' }, h('div', { className: 'player-name' }, p.label), h('div', { className: 'player-role' }, p.ai ? watching ? 'AI 선수' : '인공지능 상대' : p.id === 0 && g.config.mode === 'ai' ? '내 플레이어' : '참가자'), h('div', { className: 'pawns' }, ...pcs.map((pc, i) => h('span', { key: i, className: cx('pawn-mini', pc.node === 'FIN' && 'done'), style: { '--piece': p.color }, title: pc.node === 'FIN' ? '완주' : pc.node === 'WAIT' ? '대기' : '이동 중' }))), h('div', { className: 'player-progress', 'aria-label': `${done}개 완주` }, h('div', { className: 'player-progress-fill', style: { width: `${done * 25}%` } }))), h('div', { className: 'player-right' }, p.id === g.current ? h('span', { className: 'on-turn' }, p.ai ? '● AI 차례' : '● 내 차례') : h('span', { className: 'player-tag' }, p.ai ? 'AI' : '대기'), h('div', { className: 'player-status' }, done > 0 ? `${done}/4 완주` : `대기 ${ready}개`), p.items.length ? h('div', { className: 'player-items-mini', 'aria-label': `보유 패물 ${p.items.length}개` }, ...p.items.map(it => h('span', { key: it.id, title: E.ITEMS[it.type].name }, E.ITEMS[it.type].icon))) : null)));
+            return h('div', { className: cx('player-card', p.id === g.current && 'active', `player-${p.id}`), key: p.id, style: { '--player-accent': p.color } }, h('div', { className: 'player-hanji-pattern', 'aria-hidden': true }, '✿'), h('div', { className: 'player-main' }, h('div', { className: 'avatar-coin' }, h('div', { className: 'avatar' }, p.avatar)), h('div', { className: 'player-identity' }, h('div', { className: 'player-name' }, p.label), h('div', { className: 'player-role' }, p.ai ? watching ? 'AI 선수' : '인공지능 상대' : p.id === 0 && g.config.mode === 'ai' ? '내 플레이어' : '참가자'), h('div', { className: 'pawns' }, ...pcs.map((pc, i) => h('span', { key: i, className: cx('pawn-mini', pc.node === 'FIN' && 'done'), style: { '--piece': p.color }, title: pc.node === 'FIN' ? '완주' : pc.node === 'WAIT' ? '대기' : '이동 중' }))), h('div', { className: 'player-progress', 'aria-label': `${done}개 완주` }, h('div', { className: 'player-progress-fill', style: { width: `${done * 25}%` } }))), h('div', { className: 'player-right' }, p.id === g.current ? h('span', { className: 'on-turn' }, p.ai ? '● AI 차례' : '● 내 차례') : h('span', { className: 'player-tag' }, p.ai ? 'AI' : '대기'), h('div', { className: 'player-status' }, done > 0 ? `${done}/4 완주` : `대기 ${ready}개`), g.config.itemMode && p.items.length ? h('div', { className: 'player-items-mini', 'aria-label': `보유 패물 ${p.items.length}개` }, ...p.items.map(it => h('span', { key: it.id, title: E.ITEMS[it.type].name }, E.ITEMS[it.type].icon))) : null)));
         });
         const readyPieces = g.pieces.filter(p => p.player === g.current && p.node === 'WAIT');
         const rack = readyPieces.map((p, i) => h('button', { key: p.id, className: cx('rack-piece', allowed.has(p.id) && human && 'pickable', s.selectedPiece === p.id && 'selected'), disabled: !human || g.phase !== 'move' || !allowed.has(p.id) || !!s.moving, onClick: () => this.selectPiece(p.id), 'aria-label': `대기 말 ${p.index + 1} 선택` }, h('span', { className: 'rack-token', style: { '--piece': owner.color } }, '♟'), h('small', null, `${p.index + 1}번 말`)));
@@ -2070,20 +2112,23 @@ class App extends React.Component {
             return h('button', { key: r.id, className: cx('roll-pill', roll && roll.id === r.id && 'active'), disabled: !human || g.phase !== 'move' || !!s.moving, onClick: () => this.setState({ selectedRoll: r.id, selectedPiece: null, selectedChoice: null }) }, E.NAMES[r.value], h('small', null, eff === -1 ? '↶' : owner.stoneDelta ? `${eff}칸(${owner.stoneDelta > 0 ? '+1' : '-1'})` : `${eff}칸`));
         }) : h('div', { className: 'no-rolls' }, g.phase === 'roll' ? '아직 던진 결과가 없어요.' : '윷 던지기 버튼으로 시작하세요.');
         const activeBuffs = [owner.geumjulArmed && '🌾 금줄 준비됨', owner.keyArmed && '🔑 돌담 열쇠 활성', owner.stoneDelta !== 0 && `🪨 디딤돌(${owner.stoneDelta > 0 ? '+1' : '-1'}칸)`].filter(Boolean);
-        const itemPouchView = h('div', { className: 'tactical-pouch' }, h('div', { className: 'results-caption' }, h('span', null, '전술 패물 주머니'), h('span', null, `${owner.items.length}/2 보유`)), activeBuffs.length ? h('div', { className: 'active-buffs' }, ...activeBuffs.map((b, i) => h('span', { key: i, className: 'buff-chip' }, b))) : null, owner.items.length ? h('div', { className: 'item-cards' }, ...owner.items.map(it => {
-            const meta = E.ITEMS[it.type];
-            if (it.type === 'stone') {
-                return h('div', { key: it.id, className: 'item-card stone-card', title: meta.summary }, h('span', { className: 'item-title' }, `${meta.icon} ${meta.name}`), h('div', { className: 'stone-actions' }, h('button', { className: 'stone-btn', disabled: !human || g.phase !== 'move' || !!s.moving, onClick: () => this.activateItem(it, 1) }, '+1칸'), h('button', { className: 'stone-btn', disabled: !human || g.phase !== 'move' || !!s.moving, onClick: () => this.activateItem(it, -1) }, '-1칸')));
-            }
-            const canUse = human && !s.moving && (it.type === 'geumjul' ? !owner.geumjulArmed : it.type === 'key' ? g.phase === 'move' && !owner.keyArmed : g.pieces.some(p => p.player === g.current && p.node !== 'WAIT' && p.node !== 'FIN' && !p.shielded));
-            return h('button', { key: it.id, className: 'item-card', disabled: !canUse, onClick: () => this.activateItem(it), title: meta.summary }, h('span', { className: 'item-title' }, `${meta.icon} ${meta.name}`), h('small', null, it.type === 'geumjul' ? '낙 1회 방어' : it.type === 'key' ? '지나치며 분기' : '말 1회 보호'));
-        })) : h('div', { className: 'no-rolls' }, '보유한 패물이 없습니다. 판 위의 복주머니 칸에 정차해 획득하세요.'));
-        return h('div', { className: 'app-shell' }, h('div', { className: 'lantern-decor lantern-decor-left', 'aria-hidden': true }), h('div', { className: 'lantern-decor lantern-decor-right', 'aria-hidden': true }), h('div', { className: 'ambient-leaves', 'aria-hidden': true }, ...Array.from({ length: 12 }, (_, i) => h('i', { className: 'ambient-leaf', key: i, style: { '--left': `${6 + i * 8}%`, '--delay': `${i * -1.6}s`, '--duration': `${14 + i % 5 * 2}s` } }))), h('div', { className: 'app-wrap' }, h('header', { className: 'header' }, h('div', { className: 'brand' }, h('div', { className: 'brand-mark' }, h('strong', null, '달빛 윷마당'), h('span', { className: 'brand-seal' }, '전통')), h('div', { className: 'brand-sub' }, '한옥 마루에서 즐기는 우리들의 한 판')), h('div', { className: 'header-right' }, h('span', { className: 'head-chip' }, `제 ${String(g.turn)} 턴`), h('button', { className: 'header-btn watch-entry', onClick: () => this.setState({ settingsOpen: true, setup: { ...g.config, mode: 'spectate', count: watching ? g.players.length : 4 } }) }, watching ? '관전 설정' : 'AI 관전'), h('button', { className: 'header-btn icon-button', 'aria-label': s.sound ? '소리 끄기' : '소리 켜기', 'aria-pressed': s.sound, title: s.sound ? '소리 끄기' : '소리 켜기', onClick: () => this.setState({ sound: !s.sound }) }, s.sound ? '♫' : '♬'), h('button', { className: 'header-btn icon-button', 'aria-label': '새 게임 설정', title: '새 게임 설정', onClick: () => this.setState({ settingsOpen: true }) }, '⚙'))), h('main', { className: 'layout' }, h('aside', { className: 'panel side player-panel' }, h('div', { className: 'side-section-title' }, '지금은 누구 차례?', h('span', null, watching ? `AI ${g.players.length}명 관전` : g.config.mode === 'ai' ? `나 + AI ${g.players.length - 1}명` : `함께하기 · ${g.players.length}인`)), h('div', { className: 'turn-hero' }, h('div', { className: 'eyebrow' }, watchPaused ? 'PAUSED' : 'CURRENT TURN'), h('div', { className: 'turn-name' }, h('span', { className: 'turn-dot', style: { background: owner.color } }), owner.label), h('div', { className: 'turn-sub' }, watchPaused ? busy ? '현재 동작을 마친 뒤 멈춥니다.' : 'AI 대전을 일시정지했습니다.' : s.moving ? '선택한 말이 윷판 위를 이동 중입니다.' : owner.ai ? 'AI가 다음 행동을 결정하고 있습니다.' : g.phase === 'move' ? '말을 직접 눌러 이동해보세요.' : '아래 멍석에서 윷을 던져주세요.')), h('div', { className: 'side-section-title' }, '참가자', h('span', null, '각 4개의 말')), h('div', { className: 'players-list' }, ...players), h('div', { className: 'subpanel' }, h('div', { className: 'rack-title' }, h('b', null, '출발 대기 말'), h('span', null, `${readyPieces.length}개`)), h('div', { className: 'rack' }, rack.length ? rack : h('div', { style: { gridColumn: '1/-1', fontSize: 11, color: '#c4d1d9' } }, '출발 대기 중인 말이 없습니다.'))), h('div', { className: 'subpanel tips-block' }, h('div', { className: 'side-section-title' }, watching ? '관전 안내' : '이동하는 방법'), ...(watching ? [['1', 'AI가 차례대로 윷을 던집니다.'], ['2', '말과 경로를 자동으로 선택합니다.'], ['3', '윷·모 또는 잡기 시 추가로 던집니다.']] : [['1', '윷을 던져 결과를 얻습니다.'], ['2', '결과와 움직일 말을 직접 누릅니다.'], ['3', '경로를 고르고 빛나는 목적지를 누릅니다.']]).map(([num, text]) => h('div', { key: num, className: 'tiny-guide' }, h('b', null, num), h('p', { className: 'tips' }, text))))), h('section', { className: 'panel board-panel' }, h('div', { className: 'board-top' }, h('div', { className: 'board-heading' }, h('strong', null, `✿ ${graph.title}`), h('small', null, graph.subtitle)), h('div', { className: 'board-switch' }, ...M.BOARD_TYPES.map(key => h('button', { key, className: cx('board-choice', g.config.board === key && 'active'), 'aria-pressed': g.config.board === key, onClick: () => { if (g.config.board !== key)
-                this.startGame({ ...g.config, board: key }); } }, key === 'S' ? '기본판' : key === 'A' ? '팔각형' : key === 'B' ? '이중 링' : '나선정원')))), h('div', { className: 'board-shadow' }, h('div', { className: 'board-cloth' }, h('div', { className: 'frame-charm frame-charm-left', 'aria-hidden': true }, '❖'), h('div', { className: 'frame-charm frame-charm-right', 'aria-hidden': true }, '❖'), h(Board, { game: g, chosenRoll: roll, chosenPiece: g.pieces.find(p => p.id === s.selectedPiece), chosenChoice: selectedOpt?.choice, onPiece: id => this.selectPiece(id), onTarget: opt => this.commitMove(opt, false), moving: s.moving, burst: s.burst }))), h('div', { className: 'board-cap' }, h('span', null, g.config.board === 'G' ? '✦ 모 자리(5·10·15·20) 정차 시 협문 · 복주머니 정차 시 패물 획득' : '✦ 갈림길 정차 시 지름길 · 복주머니 정차 시 패물 획득'), h('span', null, watching ? 'AI 판단 → 자동 말 이동' : '말 선택 → 황금색 목적지 클릭')), h('div', { className: 'map-sep' }), h('div', { className: 'throw-top' }, h('div', null, h('div', { className: 'throw-title' }, '✦ 달빛 멍석 · 윷 던지기'), h('div', { className: 'throw-desc' }, '네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')), h('div', { style: { fontSize: 11, color: '#eac78f', fontWeight: 850 } }, watchPaused ? busy ? '동작 마무리 중' : '관전 일시정지' : g.phase === 'move' ? '말 이동 중' : `${g.players[g.current].label} 차례`)), h(ThrowMat, { sticks: s.sticks, stage: s.stage, result: s.result, watching }), watching ? h('div', { className: 'throw-actions spectator-controls' }, h('button', { className: 'primary-action', disabled: g.winner !== null, 'aria-label': watchPaused ? '관전 재개' : '관전 일시정지', onClick: () => this.toggleSpectatorPause(), title: '진행 중인 던지기나 이동은 마친 뒤 다음 행동부터 멈춥니다.' }, watchPaused ? '▶ 관전 재개' : 'Ⅱ 관전 일시정지'), h('button', { className: 'sub-action', onClick: () => this.startGame(g.config) }, '새 AI 대전')) :
+        const itemPouchView = !g.config.itemMode ? null : h('div', { className: 'tactical-pouch' }, h('div', { className: 'results-caption' }, h('span', null, '전술 패물 주머니'), h('span', null, g.itemsUnlocked ? `${owner.items.length}/2 보유` : `중반 대기 (${g.turn}/${g.itemUnlockTurn}턴)`)), !g.itemsUnlocked ? h('div', { className: 'no-rolls' }, `⏳ ${g.config.count}인 대전 기준 제 ${g.itemUnlockTurn}턴(중반)부터 패물과 복주머니가 등장합니다.`) : FRAG([
+            activeBuffs.length ? h('div', { name: 'buffs', className: 'active-buffs' }, ...activeBuffs.map((b, i) => h('span', { key: i, className: 'buff-chip' }, b))) : null,
+            owner.items.length ? h('div', { className: 'item-cards' }, ...owner.items.map(it => {
+                const meta = E.ITEMS[it.type];
+                if (it.type === 'stone') {
+                    return h('div', { key: it.id, className: 'item-card stone-card', title: meta.summary }, h('span', { className: 'item-title' }, `${meta.icon} ${meta.name}`), h('div', { className: 'stone-actions' }, h('button', { className: 'stone-btn', disabled: !human || g.phase !== 'move' || !!s.moving, onClick: () => this.activateItem(it, 1) }, '+1칸'), h('button', { className: 'stone-btn', disabled: !human || g.phase !== 'move' || !!s.moving, onClick: () => this.activateItem(it, -1) }, '-1칸')));
+                }
+                const canUse = human && !s.moving && (it.type === 'geumjul' ? !owner.geumjulArmed : it.type === 'key' ? g.phase === 'move' && !owner.keyArmed : g.pieces.some(p => p.player === g.current && p.node !== 'WAIT' && p.node !== 'FIN' && !p.shielded));
+                return h('button', { key: it.id, className: 'item-card', disabled: !canUse, onClick: () => this.activateItem(it), title: meta.summary }, h('span', { className: 'item-title' }, `${meta.icon} ${meta.name}`), h('small', null, it.type === 'geumjul' ? '낙 1회 방어' : it.type === 'key' ? '지나치며 분기' : '말 1회 보호'));
+            })) : h('div', { className: 'no-rolls' }, '보유한 패물이 없습니다. 판 위의 복주머니 칸에 정차해 획득하세요.')
+        ]));
+        return h('div', { className: 'app-shell' }, h('div', { className: 'lantern-decor lantern-decor-left', 'aria-hidden': true }), h('div', { className: 'lantern-decor lantern-decor-right', 'aria-hidden': true }), h('div', { className: 'ambient-leaves', 'aria-hidden': true }, ...Array.from({ length: 12 }, (_, i) => h('i', { className: 'ambient-leaf', key: i, style: { '--left': `${6 + i * 8}%`, '--delay': `${i * -1.6}s`, '--duration': `${14 + i % 5 * 2}s` } }))), h('div', { className: 'app-wrap' }, h('header', { className: 'header' }, h('div', { className: 'brand' }, h('div', { className: 'brand-mark' }, h('strong', null, '달빛 윷마당'), h('span', { className: 'brand-seal' }, '전통')), h('div', { className: 'brand-sub' }, '한옥 마루에서 즐기는 우리들의 한 판')), h('div', { className: 'header-right' }, h('span', { className: 'head-chip' }, `제 ${String(g.turn)} 턴`), h('button', { className: cx('header-btn', 'watch-entry'), onClick: () => this.setState({ settingsOpen: true, setup: { ...g.config } }), title: '일반전 / 아이템전 설정 변경' }, g.config.itemMode ? '🎁 아이템전' : '일반전'), h('button', { className: 'header-btn watch-entry', onClick: () => this.setState({ settingsOpen: true, setup: { ...g.config, mode: 'spectate', count: watching ? g.players.length : 4 } }) }, watching ? '관전 설정' : 'AI 관전'), h('button', { className: 'header-btn icon-button', 'aria-label': s.sound ? '소리 끄기' : '소리 켜기', 'aria-pressed': s.sound, title: s.sound ? '소리 끄기' : '소리 켜기', onClick: () => this.setState({ sound: !s.sound }) }, s.sound ? '♫' : '♬'), h('button', { className: 'header-btn icon-button', 'aria-label': '새 게임 설정', title: '새 게임 설정', onClick: () => this.setState({ settingsOpen: true, setup: { ...g.config } }) }, '⚙'))), h('main', { className: 'layout' }, h('aside', { className: 'panel side player-panel' }, h('div', { className: 'side-section-title' }, '지금은 누구 차례?', h('span', null, watching ? `AI ${g.players.length}명 관전` : g.config.mode === 'ai' ? `나 + AI ${g.players.length - 1}명` : `함께하기 · ${g.players.length}인`)), h('div', { className: 'turn-hero' }, h('div', { className: 'eyebrow' }, watchPaused ? 'PAUSED' : 'CURRENT TURN'), h('div', { className: 'turn-name' }, h('span', { className: 'turn-dot', style: { background: owner.color } }), owner.label), h('div', { className: 'turn-sub' }, watchPaused ? busy ? '현재 동작을 마친 뒤 멈춥니다.' : 'AI 대전을 일시정지했습니다.' : s.moving ? '선택한 말이 윷판 위를 이동 중입니다.' : owner.ai ? 'AI가 다음 행동을 결정하고 있습니다.' : g.phase === 'move' ? '말을 직접 눌러 이동해보세요.' : '아래 멍석에서 윷을 던져주세요.')), h('div', { className: 'side-section-title' }, '참가자', h('span', null, '각 4개의 말')), h('div', { className: 'players-list' }, ...players), h('div', { className: 'subpanel' }, h('div', { className: 'rack-title' }, h('b', null, '출발 대기 말'), h('span', null, `${readyPieces.length}개`)), h('div', { className: 'rack' }, rack.length ? rack : h('div', { style: { gridColumn: '1/-1', fontSize: 11, color: '#c4d1d9' } }, '출발 대기 중인 말이 없습니다.'))), h('div', { className: 'subpanel tips-block' }, h('div', { className: 'side-section-title' }, watching ? '관전 안내' : '이동하는 방법'), ...(watching ? [['1', 'AI가 차례대로 윷을 던집니다.'], ['2', '말과 경로를 자동으로 선택합니다.'], ['3', '윷·모 또는 잡기 시 추가로 던집니다.']] : [['1', '윷을 던져 결과를 얻습니다.'], ['2', '결과와 움직일 말을 직접 누릅니다.'], ['3', '경로를 고르고 빛나는 목적지를 누릅니다.']]).map(([num, text]) => h('div', { key: num, className: 'tiny-guide' }, h('b', null, num), h('p', { className: 'tips' }, text))))), h('section', { className: 'panel board-panel' }, h('div', { className: 'board-top' }, h('div', { className: 'board-heading' }, h('strong', null, `✿ ${graph.title}`), h('small', null, graph.subtitle)), h('div', { className: 'board-switch' }, ...M.BOARD_TYPES.map(key => h('button', { key, className: cx('board-choice', g.config.board === key && 'active'), 'aria-pressed': g.config.board === key, onClick: () => { if (g.config.board !== key)
+                this.startGame({ ...g.config, board: key }); } }, key === 'S' ? '기본판' : key === 'A' ? '팔각형' : key === 'B' ? '이중 링' : '나선정원')))), h('div', { className: 'board-shadow' }, h('div', { className: 'board-cloth' }, h('div', { className: 'frame-charm frame-charm-left', 'aria-hidden': true }, '❖'), h('div', { className: 'frame-charm frame-charm-right', 'aria-hidden': true }, '❖'), h(Board, { game: g, chosenRoll: roll, chosenPiece: g.pieces.find(p => p.id === s.selectedPiece), chosenChoice: selectedOpt?.choice, onPiece: id => this.selectPiece(id), onTarget: opt => this.commitMove(opt, false), moving: s.moving, burst: s.burst }))), h('div', { className: 'board-cap' }, h('span', null, g.config.itemMode ? (g.config.board === 'G' ? '✦ 모 자리 정차 시 협문 · 중반 복주머니 정차 시 패물 획득' : '✦ 갈림길 정차 시 지름길 · 중반 복주머니 정차 시 패물 획득') : (g.config.board === 'G' ? '✦ 모 자리(5·10·15·20) 정차 시 협문 지름길 진입' : '✦ 갈림길에 정확히 멈추었을 때만 지름길 진입')), h('span', null, watching ? 'AI 판단 → 자동 말 이동' : '말 선택 → 황금색 목적지 클릭')), h('div', { className: 'map-sep' }), h('div', { className: 'throw-top' }, h('div', null, h('div', { className: 'throw-title' }, '✦ 달빛 멍석 · 윷 던지기'), h('div', { className: 'throw-desc' }, '네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')), h('div', { style: { fontSize: 11, color: '#eac78f', fontWeight: 850 } }, watchPaused ? busy ? '동작 마무리 중' : '관전 일시정지' : g.phase === 'move' ? '말 이동 중' : `${g.players[g.current].label} 차례`)), h(ThrowMat, { sticks: s.sticks, stage: s.stage, result: s.result, watching }), watching ? h('div', { className: 'throw-actions spectator-controls' }, h('button', { className: 'primary-action', disabled: g.winner !== null, 'aria-label': watchPaused ? '관전 재개' : '관전 일시정지', onClick: () => this.toggleSpectatorPause(), title: '진행 중인 던지기나 이동은 마친 뒤 다음 행동부터 멈춥니다.' }, watchPaused ? '▶ 관전 재개' : 'Ⅱ 관전 일시정지'), h('button', { className: 'sub-action', onClick: () => this.startGame(g.config) }, '새 AI 대전')) :
             h('div', { className: 'throw-actions' }, h('button', { className: 'primary-action throw-main-button', disabled: !human || g.phase !== 'roll' || s.stage === 'throwing' || !!s.moving, onClick: () => this.throwYut('random', false) }, h('span', { className: 'throw-icon' }, '♢'), s.stage === 'throwing' ? '윷가락이 날아갑니다…' : g.phase === 'move' ? '말을 이동해 주세요' : g.lastRoll && (g.lastRoll.value === 4 || g.lastRoll.value === 5) ? '보너스 윷 던지기' : '윷 던지기', h('span', { className: 'button-ornament' }, '❖')), h('button', { className: 'sub-action', disabled: !human || g.phase !== 'roll' || s.stage === 'throwing' || !!s.moving, onClick: () => this.throwYut('nak', false) }, '낙 시연'))), h('aside', { className: 'panel right-panel' }, h('div', { className: 'action-section' }, h('div', { className: 'phase-badge' }, g.phase === 'won' ? '♛ 승리' : watching ? watchPaused ? 'Ⅱ 관전 일시정지' : '◉ AI 자동 대전' : g.phase === 'move' ? '✦ 직접 말 이동' : '✦ 윷 던지기'), h('h2', { className: 'step-title' }, turnTitle), h('p', { className: 'step-desc' }, statusDesc), h('div', { className: 'move-steps' }, ...(watching ? ['윷 던지기', 'AI 판단', '말 이동'] : ['윷 결과', '말 선택', '도착점']).map((name, i) => h('div', { className: cx('move-step', (watching ? i === (g.phase === 'roll' ? 0 : s.moving ? 2 : 1) : ((i === 0 && g.phase === 'roll') || (i === 1 && g.phase === 'move' && !s.selectedPiece) || (i === 2 && !!s.selectedPiece))) && 'is-current', i === 0 && g.phase === 'move' && 'is-done'), key: i }, h('small', null, `0${i + 1}`), h('b', null, name)))), itemPouchView, h('div', { className: 'results-caption' }, h('span', null, '사용할 윷 결과'), h('span', null, `${g.rolls.length}개 남음`)), h('div', { className: 'results' }, ...Array.isArray(rollViews) ? rollViews : [rollViews]), watching ? h('div', { className: 'manual-block spectator-note' }, h('div', { className: 'manual-title' }, watchPaused ? 'Ⅱ 잠시 멈춤' : '◉ 관전 중'), h('p', { className: 'target-help' }, watchPaused ? '현재 동작이 끝나면 멈추며, 재개하면 이어서 대전합니다.' : 'AI가 모든 윷 던지기와 말 이동을 수행합니다. 윷·모 또는 잡기가 나오면 같은 AI가 추가로 던집니다.')) :
             s.selectedPiece && selectedOpt ? h('div', { className: 'manual-block is-ready' }, h('div', { className: 'manual-title' }, '✦ 이동 경로를 선택하세요'), h('div', { className: 'route-buttons' }, ...opts.map(o => h('button', { className: cx('route-btn', selectedOpt.choice === o.choice && 'active'), key: o.choice, onClick: () => this.setState({ selectedChoice: o.choice }) }, o.label))), h('p', { className: 'target-help' }, '윷판에서 금빛으로 빛나는 도착점을 누르거나 아래 버튼으로 이동하세요.'), h('button', { className: 'primary-action', style: { width: '100%', minHeight: 44, fontSize: 13, marginTop: 11 }, disabled: !!s.moving, onClick: () => this.commitMove(selectedOpt, false) }, `✦ ${E.NAMES[roll?.value ?? 0] || ''} · 선택한 말 이동 확정`)) :
                 h('div', { className: 'manual-block' }, h('div', { className: 'manual-title' }, '✦ 조작 안내'), h('p', { className: 'target-help' }, g.phase === 'move' ? '윷 결과 선택 → 윷판의 내 말이나 왼쪽 대기 말을 클릭하세요.' : g.phase === 'roll' ? '윷을 던져 도·개·걸·윷·모·빽도 결과를 확인하세요.' : '말 4개를 모두 완주시켜 승리하세요.'))), h('div', { className: 'log-section' }, h('div', { className: 'side-section-title' }, '게임 기록', h('span', null, 'LIVE')), h('div', { className: 'log-list' }, ...logViews)))), h('div', { className: 'footer-copy' }, 'DALBIT YUT · 나 + AI 1~3명 / 2~4인 로컬 / AI 자동 대전 관전'), s.toast ? h('div', { className: 'toast', role: 'status' }, s.toast) : null, s.settingsOpen ? h('div', { className: 'modal-backdrop', role: 'presentation', onMouseDown: (ev) => { if (ev.target === ev.currentTarget)
-                this.setState({ settingsOpen: false }); } }, h('div', { className: 'modal', role: 'dialog', 'aria-modal': true, 'aria-label': '게임 설정' }, h('div', { style: { color: '#e5c17d', fontSize: 12, fontWeight: 900 } }, '새로운 한 판'), h('h2', null, '달빛 아래 윷놀이'), h('p', null, '직접 플레이하거나 AI끼리 대전하는 모습을 관전하세요.'), h('label', { className: 'form-label' }, '게임 모드'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(3,1fr)' } }, ...[['ai', '나 + AI 대전'], ['local', '함께하기'], ['spectate', 'AI 관전']].map(([value, text]) => h('button', { key: value, className: cx('setting-btn', s.setup.mode === value && 'active'), 'aria-pressed': s.setup.mode === value, onClick: () => this.setState({ setup: { ...s.setup, mode: value } }) }, text))), h('label', { className: 'form-label' }, s.setup.mode === 'spectate' ? '참가 AI 수' : s.setup.mode === 'ai' ? 'AI 상대 수' : '총 참가 인원'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(3,1fr)' } }, ...[2, 3, 4].map(n => h('button', { key: n, className: cx('setting-btn', s.setup.count === n && 'active'), 'aria-pressed': s.setup.count === n, onClick: () => this.setState({ setup: { ...s.setup, count: n } }) }, s.setup.mode === 'spectate' ? `AI ${n}명` : s.setup.mode === 'ai' ? `AI ${n - 1}명` : `${n}명`))), h('p', { className: 'setup-composition', role: 'status' }, s.setup.mode === 'spectate' ? `AI ${s.setup.count}명 자동 대전 · 관전 전용` : s.setup.mode === 'ai' ? `나 1명 + AI ${s.setup.count - 1}명 · 총 ${s.setup.count}인 대전` : `사람 ${s.setup.count}명 · 로컬 대전`), h('label', { className: 'form-label' }, '윷놀이판'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(2,1fr)' } }, ...M.BOARD_TYPES.map(value => h('button', { key: value, className: cx('setting-btn', s.setup.board === value && 'active'), 'aria-pressed': s.setup.board === value, onClick: () => this.setState({ setup: { ...s.setup, board: value } }) }, M.boardMeta(value).title))), h('label', { className: 'form-label', htmlFor: 'music-volume' }, `배경음악 · 달빛 노을 머문 툇마루 (${Math.round(s.musicVolume * 100)}%)`), h('input', { id: 'music-volume', type: 'range', min: 0, max: 100, step: 1, value: Math.round(s.musicVolume * 100), 'aria-label': '배경음악 음량', onChange: (ev) => this.setState({ musicVolume: Number(ev.target.value) / 100 }), style: { width: '100%', accentColor: '#e5c17d' } }), h('p', { className: 'modal-note' }, '규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 직접 말 선택과 목적지 확정이 기본입니다.'), h('button', { className: 'primary-action', onClick: () => this.startGame(s.setup) }, s.setup.mode === 'spectate' ? `AI ${s.setup.count}명 관전 시작` : s.setup.mode === 'ai' ? `나 + AI ${s.setup.count - 1}명으로 시작` : `사람 ${s.setup.count}명으로 시작`))) : null, g.winner !== null ? h('div', { className: 'modal-backdrop' }, h('div', { className: 'modal victory' }, h('div', { style: { color: '#f2d098', fontSize: 12, textAlign: 'center' } }, '승부 결정'), h('div', { className: 'prize' }, '🏆'), h('h2', { style: { textAlign: 'center' } }, `${g.players[g.winner].label} 승리!`), h('p', { style: { textAlign: 'center' } }, '네 개의 말을 모두 완주했습니다.'), h('button', { className: 'primary-action', onClick: () => this.startGame(g.config) }, '다시 한 판'))) : null));
+                this.setState({ settingsOpen: false }); } }, h('div', { className: 'modal', role: 'dialog', 'aria-modal': true, 'aria-label': '게임 설정' }, h('div', { style: { color: '#e5c17d', fontSize: 12, fontWeight: 900 } }, '새로운 한 판'), h('h2', null, '달빛 아래 윷놀이'), h('p', null, '직접 플레이하거나 AI끼리 대전하는 모습을 관전하세요.'), h('label', { className: 'form-label' }, '게임 모드'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(3,1fr)' } }, ...[['ai', '나 + AI 대전'], ['local', '함께하기'], ['spectate', 'AI 관전']].map(([value, text]) => h('button', { key: value, className: cx('setting-btn', s.setup.mode === value && 'active'), 'aria-pressed': s.setup.mode === value, onClick: () => this.setState({ setup: { ...s.setup, mode: value } }) }, text))), h('label', { className: 'form-label' }, s.setup.mode === 'spectate' ? '참가 AI 수' : s.setup.mode === 'ai' ? 'AI 상대 수' : '총 참가 인원'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(3,1fr)' } }, ...[2, 3, 4].map(n => h('button', { key: n, className: cx('setting-btn', s.setup.count === n && 'active'), 'aria-pressed': s.setup.count === n, onClick: () => this.setState({ setup: { ...s.setup, count: n } }) }, s.setup.mode === 'spectate' ? `AI ${n}명` : s.setup.mode === 'ai' ? `AI ${n - 1}명` : `${n}명`))), h('label', { className: 'form-label' }, '대전 방식'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(2,1fr)' } }, h('button', { className: cx('setting-btn', !s.setup.itemMode && 'active'), 'aria-pressed': !s.setup.itemMode, onClick: () => this.setState({ setup: { ...s.setup, itemMode: false } }) }, '일반전 (전통 윷놀이)'), h('button', { className: cx('setting-btn', s.setup.itemMode && 'active'), 'aria-pressed': !!s.setup.itemMode, onClick: () => this.setState({ setup: { ...s.setup, itemMode: true } }) }, '🎁 아이템전 (중반 패물)')), h('p', { className: 'setup-composition', role: 'status' }, (s.setup.mode === 'spectate' ? `AI ${s.setup.count}명 자동 대전 · 관전 전용` : s.setup.mode === 'ai' ? `나 1명 + AI ${s.setup.count - 1}명 · 총 ${s.setup.count}인` : `사람 ${s.setup.count}명 · 로컬 대전`) + (s.setup.itemMode ? ` · 아이템전(제 ${E.itemUnlockTurn(s.setup.count)}턴 중반 등장)` : ' · 일반전')), h('label', { className: 'form-label' }, '윷놀이판'), h('div', { className: 'setting-options', style: { gridTemplateColumns: 'repeat(2,1fr)' } }, ...M.BOARD_TYPES.map(value => h('button', { key: value, className: cx('setting-btn', s.setup.board === value && 'active'), 'aria-pressed': s.setup.board === value, onClick: () => this.setState({ setup: { ...s.setup, board: value } }) }, M.boardMeta(value).title))), h('label', { className: 'form-label', htmlFor: 'music-volume' }, `배경음악 · 달빛 노을 머문 툇마루 (${Math.round(s.musicVolume * 100)}%)`), h('input', { id: 'music-volume', type: 'range', min: 0, max: 100, step: 1, value: Math.round(s.musicVolume * 100), 'aria-label': '배경음악 음량', onChange: (ev) => this.setState({ musicVolume: Number(ev.target.value) / 100 }), style: { width: '100%', accentColor: '#e5c17d' } }), h('p', { className: 'modal-note' }, '규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 아이템전 선택 시 참가 인원에 따른 중반 턴부터 패물이 등장합니다.'), h('button', { className: 'primary-action', onClick: () => this.startGame(s.setup) }, s.setup.mode === 'spectate' ? `AI ${s.setup.count}명 관전 시작` : s.setup.mode === 'ai' ? `나 + AI ${s.setup.count - 1}명으로 시작` : `사람 ${s.setup.count}명으로 시작`))) : null, g.winner !== null ? h('div', { className: 'modal-backdrop' }, h('div', { className: 'modal victory' }, h('div', { style: { color: '#f2d098', fontSize: 12, textAlign: 'center' } }, '승부 결정'), h('div', { className: 'prize' }, '🏆'), h('h2', { style: { textAlign: 'center' } }, `${g.players[g.winner].label} 승리!`), h('p', { style: { textAlign: 'center' } }, '네 개의 말을 모두 완주했습니다.'), h('button', { className: 'primary-action', onClick: () => this.startGame(g.config) }, '다시 한 판'))) : null));
     }
     ;
     state = { game: E.createGame(INITIAL_CONFIG), setup: { ...INITIAL_CONFIG }, selectedRoll: null, selectedPiece: null, selectedChoice: null, settingsOpen: false, sound: true, musicVolume: 0.3, aiPaused: false, stage: 'idle', sticks: initialSticks(), result: null, moving: null, burst: null, toast: null };

@@ -150,10 +150,20 @@ check(gPiece.node==='C','Shortcut from O20 passes G3 to center C');
 check(M.movePiece(gGraph,gPiece,1).node==='FIN','One step from C finishes on G');
 const gBack=M.movePiece(gGraph,M.movePiece(gGraph,M.initialState(),1),-1);
 check(gBack.node==='C'&&M.movePiece(gGraph,gBack,-1).node==='O24','Backdo from O1 reaches C then O24 on G');
-// Tactical Items verification
-let itemGame=E.createGame({mode:'local',count:2,board:'G'});
-check(itemGame.players[0].items.length===2,'Players start with 2 tactical items');
-check(Object.keys(itemGame.itemNodes).length===5,'Board spawns 5 item pouches');
+// Tactical Items verification (일반전 vs 아이템전 & 참가 인원별 중반 등장)
+let normalGame=E.createGame({mode:'local',count:2,board:'G'});
+check(!normalGame.config.itemMode&&!normalGame.itemsUnlocked&&normalGame.players[0].items.length===0&&Object.keys(normalGame.itemNodes).length===0,'Default normal mode has no items');
+for(let t=0;t<6;t++)normalGame=E.nextTurn(normalGame);
+check(!normalGame.itemsUnlocked&&normalGame.players[0].items.length===0,'Normal mode never unlocks items at mid-game');
+
+check(E.itemUnlockTurn(2)===5&&E.itemUnlockTurn(3)===7&&E.itemUnlockTurn(4)===9,'Mid-game item unlock turn scales with player count');
+let itemGame=E.createGame({mode:'local',count:2,board:'G',itemMode:true});
+check(itemGame.config.itemMode&&!itemGame.itemsUnlocked&&itemGame.players[0].items.length===0&&Object.keys(itemGame.itemNodes).length===0,'Item mode starts empty before mid-game');
+for(let t=1;t<itemGame.itemUnlockTurn;t++){
+ check(!itemGame.itemsUnlocked,'Items remain locked before turn '+itemGame.itemUnlockTurn);
+ itemGame=E.nextTurn(itemGame);
+}
+check(itemGame.itemsUnlocked&&itemGame.players.every(p=>p.items.length===1)&&Object.keys(itemGame.itemNodes).length===4,'Mid-game turn unlocks items and spawns count+2 pouches');
 // 1. Geumjul saves nak
 itemGame.players[0].items=[{id:'it-g',type:'geumjul'}];
 itemGame=E.useItem(itemGame,'it-g');
@@ -161,7 +171,7 @@ check(itemGame.players[0].geumjulArmed&&itemGame.players[0].items.length===0,'Ge
 itemGame=E.throwResult(itemGame,{value:3,faces:[true,true,true,false]},true);
 check(itemGame.phase==='move'&&itemGame.rolls.length===1&&!itemGame.players[0].geumjulArmed,'Geumjul saves nak throw');
 // 2. Key allows pass-through shortcut on G (O4 + 2 steps passes O5 -> G0 -> O17)
-let keyGame=E.createGame({mode:'local',count:2,board:'G'});
+let keyGame=E.unlockItemsNow(E.createGame({mode:'local',count:2,board:'G',itemMode:true}));
 keyGame.pieces[0]={...keyGame.pieces[0],...M.movePiece(gGraph,M.initialState(),4)};
 keyGame.phase='move';keyGame.rolls=[{id:'r-key',value:2,faces:[true,true,false,false]}];
 keyGame.players[0].items=[{id:'it-k',type:'key'}];
@@ -169,13 +179,13 @@ keyGame=E.useItem(keyGame,'it-k');
 const keyOpts=E.moveOptions(keyGame,'p0-0','r-key');
 check(keyOpts.some(o=>o.choice==='shortcut'&&o.destination==='G0'),'Key enables pass-through shortcut at O5');
 // 3. Moss stone adjusts roll by +1 or -1
-let stoneGame=E.createGame({mode:'local',count:2,board:'S'});
+let stoneGame=E.unlockItemsNow(E.createGame({mode:'local',count:2,board:'S',itemMode:true}));
 stoneGame.phase='move';stoneGame.rolls=[{id:'r-st',value:2,faces:[true,true,false,false]}];
 stoneGame.players[0].items=[{id:'it-s',type:'stone'}];
 stoneGame=E.useItem(stoneGame,'it-st-bad')&&E.useItem(stoneGame,'it-s',{delta:1});
 check(E.moveOptions(stoneGame,'p0-0','r-st')[0].destination==='O3','Stone +1 turns gae(2) into geol(3)');
 // 4. Hopae shield blocks capture and stops attacker 1 step before
-let shieldGame=E.createGame({mode:'local',count:2,board:'S'});
+let shieldGame=E.unlockItemsNow(E.createGame({mode:'local',count:2,board:'S',itemMode:true}));
 const sGraph=M.makeGraph('S');
 shieldGame.pieces[4]={...shieldGame.pieces[4],...M.movePiece(sGraph,M.initialState(),3),shielded:true};
 shieldGame.phase='move';shieldGame.rolls=[{id:'r-atk',value:3,faces:[true,true,true,false]}];
@@ -183,7 +193,7 @@ const atkRes=E.resolveMove(shieldGame,E.moveOptions(shieldGame,'p0-0','r-atk')[0
 check(atkRes.meta.shieldBlocked&&atkRes.meta.captured===0,'Shield blocks capture');
 check(atkRes.game.pieces[0].node==='O2'&&atkRes.game.pieces[4].node==='O3'&&!atkRes.game.pieces[4].shielded,'Attacker stops at O2 and shield is consumed');
 // 5. Pouch pickup when landing on item node with <2 items
-let pouchGame=E.createGame({mode:'local',count:2,board:'S'});
+let pouchGame=E.unlockItemsNow(E.createGame({mode:'local',count:2,board:'S',itemMode:true}));
 pouchGame.players[0].items=[];
 pouchGame.phase='move';pouchGame.rolls=[{id:'r-pouch',value:3,faces:[true,true,true,false]}];
 const pouchRes=E.resolveMove(pouchGame,E.moveOptions(pouchGame,'p0-0','r-pouch')[0]);

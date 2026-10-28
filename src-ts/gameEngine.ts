@@ -15,7 +15,7 @@ export interface Player extends PlayerVisual {
  stoneDelta: -1 | 0 | 1;
 }
 export interface GamePiece extends PiecePath { id: string; player: number; index: number; shielded: boolean }
-export interface GameConfig { mode: 'ai'|'local'|'spectate'; count: number; board: BoardType; backdo: boolean }
+export interface GameConfig { mode: 'ai'|'local'|'spectate'; count: number; board: BoardType; backdo: boolean; itemMode: boolean }
 export interface YutRollOutcome { faces: boolean[]; value: number }
 export interface YutRoll extends YutRollOutcome { id: string }
 export interface GameLog { id: string; type: string; text: string; player: number|null }
@@ -31,6 +31,8 @@ export interface GameState {
  turn: number;
  logs: GameLog[];
  throwCount: number;
+ itemsUnlocked: boolean;
+ itemUnlockTurn: number;
  itemNodes: Record<string, ItemType>;
 }
 export interface MoveOption {
@@ -61,10 +63,10 @@ export const ITEMS: Record<ItemType, ItemMeta>={
  shield:{type:'shield',name:'호패 방패',icon:'🛡️',summary:'이번에 이동해 도착한 내 말(또는 업힌 그룹)에 1회 방어막을 씌웁니다.'}
 };
 const POUCH_SPOTS: Record<BoardType, string[]>={
- S:['O3','O8','O13','O18','C'],
- A:['O3','O9','O15','O21','C'],
- B:['O3','O9','O15','O21','I4'],
- G:['O3','O8','O13','O18','O22']
+ S:['O3','O8','O13','O18','C','O11'],
+ A:['O3','O9','O15','O21','C','O13'],
+ B:['O3','O9','O15','O21','I4','O13'],
+ G:['O3','O8','O13','O18','O22','O11']
 };
 const COLORS: PlayerVisual[]=[
  {name:'황금',color:'#eca14d',light:'#ffe4ba',avatar:'🐕'},
@@ -76,23 +78,49 @@ const NAMES: Record<number, string>={'-1':'빽도','1':'도','2':'개','3':'걸'
 const SCORES: Record<number, string>={'-1':'↶','1':'Ⅰ','2':'Ⅱ','3':'Ⅲ','4':'Ⅳ','5':'Ⅴ','6':'Ⅵ'};
 let idSeq=1;
 function newId(){return String(idSeq++);}
-function makeItemNodes(board: BoardType): Record<string, ItemType>{
- const spots=POUCH_SPOTS[board]||POUCH_SPOTS.S;
+
+export function itemUnlockTurn(count: number): number{
+ const c=Math.min(4,Math.max(2,Number(count ?? 2)));
+ return c*2+1;
+}
+
+function makeItemNodes(board: BoardType,count=3): Record<string, ItemType>{
+ const spots=(POUCH_SPOTS[board]||POUCH_SPOTS.S).slice(0,Math.min(6,Math.max(4,count+2)));
  return Object.fromEntries(spots.map((node,i)=>[node,ITEM_TYPES[i%ITEM_TYPES.length]]));
 }
+
+export function unlockItemsNow(g: GameState): GameState{
+ if(!g.config.itemMode||g.itemsUnlocked)return g;
+ const starter: ItemType[]=['key','stone','geumjul','shield'];
+ const players=g.players.map((p,i)=>({
+  ...p,
+  items:p.items.length<2?[...p.items,{id:newId(),type:starter[i%starter.length]}]:p.items
+ }));
+ const itemNodes=makeItemNodes(g.config.board,g.config.count);
+ return appendLog({...g,players,itemsUnlocked:true,itemNodes},'item',`🎁 중반전 돌입! 참가자 전원에게 전술 패물 1개가 보급되고 윷판에 복주머니 ${Object.keys(itemNodes).length}개가 나타났습니다.`,null);
+}
+
 function createGame(opts: Partial<GameConfig>): GameState{
- const config: GameConfig={mode:opts.mode==='spectate'?'spectate':opts.mode==='local'?'local':'ai',count:Math.min(4,Math.max(2,Number(opts.count ?? 2))),board:opts.board==='A'||opts.board==='B'||opts.board==='G'?opts.board:'S',backdo:opts.backdo!==false};
- const starter: [ItemType,ItemType][]= [['key','stone'],['stone','shield'],['geumjul','key'],['shield','geumjul']];
+ const count=Math.min(4,Math.max(2,Number(opts.count ?? 2)));
+ const config: GameConfig={
+  mode:opts.mode==='spectate'?'spectate':opts.mode==='local'?'local':'ai',
+  count,
+  board:opts.board==='A'||opts.board==='B'||opts.board==='G'?opts.board:'S',
+  backdo:opts.backdo!==false,
+  itemMode:Boolean(opts.itemMode)
+ };
+ const unlockTurn=itemUnlockTurn(count);
  const players: Player[]=Array.from({length:config.count},(_,i)=>({
   id:i,...COLORS[i],
   label:config.mode==='local'?`플레이어 ${i+1}`:config.mode==='ai'&&i===0?'나':`${COLORS[i].name} AI`,
   ai:config.mode==='spectate'||config.mode==='ai'&&i>0,
-  items:starter[i%starter.length].map(type=>({id:newId(),type})),
+  items:[],
   geumjulArmed:false,keyArmed:false,stoneDelta:0
  }));
  const pieces: GamePiece[]=players.flatMap(p=>Array.from({length:4},(_,i)=>({...maps.initialState(),id:`p${p.id}-${i}`,player:p.id,index:i,shielded:false})));
+ const modeLabel=config.itemMode?`아이템전(제 ${unlockTurn}턴 중반부터 패물 등장)`:'일반전';
  return {config,players,pieces,current:0,phase:'roll',rolls:[],lastRoll:null,winner:null,turn:1,
- logs:[{id:newId(),type:'system',text:`${maps.boardMeta(config.board).title} 윷놀이가 시작되었습니다.`,player:null}],throwCount:0,itemNodes:makeItemNodes(config.board)};
+ logs:[{id:newId(),type:'system',text:`${maps.boardMeta(config.board).title} · ${modeLabel} 윷놀이가 시작되었습니다.`,player:null}],throwCount:0,itemsUnlocked:false,itemUnlockTurn:unlockTurn,itemNodes:{}};
 }
 function currentPlayer(g: GameState): Player{return g.players[g.current];}
 function occupied(piece: GamePiece): boolean{return piece.node!=='WAIT'&&piece.node!=='FIN';}
@@ -143,8 +171,15 @@ function appendLog(g: GameState,type: string,text: string,player: number|null=nu
 function nextTurn(g: GameState,why?: string): GameState{
  const old=g.current, next=(old+1)%g.players.length;
  const clearedPlayers=g.players.map((p,i)=>i===old?{...p,keyArmed:false,stoneDelta:0 as const}:p);
- let result: GameState={...g,players:clearedPlayers,current:next,phase:'roll',turn:g.turn+1,rolls:[],lastRoll:null};
+ const nextTurnNum=g.turn+1;
+ let result: GameState={...g,players:clearedPlayers,current:next,phase:'roll',turn:nextTurnNum,rolls:[],lastRoll:null};
  result=appendLog(result,'turn',why||`${g.players[old].label} 차례 종료 → ${g.players[next].label} 차례`,next);
+ if(result.config.itemMode&&!result.itemsUnlocked&&nextTurnNum>=result.itemUnlockTurn){
+  result=unlockItemsNow(result);
+ }else if(result.config.itemMode&&result.itemsUnlocked&&Object.keys(result.itemNodes).length===0&&(nextTurnNum-1)%result.config.count===0){
+  const refilled=makeItemNodes(result.config.board,result.config.count);
+  result=appendLog({...result,itemNodes:refilled},'item','🎁 새 라운드를 맞아 윷판 위에 복주머니가 다시 채워졌습니다.',null);
+ }
  return result;
 }
 function normalize(g: GameState): GameState{
@@ -196,6 +231,7 @@ function throwResult(g: GameState,rolled: YutRollOutcome,nak: boolean): GameStat
  return normalize(next);
 }
 function useItem(g: GameState,itemId: string,arg?: {delta?: -1|1; pieceId?: string}): GameState{
+ if(!g.config.itemMode)return g;
  const actor=g.players[g.current];
  if(!actor||g.winner!==null)return g;
  const item=actor.items.find(it=>it.id===itemId);
@@ -257,7 +293,7 @@ function resolveMove(g: GameState,option: MoveOption): MoveResolution|null{
  });
  let itemNodes={...g.itemNodes};
  let pickedItem: ItemType|null=null;
- const pouchAtDest=finalDest!=='WAIT'&&finalDest!=='FIN'?itemNodes[finalDest]:undefined;
+ const pouchAtDest=g.config.itemMode&&g.itemsUnlocked&&finalDest!=='WAIT'&&finalDest!=='FIN'?itemNodes[finalDest]:undefined;
  const cleanedActorItems=actor.items;
  let nextActorItems=cleanedActorItems;
  if(pouchAtDest&&cleanedActorItems.length<2){
@@ -279,6 +315,11 @@ function resolveMove(g: GameState,option: MoveOption): MoveResolution|null{
   `${actor.label} · ${NAMES[rollVal]} · ${matched.label} 이동`;
  state=appendLog(state,winner!==null?'win':shieldBlocked?'item':captured?'capture':finalDest==='FIN'?'finish':'move',note);
  if(pickedItem)state=appendLog(state,'item',`🎁 ${actor.label}이(가) 복주머니에서 [${ITEMS[pickedItem].icon} ${ITEMS[pickedItem].name}]을(를) 획득했습니다!`);
+ const progressedPieces=updatedPieces.filter(p=>p.node!=='WAIT').length;
+ const anyPlayerMidFinish=g.players.some(pl=>updatedPieces.filter(p=>p.player===pl.id&&p.node==='FIN').length>=2);
+ if(winner===null&&state.config.itemMode&&!state.itemsUnlocked&&(anyPlayerMidFinish||progressedPieces>=state.config.count*3)){
+  state=unlockItemsNow(state);
+ }
  if(winner===null)state=normalize(state);
  return {game:state,meta:{captured,joined,moved,winner,from:matched.source,to:finalDest,path:finalUpdated.lastPath,player:g.current,groupIds:matched.groupIds,shieldBlocked,pickedItem}};
 }
@@ -288,7 +329,7 @@ function scoreOption(g: GameState,opt: MoveOption): number{
  const shieldedEnemy=g.pieces.filter(p=>p.player!==g.current&&p.node===dest&&p.shielded).length;
  const friend=g.pieces.filter(p=>p.player===g.current&&p.node===dest).length;
  const piece=g.pieces.find(p=>p.id===opt.pieceId)!;
- const pouch=g.itemNodes[dest]&&g.players[g.current].items.length<2?45:0;
+ const pouch=g.config.itemMode&&g.itemsUnlocked&&g.itemNodes[dest]&&g.players[g.current].items.length<2?45:0;
  return (dest==='FIN'?200:0)+enemy*115-shieldedEnemy*40+friend*18+pouch+(opt.choice==='shortcut'?60:opt.choice==='finish'?60:0)+
  (piece.node==='WAIT'?22:0)+(opt.path.length*2)+Math.random()*18;
 }

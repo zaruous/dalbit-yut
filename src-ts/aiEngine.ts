@@ -34,6 +34,7 @@ function outcomes(backdo: boolean): [number,number][]{
 
 /** Optional tactical item consideration for AI before throwing or moving. */
 export function chooseAIItem(g: GameState): GameState{
+ if(!g.config.itemMode||!g.itemsUnlocked)return g;
  const actor=g.players[g.current];
  if(!actor||!actor.ai||g.winner!==null||!actor.items.length)return g;
  if(g.phase==='roll'){
