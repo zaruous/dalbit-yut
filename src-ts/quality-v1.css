@@ -318,3 +318,23 @@ body{
 }
 @media(prefers-reduced-motion:reduce){.mat-sticks.throwing g.stick-flight,.mat-sticks.throwing g.stick-arc,.mat-sticks.throwing .stick-shadow{animation:none!important}}
 
+/* Tactical Items & Pouch UI */
+.player-items-mini{display:flex;gap:4px;justify-content:flex-end;margin-top:4px;font-size:13px}
+.tactical-pouch{margin-bottom:13px;padding:10px 11px;border-radius:10px;border:1px solid #e3b36e55;background:linear-gradient(150deg,#3b242199,#21171dcc)}
+.tactical-pouch .results-caption{margin-bottom:7px}
+.active-buffs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.buff-chip{font-size:10.5px;font-weight:800;color:#2e1a10;background:linear-gradient(#fff2c4,#eeb660);border:1px solid #fff7db;border-radius:999px;padding:2px 8px}
+.item-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.item-card{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:52px;padding:7px 9px;border-radius:9px;border:1px solid #d9a76599;background:linear-gradient(160deg,#523328,#2a1b20);color:#fff2d6;cursor:pointer;text-align:left;transition:transform .15s,border-color .15s}
+.item-card:not(:disabled):hover{border-color:#ffe39f;transform:translateY(-1px);box-shadow:0 0 12px #ebad6055}
+.item-card:disabled{opacity:.48;cursor:not-allowed}
+.item-card .item-title{font-size:12px;font-weight:900;color:#ffeaad}
+.item-card small{font-size:10px;color:#dec4a4}
+.stone-card{cursor:default}
+.stone-actions{display:flex;gap:5px;width:100%;margin-top:2px}
+.stone-btn{flex:1;min-height:24px;border-radius:6px;border:1px solid #e6b873;background:linear-gradient(#6e442c,#3b241d);color:#fff1cf;font-size:10.5px;font-weight:800;cursor:pointer}
+.stone-btn:disabled{opacity:.45;cursor:not-allowed}
+.stone-btn:not(:disabled):hover{background:linear-gradient(#99603b,#523125);border-color:#fff0b8}
+.item-pouch-marker{filter:drop-shadow(0 2px 3px #140a0acc)}
+
+

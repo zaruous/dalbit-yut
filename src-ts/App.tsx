@@ -1,7 +1,7 @@
 import * as E from './gameEngine.js';
 import * as M from './mapEngine.js';
-import {chooseAIAction} from './aiEngine.js';
-import type { GameState, GameConfig, MoveOption, MoveMeta, LandingStick, YutRoll, GamePiece } from './gameEngine.js';
+import {chooseAIAction, chooseAIItem} from './aiEngine.js';
+import type { GameState, GameConfig, MoveOption, MoveMeta, LandingStick, YutRoll, GamePiece, PlayerItem } from './gameEngine.js';
 import type { MoveChoice } from './mapEngine.js';
 
 // React/ReactDOM UMD vendors load before this ES module. The game uses React
@@ -36,9 +36,10 @@ function gateArch(pt: M.Point,horizontal: boolean,key: string){
  );
 }
 function PieceShape(props: any){
- const {x,y,color,number,selected,available,animated,onClick}=props;
- return h('g',{className:cx('piece-handle',selected&&'selected',available&&'available',animated&&'animated'),transform:`translate(${x} ${y})`,onClick,role:onClick?'button':undefined,tabIndex:onClick?0:undefined,'aria-label':onClick?'말 선택':undefined,onKeyDown:onClick?(ev)=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();onClick();}}:undefined},
+ const {x,y,color,number,shielded,selected,available,animated,onClick}=props;
+ return h('g',{className:cx('piece-handle',selected&&'selected',available&&'available',animated&&'animated',shielded&&'shielded'),transform:`translate(${x} ${y})`,onClick,role:onClick?'button':undefined,tabIndex:onClick?0:undefined,'aria-label':onClick?'말 선택':undefined,onKeyDown:onClick?(ev)=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();onClick();}}:undefined},
    h('ellipse',{className:'piece-floor-shadow',cx:0,cy:16,rx:17,ry:6,fill:'#2d1a10',opacity:'.34'}),
+   shielded?h('circle',{className:'piece-shield-ring',cx:0,cy:0,r:26,fill:'none',stroke:'#7ee8fa',strokeWidth:2.6,strokeDasharray:'5 3'}):null,
    h('circle',{className:'piece-halo',cx:0,cy:0,r:23,fill:'none',stroke:selected?'#ffe4a1':available?'#f8cb69':'#604129',strokeWidth:selected?4:available?3:1.5,strokeDasharray:selected?'7 4':undefined}),
    h('rect',{x:-13,y:-1,width:26,height:17,rx:8,fill:'#43281c',stroke:'#2b180e',strokeWidth:1.2}),
    h('rect',{x:-12,y:-4,width:24,height:17,rx:8,fill:color,stroke:'#fff4dd',strokeWidth:1.2}),
@@ -48,6 +49,7 @@ function PieceShape(props: any){
    h('ellipse',{cx:-3.3,cy:-10,rx:4.8,ry:3,fill:'#fff9df',opacity:'.65'}),
    h('circle',{cx:0,cy:-8,r:2.5,fill:'#fff1cf',opacity:'.6'}),
    number>1?h('g',null,h('circle',{cx:15,cy:-14,r:10.5,fill:'#33251d',stroke:'#ffdd94',strokeWidth:1.8}),h('text',{x:15,y:-10,textAnchor:'middle',fontSize:11,fontWeight:900,fill:'#ffe7b9'},number)):null,
+   shielded?h('g',{pointerEvents:'none'},h('circle',{cx:-15,cy:-14,r:9.5,fill:'#1c3b47',stroke:'#9bf6ff',strokeWidth:1.5}),h('text',{x:-15,y:-10.5,textAnchor:'middle',fontSize:10},'🛡️')):null,
    selected?h('g',{className:'selected-piece-label'},h('rect',{x:-27,y:-40,width:54,height:19,rx:8,fill:'#55301c',stroke:'#ffdc8f',strokeWidth:1.4}),h('text',{x:0,y:-27,textAnchor:'middle',fontSize:11},'선택한 말')):null,
    onClick?h('circle',{className:'piece-hit-area',cx:0,cy:0,r:35,fill:'transparent',stroke:'none'}):null
  );
@@ -90,6 +92,7 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
   }
   const kind=isSpiral?(id==='O0'?'goal':spiralForkSet.has(id)?'fork':id.startsWith('G')?'inner':'normal'):(id===home?'goal':id===ne||id===nw?'fork':id==='C'?'center':id.startsWith('I')?'inner':'normal');
   const big=kind==='goal'?14:kind==='fork'||kind==='center'?13:isSpiral?(id.startsWith('G')?7.5:9):game.config.board==='S'?9:8;
+  const pouchType=game.itemNodes?.[id];
   return h('g',{key:id},
     kind==='goal'||kind==='center'?h('circle',{cx:pos.x,cy:pos.y,r:big+6,fill:'none',stroke:kind==='goal'?'#7fb9a1':'#b38a51',strokeWidth:1,strokeDasharray:'3 4'}):null,
     h('ellipse',{cx:pos.x,cy:pos.y+2,rx:big+1.8,ry:big+1,fill:'#593c21',opacity:.2,pointerEvents:'none'}),
@@ -98,14 +101,18 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
     h('circle',{className:'node-engraving',cx:pos.x,cy:pos.y,r:big-2}),
     kind==='fork'?h('circle',{cx:pos.x,cy:pos.y,r:3.5,fill:'#ba7142'}):null,
     kind==='center'?h('text',{x:pos.x,y:pos.y+3.5,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#f5d99d'},'✦'):null,
-    kind==='goal'?h('text',{x:pos.x,y:pos.y+4,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#f4f3cf'},isSpiral?'출':'집'):null
+    kind==='goal'?h('text',{x:pos.x,y:pos.y+4,textAnchor:'middle',fontSize:10,fontWeight:900,fill:'#f4f3cf'},isSpiral?'출':'집'):null,
+    pouchType?h('g',{className:'item-pouch-marker',transform:`translate(${pos.x} ${pos.y-13})`,pointerEvents:'none'},
+     h('circle',{cx:0,cy:0,r:8.5,fill:'#5a231b',stroke:'#ffdc8e',strokeWidth:1.3}),
+     h('text',{x:0,y:3.5,textAnchor:'middle',fontSize:9.5},E.ITEMS[pouchType].icon)
+    ):null
   );
  });
  const tokenViews=groups.map((gr,i)=>{
   if(gr.items.some(p=>movedGroups.has(p.id)))return null;
   const p=game.players[gr.player],c=coords(graph,gr.node),head=gr.items[0];
   const canPick=isHuman&&gr.player===game.current&&gr.items.some(v=>availableIds.has(v.id));
-  return h(PieceShape,{key:'piece-'+i,x:c.x,y:c.y,color:p.color,number:gr.items.length,
+  return h(PieceShape,{key:'piece-'+i,x:c.x,y:c.y,color:p.color,number:gr.items.length,shielded:gr.items.some(v=>v.shielded),
    selected:!!chosenPiece&&gr.items.some(v=>v.id===chosenPiece.id),available:canPick,onClick:canPick?()=>onPiece(head.id):null});
  });
  const movingToken=moving&&moving.meta.player===game.current?(()=>{
@@ -352,7 +359,14 @@ checkAI(){
  const s=this.state,g=s.game;
  if(!g||!g.players[g.current].ai||g.winner!==null||s.aiPaused||s.settingsOpen||s.moving||s.stage==='throwing'||this.aiTimer)return;
  if(g.phase!=='roll'&&g.phase!=='move')return;
- this.aiTimer=setTimeout(()=>{this.aiTimer=null;if(this.destroyed)return;const current=this.state.game;if(!current.players[current.current].ai||this.state.aiPaused||this.state.moving||this.state.stage==='throwing'||this.state.settingsOpen)return;
+ this.aiTimer=setTimeout(()=>{this.aiTimer=null;if(this.destroyed)return;
+  let current=this.state.game;
+  if(!current.players[current.current].ai||this.state.aiPaused||this.state.moving||this.state.stage==='throwing'||this.state.settingsOpen)return;
+  const withItem=chooseAIItem(current);
+  if(withItem!==current){
+   this.setState({game:withItem});
+   return;
+  }
   if(current.phase==='roll')this.throwYut('random',true);else if(current.phase==='move'){
    const action=chooseAIAction(current);if(!action){this.setState({game:E.normalize(current)});return;}
    this.commitMove(action,true);
@@ -373,10 +387,46 @@ throwYut(mode: 'safe'|'nak'|'random',ai: boolean){
  this.setState({stage:'throwing',sticks,result:null,selectedPiece:null,selectedChoice:null});this.playSound('throw');
  this.defer(()=>this.playSound(landing.nak?'nak':'land'),830);
  this.defer(()=>{
-  const nak=landing.nak,next=E.throwResult(this.state.game,rolled,nak);
+  const cur=this.state.game,geumjulSaved=landing.nak&&cur.players[cur.current]?.geumjulArmed;
+  const nak=landing.nak&&!geumjulSaved,next=E.throwResult(cur,rolled,landing.nak);
   this.setState({game:next,stage:'settled',result:nak?'낙':E.NAMES[rolled.value],selectedRoll:null});
-  if(nak)this.notify(next.phase==='move'?'낙! 이번 던지기는 무효입니다. 모아 둔 결과로 이동하세요.':'낙! 윷이 멍석 경계를 완전히 벗어나 차례가 넘어갑니다.');
+  if(geumjulSaved)this.notify(`🌾 금줄 부적이 발동해 낙을 막았습니다! (${E.NAMES[rolled.value]})`);
+  else if(nak)this.notify(next.phase==='move'?'낙! 이번 던지기는 무효입니다. 모아 둔 결과로 이동하세요.':'낙! 윷이 멍석 경계를 완전히 벗어나 차례가 넘어갑니다.');
  },1450);
+};
+activateItem(item: PlayerItem,delta?: -1|1){
+ const g=this.state.game,actor=g.players[g.current];
+ if(!actor||actor.ai||this.state.moving||this.state.stage==='throwing')return;
+ if(item.type==='geumjul'){
+  if(actor.geumjulArmed){this.notify('이미 금줄 부적이 준비되어 있습니다.');return;}
+  const next=E.useItem(g,item.id);
+  this.setState({game:next});
+  this.notify('🌾 금줄 부적 준비! 다음 낙을 1회 구제합니다.');
+  return;
+ }
+ if(item.type==='key'){
+  if(g.phase!=='move'){this.notify('돌담 열쇠는 윷을 던진 뒤 말 이동 단계에서 사용하세요.');return;}
+  const next=E.useItem(g,item.id);
+  this.setState({game:next,selectedChoice:null});
+  this.notify('🔑 돌담 열쇠 활성화! 갈림길을 지나쳐도 지름길로 진입할 수 있습니다.');
+  return;
+ }
+ if(item.type==='stone'){
+  if(g.phase!=='move'){this.notify('이끼 디딤돌은 윷을 던진 뒤 말 이동 단계에서 사용하세요.');return;}
+  const d: -1|1=delta||1;
+  const next=E.useItem(g,item.id,{delta:d});
+  this.setState({game:next,selectedChoice:null});
+  this.notify(`🪨 이끼 디딤돌(${d>0?'+1칸':'-1칸'})이 적용되었습니다!`);
+  return;
+ }
+ if(item.type==='shield'){
+  const targetId=this.state.selectedPiece||g.pieces.find(p=>p.player===g.current&&p.node!=='WAIT'&&p.node!=='FIN'&&!p.shielded)?.id;
+  if(!targetId){this.notify('호패 방패를 씌울 판 위의 내 말이 없습니다.');return;}
+  const next=E.useItem(g,item.id,{pieceId:targetId});
+  if(next===g){this.notify('판 위에 있는 내 말을 먼저 선택해 주세요.');return;}
+  this.setState({game:next});
+  this.notify('🛡️ 호패 방패 발동! 선택한 내 말이 상대 잡기를 1회 막아냅니다.');
+ }
 };
 startGame(opts?: Partial<GameConfig>){
  this.timers.forEach(clearTimeout);this.timers=[];if(this.aiTimer!==null)clearTimeout(this.aiTimer);this.aiTimer=null;
@@ -400,11 +450,11 @@ commitMove(option: MoveOption,ai: boolean){
 moveTick(){
  const moving=this.state.moving;if(!moving)return;
  if(moving.step+1<moving.meta.path.length){this.setState({moving:{...moving,step:moving.step+1}},()=>this.defer(()=>this.moveTick(),235));return;}
- const note=moving.meta.captured?'말 잡기! 추가 던지기':moving.meta.joined?'말 업기 성공!':moving.meta.to==='FIN'?'완주했습니다!':'말 이동 완료';
+ const note=moving.meta.shieldBlocked?'🛡️ 호패 방패가 상대 공격을 막아냈습니다!':moving.meta.pickedItem?`🎁 복주머니 획득: ${E.ITEMS[moving.meta.pickedItem].name}!`:moving.meta.captured?'말 잡기! 추가 던지기':moving.meta.joined?'말 업기 성공!':moving.meta.to==='FIN'?'완주했습니다!':'말 이동 완료';
  this.setState({game:moving.resolution,moving:null,stage:'idle',result:null,burst:{node:moving.meta.to,capture:!!moving.meta.captured,joined:!!moving.meta.joined}},()=>{
   this.defer(()=>this.setState({burst:null}),850);
   this.playSound(moving.meta.captured?'nak':'land');
-  if(moving.meta.captured||moving.meta.joined||moving.meta.to==='FIN')this.notify(note);
+  if(moving.meta.shieldBlocked||moving.meta.pickedItem||moving.meta.captured||moving.meta.joined||moving.meta.to==='FIN')this.notify(note);
  });
 };
 render(){
@@ -431,7 +481,8 @@ render(){
       ),
       h('div',{className:'player-right'},
         p.id===g.current?h('span',{className:'on-turn'},p.ai?'● AI 차례':'● 내 차례'):h('span',{className:'player-tag'},p.ai?'AI':'대기'),
-        h('div',{className:'player-status'},done>0?`${done}/4 완주`:`대기 ${ready}개`)
+        h('div',{className:'player-status'},done>0?`${done}/4 완주`:`대기 ${ready}개`),
+        p.items.length?h('div',{className:'player-items-mini','aria-label':`보유 패물 ${p.items.length}개`},...p.items.map(it=>h('span',{key:it.id,title:E.ITEMS[it.type].name},E.ITEMS[it.type].icon))):null
       )
     )
   );
@@ -439,7 +490,32 @@ render(){
  const readyPieces=g.pieces.filter(p=>p.player===g.current&&p.node==='WAIT');
  const rack=readyPieces.map((p,i)=>h('button',{key:p.id,className:cx('rack-piece',allowed.has(p.id)&&human&&'pickable',s.selectedPiece===p.id&&'selected'),disabled:!human||g.phase!=='move'||!allowed.has(p.id)||!!s.moving,onClick:()=>this.selectPiece(p.id),'aria-label':`대기 말 ${p.index+1} 선택`},h('span',{className:'rack-token',style:{'--piece':owner.color}},'♟'),h('small',null,`${p.index+1}번 말`)));
  const logViews=g.logs.slice(0,9).map(l=>h('div',{className:'log-line',key:l.id},h('div',{className:'log-icon'},l.player==null?'✦':g.players[l.player]?.avatar||'◈'),h('div',{className:'log-content'},h('b',null,l.player==null?'알림':g.players[l.player]?.label),h('span',null,l.text))));
- const rollViews=g.rolls.length?g.rolls.map(r=>h('button',{key:r.id,className:cx('roll-pill',roll&&roll.id===r.id&&'active'),disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.setState({selectedRoll:r.id,selectedPiece:null,selectedChoice:null})},E.NAMES[r.value],h('small',null,r.value===-1?'↶':`${r.value}칸`))):h('div',{className:'no-rolls'},g.phase==='roll'?'아직 던진 결과가 없어요.':'윷 던지기 버튼으로 시작하세요.');
+ const rollViews=g.rolls.length?g.rolls.map(r=>{
+  const eff=E.effectivePips(r.value,owner.stoneDelta);
+  return h('button',{key:r.id,className:cx('roll-pill',roll&&roll.id===r.id&&'active'),disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.setState({selectedRoll:r.id,selectedPiece:null,selectedChoice:null})},E.NAMES[r.value],h('small',null,eff===-1?'↶':owner.stoneDelta?`${eff}칸(${owner.stoneDelta>0?'+1':'-1'})`:`${eff}칸`));
+ }):h('div',{className:'no-rolls'},g.phase==='roll'?'아직 던진 결과가 없어요.':'윷 던지기 버튼으로 시작하세요.');
+ const activeBuffs=[owner.geumjulArmed&&'🌾 금줄 준비됨',owner.keyArmed&&'🔑 돌담 열쇠 활성',owner.stoneDelta!==0&&`🪨 디딤돌(${owner.stoneDelta>0?'+1':'-1'}칸)`].filter(Boolean);
+ const itemPouchView=h('div',{className:'tactical-pouch'},
+  h('div',{className:'results-caption'},h('span',null,'전술 패물 주머니'),h('span',null,`${owner.items.length}/2 보유`)),
+  activeBuffs.length?h('div',{className:'active-buffs'},...activeBuffs.map((b,i)=>h('span',{key:i,className:'buff-chip'},b))):null,
+  owner.items.length?h('div',{className:'item-cards'},...owner.items.map(it=>{
+   const meta=E.ITEMS[it.type];
+   if(it.type==='stone'){
+    return h('div',{key:it.id,className:'item-card stone-card',title:meta.summary},
+     h('span',{className:'item-title'},`${meta.icon} ${meta.name}`),
+     h('div',{className:'stone-actions'},
+      h('button',{className:'stone-btn',disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.activateItem(it,1)},'+1칸'),
+      h('button',{className:'stone-btn',disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.activateItem(it,-1)},'-1칸')
+     )
+    );
+   }
+   const canUse=human&&!s.moving&&(it.type==='geumjul'?!owner.geumjulArmed:it.type==='key'?g.phase==='move'&&!owner.keyArmed:g.pieces.some(p=>p.player===g.current&&p.node!=='WAIT'&&p.node!=='FIN'&&!p.shielded));
+   return h('button',{key:it.id,className:'item-card',disabled:!canUse,onClick:()=>this.activateItem(it),title:meta.summary},
+    h('span',{className:'item-title'},`${meta.icon} ${meta.name}`),
+    h('small',null,it.type==='geumjul'?'낙 1회 방어':it.type==='key'?'지나치며 분기':'말 1회 보호')
+   );
+  })):h('div',{className:'no-rolls'},'보유한 패물이 없습니다. 판 위의 복주머니 칸에 정차해 획득하세요.')
+ );
  return h('div',{className:'app-shell'},
   h('div',{className:'lantern-decor lantern-decor-left','aria-hidden':true}),h('div',{className:'lantern-decor lantern-decor-right','aria-hidden':true}),
   h('div',{className:'ambient-leaves','aria-hidden':true},...Array.from({length:12},(_,i)=>h('i',{className:'ambient-leaf',key:i,style:{'--left':`${6+i*8}%`,'--delay':`${i*-1.6}s`,'--duration':`${14+i%5*2}s`}}))),
@@ -465,7 +541,7 @@ render(){
     h('div',{className:'board-top'},h('div',{className:'board-heading'},h('strong',null,`✿ ${graph.title}`),h('small',null,graph.subtitle)),
      h('div',{className:'board-switch'},...M.BOARD_TYPES.map(key=>h('button',{key,className:cx('board-choice',g.config.board===key&&'active'),'aria-pressed':g.config.board===key,onClick:()=>{if(g.config.board!==key)this.startGame({...g.config,board:key});}},key==='S'?'기본판':key==='A'?'팔각형':key==='B'?'이중 링':'나선정원')))),
     h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:selectedOpt?.choice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
-    h('div',{className:'board-cap'},h('span',null,g.config.board==='G'?'✦ 모 자리(5·10·15·20)에 정확히 정차하면 협문 지름길':'✦ 갈림길에 정확히 정차하면 지름길'),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
+    h('div',{className:'board-cap'},h('span',null,g.config.board==='G'?'✦ 모 자리(5·10·15·20) 정차 시 협문 · 복주머니 정차 시 패물 획득':'✦ 갈림길 정차 시 지름길 · 복주머니 정차 시 패물 획득'),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
     h('div',{className:'map-sep'}),
     h('div',{className:'throw-top'},h('div',null,h('div',{className:'throw-title'},'✦ 달빛 멍석 · 윷 던지기'),h('div',{className:'throw-desc'},'네 가락이 멍석 경계 안에 걸쳐야 유효 · 완전히 밖이면 낙')),h('div',{style:{fontSize:11,color:'#eac78f',fontWeight:850}},watchPaused?busy?'동작 마무리 중':'관전 일시정지':g.phase==='move'?'말 이동 중':`${g.players[g.current].label} 차례`)),
     h(ThrowMat,{sticks:s.sticks,stage:s.stage,result:s.result,watching}),
@@ -480,6 +556,7 @@ render(){
     h('div',{className:'action-section'},h('div',{className:'phase-badge'},g.phase==='won'?'♛ 승리':watching?watchPaused?'Ⅱ 관전 일시정지':'◉ AI 자동 대전':g.phase==='move'?'✦ 직접 말 이동':'✦ 윷 던지기'),
      h('h2',{className:'step-title'},turnTitle),h('p',{className:'step-desc'},statusDesc),
      h('div',{className:'move-steps'},...(watching?['윷 던지기','AI 판단','말 이동']:['윷 결과','말 선택','도착점']).map((name,i)=>h('div',{className:cx('move-step',(watching?i===(g.phase==='roll'?0:s.moving?2:1):((i===0&&g.phase==='roll')||(i===1&&g.phase==='move'&&!s.selectedPiece)||(i===2&&!!s.selectedPiece)))&&'is-current',i===0&&g.phase==='move'&&'is-done'),key:i},h('small',null,`0${i+1}`),h('b',null,name)))),
+     itemPouchView,
      h('div',{className:'results-caption'},h('span',null,'사용할 윷 결과'),h('span',null,`${g.rolls.length}개 남음`)),
      h('div',{className:'results'},...Array.isArray(rollViews)?rollViews:[rollViews]),
      watching?h('div',{className:'manual-block spectator-note'},h('div',{className:'manual-title'},watchPaused?'Ⅱ 잠시 멈춤':'◉ 관전 중'),h('p',{className:'target-help'},watchPaused?'현재 동작이 끝나면 멈추며, 재개하면 이어서 대전합니다.':'AI가 모든 윷 던지기와 말 이동을 수행합니다. 윷·모 또는 잡기가 나오면 같은 AI가 추가로 던집니다.')):

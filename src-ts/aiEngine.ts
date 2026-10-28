@@ -24,12 +24,51 @@ function distance(board: M.BoardType,piece: M.PieceStep): number{
 function pieceValue(g: GameState,piece: GamePiece): number{
  if(piece.node==='WAIT')return 0;
  if(piece.node==='FIN')return 100;
- return 8+2*(graphs[g.config.board].outerSteps+1-distance(g.config.board,piece));
+ return 8+2*(graphs[g.config.board].outerSteps+1-distance(g.config.board,piece))+(piece.shielded?12:0);
 }
 
 /** Each of the 16 equally likely face patterns; no knowledge of future throws. */
 function outcomes(backdo: boolean): [number,number][]{
  return [[-1,backdo?1/16:0],[1,backdo?3/16:4/16],[2,6/16],[3,4/16],[4,1/16],[5,1/16]];
+}
+
+/** Optional tactical item consideration for AI before throwing or moving. */
+export function chooseAIItem(g: GameState): GameState{
+ const actor=g.players[g.current];
+ if(!actor||!actor.ai||g.winner!==null||!actor.items.length)return g;
+ if(g.phase==='roll'){
+  const geumjul=actor.items.find(it=>it.type==='geumjul');
+  if(geumjul&&!actor.geumjulArmed&&g.rolls.length>=1){
+   return E.useItem(g,geumjul.id);
+  }
+  return g;
+ }
+ if(g.phase!=='move')return g;
+ let next=g;
+ const currentActor=next.players[next.current];
+ const shieldItem=currentActor.items.find(it=>it.type==='shield');
+ if(shieldItem){
+  const stackPiece=next.pieces.find(p=>p.player===next.current&&p.node!=='WAIT'&&p.node!=='FIN'&&!p.shielded&&E.sameStack(next,p).length>=2);
+  if(stackPiece)next=E.useItem(next,shieldItem.id,{pieceId:stackPiece.id});
+ }
+ const afterShieldActor=next.players[next.current];
+ const keyItem=afterShieldActor.items.find(it=>it.type==='key');
+ if(keyItem&&!afterShieldActor.keyArmed){
+  const withKey=E.useItem(next,keyItem.id);
+  const baseShortcuts=E.legalActions(next).filter(a=>a.choice==='shortcut'||a.choice==='finish').length;
+  const keyShortcuts=E.legalActions(withKey).filter(a=>a.choice==='shortcut'||a.choice==='finish').length;
+  if(keyShortcuts>baseShortcuts)return withKey;
+ }
+ const stoneItem=afterShieldActor.items.find(it=>it.type==='stone');
+ if(stoneItem&&afterShieldActor.stoneDelta===0){
+  const baseBest=Math.max(-Infinity,...E.legalActions(next).map(o=>E.scoreOption(next,o)));
+  for(const delta of [1,-1] as const){
+   const tested=E.useItem(next,stoneItem.id,{delta});
+   const testedBest=Math.max(-Infinity,...E.legalActions(tested).map(o=>E.scoreOption(tested,o)));
+   if(testedBest>baseBest+45)return tested;
+  }
+ }
+ return next;
 }
 
 /** Choose one legal move; search at most three stored results with bounded branching. */
@@ -60,7 +99,7 @@ export function chooseAIAction(g: GameState): MoveOption|null{
  }
  function evaluate(state: GameState): number{
   if(state.winner!==null)return state.winner===actor?1_000_000:-1_000_000;
-  let score=0;
+  let score=(state.players[actor]?.items.length||0)*14;
   const opponents=state.players.filter(p=>p.id!==actor);
   const danger=opponents.map(p=>threats(state,p.id));
   for(const piece of state.pieces){
@@ -68,7 +107,7 @@ export function chooseAIAction(g: GameState): MoveOption|null{
    if(piece.player!==actor){score-=value*.8/opponents.length;continue;}
    score+=value;
    if(piece.node==='WAIT'||piece.node==='FIN')continue;
-   const risk=1-danger.reduce((safe,enemy)=>safe*(1-(enemy.get(piece.node)||0)),1);
+   const risk=piece.shielded?0:1-danger.reduce((safe,enemy)=>safe*(1-(enemy.get(piece.node)||0)),1);
    // A stack loses every carried piece when captured; value each piece at risk.
    score-=risk*(value+18)*.9;
   }
@@ -79,7 +118,7 @@ export function chooseAIAction(g: GameState): MoveOption|null{
   }
   for(const [node,stack] of stacks){
    if(stack.length<2)continue;
-   const safe=danger.reduce((chance,enemy)=>chance*(1-(enemy.get(node)||0)),1);
+   const safe=stack[0].shielded?1:danger.reduce((chance,enemy)=>chance*(1-(enemy.get(node)||0)),1);
    // Carrying saves future throws, especially when the group still has far to go.
    score+=Math.min(20,distance(state.config.board,stack[0])*1.4)*(stack.length-1)*safe;
   }
@@ -94,7 +133,7 @@ export function chooseAIAction(g: GameState): MoveOption|null{
    const key=`${option.source==='WAIT'?'WAIT':option.pieceId}/${roll.value}/${option.choice}`;
    if(seen.has(key))continue;seen.add(key);
    const result=E.resolveMove(state,option);if(!result)continue;
-   const nextBonus=bonus+(result.meta.captured?18:0);
+   const nextBonus=bonus+(result.meta.captured?18:0)+(result.meta.pickedItem?12:0);
    ranked.push({option,result,bonus:nextBonus,score:evaluate(result.game)+nextBonus});
   }
   return ranked.sort((a,b)=>b.score-a.score);

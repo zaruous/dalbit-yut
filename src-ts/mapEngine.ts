@@ -136,26 +136,47 @@ export function makeGraph(type: BoardType): BoardGraph{
 }
 
 export function initialState(): PiecePath{return { node:'WAIT', lane:'outer', history:[{node:'WAIT',lane:'outer'}], lastPath:[], lastResult:'시작 전' }}
-export function getOptions(graph: BoardGraph,state: Pick<PiecePath, 'node'|'lane'>): RouteChoice[]{
+export function getOptions(graph: BoardGraph,state: Pick<PiecePath, 'node'|'lane'>,passThrough=false,pips=1): RouteChoice[]{
   if(graph.type==='G'){
     const gate=SPIRAL_GATES.find(g=>g.from===state.node);
     if(gate)return [{value:'outer',label:'바깥 돌담길 유지'},{value:'shortcut',label:gate.name}];
+    if(passThrough&&pips>1){
+      const m=/^O(\d+)$/.exec(state.node);
+      const startIdx=state.node==='WAIT'?0:m?Number(m[1]):-1;
+      if(startIdx>=0){
+        const passed=SPIRAL_GATES.find(g=>{const gi=Number(g.from.slice(1));return gi>startIdx&&gi<startIdx+pips;});
+        if(passed)return [{value:'outer',label:'바깥 돌담길 유지'},{value:'shortcut',label:`🔑 ${passed.name}`}];
+      }
+    }
     return [{value:'normal',label:'정해진 방향으로 전진'}];
   }
   if(state.node===graph.cornerIds[1]||state.node===graph.cornerIds[2]) return [{value:'outer',label:'바깥길 유지'},{value:'shortcut',label:state.node===graph.cornerIds[1]?'① 지름길 진입':'② 지름길 진입'}];
   if(graph.type!=='B'&&state.node==='C'&&state.lane==='ne') return [{value:'straight',label:'남서로 직진'},{value:'finish',label:'남동으로 전환'}];
+  if(passThrough&&pips>1){
+    const m=/^O(\d+)$/.exec(state.node);
+    const startIdx=state.node==='WAIT'?0:m?Number(m[1]):-1;
+    const neIdx=Number(graph.cornerIds[1].slice(1)),nwIdx=Number(graph.cornerIds[2].slice(1));
+    if(startIdx>=0&&((neIdx>startIdx&&neIdx<startIdx+pips)||(nwIdx>startIdx&&nwIdx<startIdx+pips))){
+      const firstHit=neIdx>startIdx&&neIdx<startIdx+pips?'① 지름길 진입':'② 지름길 진입';
+      return [{value:'outer',label:'바깥길 유지'},{value:'shortcut',label:`🔑 ${firstHit}`}];
+    }
+    if(graph.type!=='B'&&state.lane==='ne'&&(state.node==='NE1'||state.node==='NE2')){
+      const cSteps=state.node==='NE1'?2:1;
+      if(pips>cSteps)return [{value:'straight',label:'남서로 직진'},{value:'finish',label:'🔑 중앙에서 남동 전환'}];
+    }
+  }
   return [{value:'normal',label:'정해진 방향으로 전진'}];
 }
 export function suggestedOption(options: RouteChoice[]): MoveChoice{return options.find(x=>x.value==='shortcut')?.value ?? options.find(x=>x.value==='finish')?.value ?? options[0]?.value ?? 'normal'}
 
-function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: MoveChoice): PieceStep{
+function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: MoveChoice,passThrough=false): PieceStep{
   const node=pos.node,lane=pos.lane;
   if(node==='WAIT') return {node:'O1',lane:'outer'};
   if(node==='FIN') return {node:'FIN',lane};
   if(graph.type==='G'){
     if(node==='C'||node==='O0')return {node:'FIN',lane:'complete'};
     const gateByFrom=SPIRAL_GATES.find(g=>g.from===node);
-    if(gateByFrom&&first&&choice==='shortcut')return {node:gateByFrom.id,lane:'spiral'};
+    if(gateByFrom&&(first||passThrough)&&choice==='shortcut')return {node:gateByFrom.id,lane:'spiral'};
     const gateById=SPIRAL_GATES.find(g=>g.id===node);
     if(gateById)return {node:gateById.to,lane:'outer'};
     if(/^O\d+$/.test(node)){
@@ -167,7 +188,7 @@ function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: Mov
   if(node==='O0')return {node:'FIN',lane:'complete'};
   if(/^O\d+$/.test(node)){
     const i=Number(node.slice(1));
-    if((node===graph.cornerIds[1]||node===graph.cornerIds[2])&&first&&choice==='shortcut'){
+    if((node===graph.cornerIds[1]||node===graph.cornerIds[2])&&(first||passThrough)&&choice==='shortcut'){
       if(graph.type!=='B')return node===graph.cornerIds[1]?{node:'NE1',lane:'ne'}:{node:'NW1',lane:'nw'};
       return node===graph.cornerIds[1]?{node:'I0',lane:'ring'}:{node:'W0',lane:'ring'};
     }
@@ -176,7 +197,7 @@ function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: Mov
   if(graph.type!=='B'){
     const next={NE1:'NE2',NE2:'C',NW1:'NW2',NW2:'C',SW1:'SW2',SW2:graph.cornerIds[3],SE1:'SE2',SE2:'O0'};
     if(node==='C'){
-      if(lane==='ne' && first && choice==='finish') return {node:'SE1',lane:'se'};
+      if(lane==='ne' && (first||passThrough) && choice==='finish') return {node:'SE1',lane:'se'};
       return lane==='ne'?{node:'SW1',lane:'sw'}:{node:'SE1',lane:'se'};
     }
     if(next[node]) return {node:next[node],lane};
@@ -190,12 +211,12 @@ function advanceOnce(graph: BoardGraph,pos: PieceStep,first: boolean,choice: Mov
   throw new Error(`Bad transition ${graph.type} ${node} (${lane})`);
 }
 
-/** One move takes an integer number of pips. Back-do = -1. Choices only at starting node. */
-export function movePiece(graph: BoardGraph,oldState: PiecePath,pips: number,choice?: MoveChoice): PiecePath{
-  if(!Number.isInteger(pips)||pips<-1||pips===0||pips>5)throw new Error('pips must be -1 or 1..5');
+/** One move takes an integer number of pips. Back-do = -1. Choices only at starting node unless passThrough is active. */
+export function movePiece(graph: BoardGraph,oldState: PiecePath,pips: number,choice?: MoveChoice,passThrough=false): PiecePath{
+  if(!Number.isInteger(pips)||pips<-1||pips===0||pips>6)throw new Error('pips must be -1 or 1..6');
   if(oldState.node==='FIN')return {...oldState,lastPath:[],lastResult:'이미 완주했습니다'};
   const state: PiecePath={...oldState,history:oldState.history.map(item=>({...item})),lastPath:[]};
-  const validChoices=getOptions(graph,state).map(o=>o.value);
+  const validChoices=getOptions(graph,state,passThrough,pips).map(o=>o.value);
   if(pips>0 && choice && !validChoices.includes(choice)) throw new Error(`Invalid choice ${choice} for ${state.node}`);
   if(pips===-1){
     if(state.history.length<2)return {...state,lastResult:'판에 말이 없어 빽도를 사용할 수 없습니다'};
@@ -214,10 +235,13 @@ export function movePiece(graph: BoardGraph,oldState: PiecePath,pips: number,cho
     state.lastPath=[prev,state.node];state.lastResult=`빽도: ${prev} → ${state.node}`;
     return state;
   }
-  const selected=choice||suggestedOption(getOptions(graph,state));
+  const selected=choice||suggestedOption(getOptions(graph,state,passThrough,pips));
   state.lastPath=[state.node];
+  let branched=false;
   for(let step=0;step<pips;step++){
-    const pos=advanceOnce(graph,{node:state.node,lane:state.lane},step===0,selected);
+    const before=state.lane;
+    const pos=advanceOnce(graph,{node:state.node,lane:state.lane},step===0,selected,passThrough&&!branched);
+    if(step>0&&pos.lane!==before)branched=true;
     state.node=pos.node;state.lane=pos.lane;
     state.history.push({...pos});
     state.lastPath.push(pos.node);
