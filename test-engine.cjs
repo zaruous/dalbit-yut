@@ -163,7 +163,13 @@ for(let t=1;t<itemGame.itemUnlockTurn;t++){
  check(!itemGame.itemsUnlocked,'Items remain locked before turn '+itemGame.itemUnlockTurn);
  itemGame=E.nextTurn(itemGame);
 }
-check(itemGame.itemsUnlocked&&itemGame.players.every(p=>p.items.length===1)&&Object.keys(itemGame.itemNodes).length===4,'Mid-game turn unlocks items and spawns count+2 pouches');
+check(itemGame.itemsUnlocked&&itemGame.players.every(p=>p.items.length===0)&&Object.keys(itemGame.itemNodes).length===4,'Mid-game turn unlocks items and spawns count+2 pouches on unoccupied nodes');
+// Occupied nodes never get pouches
+let busyGame=E.createGame({mode:'local',count:2,board:'S',itemMode:true});
+busyGame.pieces[0]={...busyGame.pieces[0],node:'O1'};
+busyGame.pieces[4]={...busyGame.pieces[4],node:'O2'};
+busyGame=E.unlockItemsNow(busyGame);
+check(!busyGame.itemNodes.O0&&!busyGame.itemNodes.O1&&!busyGame.itemNodes.O2,'Pouches never spawn on start or occupied nodes');
 // 1. Geumjul saves nak
 itemGame.players[0].items=[{id:'it-g',type:'geumjul'}];
 itemGame=E.useItem(itemGame,'it-g');

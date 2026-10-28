@@ -93,26 +93,22 @@ function shuffled<T>(arr: readonly T[]): T[]{
  return copy;
 }
 
-function makeItemNodes(board: BoardType,count=3,pieces: GamePiece[]=[]): Record<string, ItemType>{
+function makeItemNodes(board: BoardType,count=3,pieces: GamePiece[]=[],existing: Record<string, ItemType>={}): Record<string, ItemType>{
  const graph=maps.makeGraph(board);
  const busy=new Set(pieces.filter(p=>p.node!=='WAIT'&&p.node!=='FIN').map(p=>p.node));
  const allNodes=Object.keys(graph.xy).filter(id=>id!=='O0'&&!(board==='G'&&id==='C'));
- const candidates=allNodes.filter(id=>!busy.has(id));
- const pool=candidates.length>=count+2?candidates:allNodes;
- const picked=shuffled(pool).slice(0,Math.min(6,Math.max(4,count+2)));
+ const candidates=allNodes.filter(id=>!busy.has(id)&&!existing[id]);
+ const targetCount=Math.min(6,Math.max(4,count+2));
+ const needed=Math.max(0,targetCount-Object.keys(existing).length);
+ const picked=shuffled(candidates).slice(0,needed);
  const types=shuffled([...ITEM_TYPES,...ITEM_TYPES]);
- return Object.fromEntries(picked.map((node,i)=>[node,types[i%types.length]]));
+ return {...existing,...Object.fromEntries(picked.map((node,i)=>[node,types[i%types.length]]))};
 }
 
 export function unlockItemsNow(g: GameState): GameState{
  if(!g.config.itemMode||g.itemsUnlocked)return g;
- const starter=shuffled(ITEM_TYPES);
- const players=g.players.map((p,i)=>({
-  ...p,
-  items:p.items.length<2?[...p.items,{id:newId(),type:starter[i%starter.length]}]:p.items
- }));
  const itemNodes=makeItemNodes(g.config.board,g.config.count,g.pieces);
- return appendLog({...g,players,itemsUnlocked:true,itemNodes},'item',`🎁 중반전 돌입! 참가자 전원에게 전술 패물 1개가 보급되고 윷판 무작위 거점 ${Object.keys(itemNodes).length}곳에 복주머니가 나타났습니다.`,null);
+ return appendLog({...g,itemsUnlocked:true,itemNodes},'item',`🎁 중반전 돌입! 말이 없는 빈 칸 ${Object.keys(itemNodes).length}곳에 무작위로 전술 패물 복주머니가 나타났습니다.`,null);
 }
 
 function createGame(opts: Partial<GameConfig>): GameState{
@@ -191,9 +187,9 @@ function nextTurn(g: GameState,why?: string): GameState{
  result=appendLog(result,'turn',why||`${g.players[old].label} 차례 종료 → ${g.players[next].label} 차례`,next);
  if(result.config.itemMode&&!result.itemsUnlocked&&nextTurnNum>=result.itemUnlockTurn){
   result=unlockItemsNow(result);
- }else if(result.config.itemMode&&result.itemsUnlocked&&Object.keys(result.itemNodes).length===0&&(nextTurnNum-1)%result.config.count===0){
-  const refilled=makeItemNodes(result.config.board,result.config.count,result.pieces);
-  result=appendLog({...result,itemNodes:refilled},'item','🎁 새 라운드를 맞아 윷판 무작위 거점에 복주머니가 다시 채워졌습니다.',null);
+ }else if(result.config.itemMode&&result.itemsUnlocked&&Object.keys(result.itemNodes).length<result.config.count&&(nextTurnNum-1)%result.config.count===0){
+  const refilled=makeItemNodes(result.config.board,result.config.count,result.pieces,result.itemNodes);
+  result=appendLog({...result,itemNodes:refilled},'item','🎁 새 라운드를 맞아 말이 없는 빈 칸에 복주머니가 추가로 배치되었습니다.',null);
  }
  return result;
 }
