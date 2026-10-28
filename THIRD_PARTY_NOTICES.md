@@ -1,3 +1,9 @@
+## Background music
+
+The game uses “달빛 노을 머문 툇마루”, composed and arranged by agy for this project.
+Instrument sources, credits, and the Korean percussion license are recorded in
+[public/audio/CREDITS.md](public/audio/CREDITS.md).
+
 ## React and ReactDOM 16.0.0
 
 React and ReactDOM are copyright Facebook, Inc. and its affiliates.

@@ -49,11 +49,11 @@
 
 ## 배경음악
 
-[**「노을 머문 마당」 듣기 (MP3, 64초)**](https://zaruous.github.io/dalbit-yut/audio/hanok-dusk.mp3)
+[**「달빛 노을 머문 툇마루」 듣기 (MP3, 80초)**](https://zaruous.github.io/dalbit-yut/audio/moonlit-porch.mp3)
 
 게임을 처음 클릭하거나 키보드로 조작하면 반복 재생됩니다. 상단 ♫ 버튼으로 효과음과 함께 끄고 켤 수 있고, ⚙ 설정에서 배경음악 음량을 따로 조절할 수 있습니다. 다른 탭으로 이동하면 음악은 잠시 멈춥니다.
 
-이 프로젝트를 위해 만든 국악풍 5음 선율이며, 가야금·대금·장구에서 착안한 합성음으로 연주합니다. 원본 WAV와 MP3는 `python scripts/compose-bgm.py`로 다시 만들 수 있습니다(제작 도구: Python, NumPy, ffmpeg). 게임 실행에는 이 도구들이 필요하지 않습니다.
+agy가 이 프로젝트를 위해 작곡·편곡한 국악풍 연주곡입니다. 가야금과 전통 타악 녹음 샘플에 피아노·베이스·스트링·플루트 반주를 더했습니다. [악기 소스와 제작 정보](public/audio/CREDITS.md)를 참고하세요.
 
 ## 로컬 실행
 

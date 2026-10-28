@@ -23,7 +23,7 @@ const js=['mapEngine.js','gameEngine.js','aiEngine.js','App.js'].map(wrap).join(
 const head=rd('index.html').match(/<head>([\s\S]*?)<\/head>/)[1]
  .replace(/\s*<link rel="stylesheet"[^>]*>/g,'').replace(/\s*<script[^>]*><\/script>/g,'')
  .replace(/href="\/([^"]+)"/g,(m,f)=>{const d=dataUri(f);return d?`href="${d}"`:m});
-const html=`<!doctype html><html lang="ko"><head>${head}<style>${css}</style></head><body><audio id="dalbit-bgm" src="${dataUri('audio/hanok-dusk.mp3')}" loop preload="none"></audio><div id="root"></div>
+const html=`<!doctype html><html lang="ko"><head>${head}<style>${css}</style></head><body><audio id="dalbit-bgm" src="${dataUri('audio/moonlit-porch.mp3')}" loop preload="none"></audio><div id="root"></div>
 <script>${safe(rd('public/react.production.min.js'))}</script>
 <script>${safe(rd('public/react-dom.production.min.js'))}</script>
 <script>${safe(js)}</script></body></html>`;
