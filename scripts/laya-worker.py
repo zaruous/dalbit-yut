@@ -36,6 +36,7 @@ def main():
     versions = {name: importlib.metadata.version(name) for name in ("laya", "torch", "transformers")}
     max_len = int(os.environ.get("LAYA_MAX_LEN", "512"))
     head_max_len = int(os.environ.get("LAYA_HEAD_MAX_LEN", "256"))
+    instructions = os.environ.get("LAYA_INSTRUCTIONS", "Choose the legal Yutnori move with the highest long-term probability of winning.")
     if max_len < 128 or head_max_len < 64 or head_max_len > max_len:
         emit({"error": "invalid_token_limits"})
         return 1
@@ -54,7 +55,7 @@ def main():
         emit({"error": "model_load_failed", "exception": type(exc).__name__})
         return 1
     emit({"ready": True, "versions": versions, "revision": agent.revision, "device": device,
-          "max_len": max_len, "head_max_len": head_max_len})
+          "max_len": max_len, "head_max_len": head_max_len, "instructions": instructions})
     for line in sys.stdin:
         request_id = None
         try:
@@ -72,7 +73,7 @@ def main():
             with contextlib.redirect_stdout(sys.stderr), torch.inference_mode():
                 result = agent.predict(state, {"move": {
                     "type": "choice",
-                    "instructions": "Choose the Yutnori move most likely to win: finish all four pieces, capture enemies for extra throws, use shortcuts and avoid losing valuable stacks.",
+                    "instructions": instructions,
                     "criteria": criteria,
                 }}, max_len=max_len, head_max_len=head_max_len)
             usage = result.get("usage", {})

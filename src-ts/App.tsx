@@ -186,11 +186,11 @@ function Board({game,chosenRoll,chosenPiece,chosenChoice,onPiece,onTarget,moving
    h('pattern',{id:'boardEdgeGrain',width:80,height:12,patternUnits:'userSpaceOnUse'},h('path',{d:'M0 3Q20 0 40 3T80 3M0 9Q20 6 40 9T80 9',fill:'none',stroke:'#d5aa6a',strokeWidth:.45,opacity:.17}))
   ),
   h('rect',{x:2,y:2,width:496,height:466,rx:7,fill:'url(#boardWood)'}),
-  h('rect',{x:2,y:2,width:496,height:466,rx:7,fill:'url(#boardEdgeGrain)'}),
+  h('rect',{className:'board-edge-grain',x:2,y:2,width:496,height:466,rx:7,fill:'url(#boardEdgeGrain)'}),
   h('rect',{x:7,y:7,width:486,height:456,rx:5,fill:'none',stroke:'#edcd8c',strokeWidth:.65,opacity:.7}),
   h('rect',{x:16,y:16,width:468,height:438,rx:3,fill:'url(#boardBrass)',stroke:'#241c13',strokeWidth:1.2}),
-  h('rect',{x:21,y:21,width:458,height:428,rx:2,fill:'url(#paperFill)',stroke:'#fff2ca',strokeWidth:1}),
-  h('rect',{x:21,y:21,width:458,height:428,rx:2,fill:'url(#grain)'}),
+  h('rect',{className:'board-paper',x:21,y:21,width:458,height:428,rx:2,fill:'url(#paperFill)',stroke:'#fff2ca',strokeWidth:1}),
+  h('rect',{className:'board-paper-grain',x:21,y:21,width:458,height:428,rx:2,fill:'url(#grain)'}),
   !isSpiral?h('rect',{x:28,y:28,width:444,height:414,rx:1,fill:'none',stroke:'#aa8b5c',strokeWidth:.65,opacity:.65}):null,
   h('g',{className:'board-craft-detail','aria-hidden':true},
    ...[{x:16,y:16,r:0},{x:484,y:16,r:90},{x:484,y:454,r:180},{x:16,y:454,r:270}].map((c,i)=>h('g',{key:i,transform:`translate(${c.x} ${c.y}) rotate(${c.r})`},
@@ -299,6 +299,8 @@ function initialConfig(): GameConfig{
 const INITIAL_CONFIG=initialConfig();
 
 interface GameUIState {
+ layaConnected?: boolean;
+ layaModelName?: string;
  game: GameState;
  setup: GameConfig;
  selectedRoll: string|null;
@@ -317,6 +319,8 @@ interface GameUIState {
 }
 class App extends React.Component {
   destroyed = false;
+  matchId = 'match_' + Date.now();
+  matchStartedAt = new Date().toISOString();
   aiTimer: ReturnType<typeof setTimeout>|null = null;
   toastTimer: ReturnType<typeof setTimeout>|null = null;
   audioCtx: AudioContext|null = null;
@@ -325,6 +329,15 @@ class App extends React.Component {
   timers: ReturnType<typeof setTimeout>[] = [];
 
 componentDidMount(){
+ fetch('/api/laya/status')
+  .then(r=>r.ok?r.json():null)
+  .then(d=>{
+   if(d&&d.ready){
+    this.setState({layaConnected:true,layaModelName:d.model||'1500'});
+    this.notify(`🤖 달빛 Laya AI (${d.model||'1500'}) 연결됨`);
+   }
+  })
+  .catch(()=>{});
  this.music=document.getElementById('dalbit-bgm') as HTMLAudioElement|null;
  document.addEventListener('pointerdown',this.unlockAudio,true);
  document.addEventListener('keydown',this.unlockAudio,true);
@@ -369,10 +382,46 @@ checkAI(){
    return;
   }
   if(current.phase==='roll')this.throwYut('random',true);else if(current.phase==='move'){
-   const action=chooseAIAction(current);if(!action){this.setState({game:E.normalize(current)});return;}
-   this.commitMove(action,true);
+   void (async()=>{
+    let action: MoveOption|null=null;
+    try{
+     const ctrl=new AbortController();
+     const timer=setTimeout(()=>ctrl.abort(),2000);
+     const res=await fetch('/api/laya/action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({game:current,matchId:this.matchId}),
+      signal:ctrl.signal,
+     });
+     clearTimeout(timer);
+     if(res.ok){
+      const data=await res.json();
+      if(data&&data.action)action=data.action;
+     }
+    }catch(e){}
+    if(!action)action=chooseAIAction(current);
+    if(this.destroyed||this.state.game!==current)return;
+    if(!action){this.setState({game:E.normalize(current)});return;}
+    this.commitMove(action,true);
+   })();
   }
  },g.phase==='roll'?850:620);
+};
+recordMatchEnd(game: GameState){
+ if(!this.state.layaConnected)return;
+ fetch('/api/laya/match-end',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({
+   matchId:this.matchId,
+   board:game.config.board,
+   mode:game.config.mode,
+   winner:game.winner,
+   totalTurns:game.turn,
+   startedAt:this.matchStartedAt,
+   logs:game.logs,
+  }),
+ }).catch(()=>{});
 };
 toggleSpectatorPause(){
  if(this.state.game.config.mode!=='spectate'||this.state.game.winner!==null)return;
@@ -430,6 +479,7 @@ activateItem(item: PlayerItem,delta?: -1|1){
  }
 };
 startGame(opts?: Partial<GameConfig>){
+ this.matchId='match_'+Date.now();this.matchStartedAt=new Date().toISOString();
  this.timers.forEach(clearTimeout);this.timers=[];if(this.aiTimer!==null)clearTimeout(this.aiTimer);this.aiTimer=null;
  const game=E.createGame(opts||this.state.setup);
  this.setState({game,setup:{...game.config},settingsOpen:false,aiPaused:false,selectedRoll:null,selectedPiece:null,selectedChoice:null,
@@ -457,6 +507,7 @@ moveTick(){
   this.defer(()=>this.setState({burst:null}),850);
   this.playSound(moving.meta.captured?'nak':'land');
   if(unlockedJustNow||moving.meta.shieldBlocked||moving.meta.pickedItem||moving.meta.captured||moving.meta.joined||moving.meta.to==='FIN')this.notify(note);
+  if(moving.resolution.winner!==null)this.recordMatchEnd(moving.resolution);
  });
 };
 render(){
@@ -477,7 +528,7 @@ render(){
       h('div',{className:'avatar-coin'},h('div',{className:'avatar'},p.avatar)),
       h('div',{className:'player-identity'},
         h('div',{className:'player-name'},p.label),
-        h('div',{className:'player-role'},p.ai?watching?'AI 선수':'인공지능 상대':p.id===0&&g.config.mode==='ai'?'내 플레이어':'참가자'),
+        h('div',{className:'player-role'},p.ai?watching?'AI 선수':(s.layaConnected?`달빛 Laya AI (${s.layaModelName?.replace('checkpoint-rollout-','')||'1500'})`:'인공지능 상대'):p.id===0&&g.config.mode==='ai'?'내 플레이어':'참가자'),
         h('div',{className:'pawns'},...pcs.map((pc,i)=>h('span',{key:i,className:cx('pawn-mini',pc.node==='FIN'&&'done'),style:{'--piece':p.color},title:pc.node==='FIN'?'완주':pc.node==='WAIT'?'대기':'이동 중'}))),
         h('div',{className:'player-progress','aria-label':`${done}개 완주`},h('div',{className:'player-progress-fill',style:{width:`${done*25}%`}}))
       ),
@@ -490,7 +541,52 @@ render(){
   );
  });
  const readyPieces=g.pieces.filter(p=>p.player===g.current&&p.node==='WAIT');
+ const mobilePieces=groups.filter(p=>g.phase!=='move'||!roll||allowed.has(p.id));
  const rack=readyPieces.map((p,i)=>h('button',{key:p.id,className:cx('rack-piece',allowed.has(p.id)&&human&&'pickable',s.selectedPiece===p.id&&'selected'),disabled:!human||g.phase!=='move'||!allowed.has(p.id)||!!s.moving,onClick:()=>this.selectPiece(p.id),'aria-label':`대기 말 ${p.index+1} 선택`},h('span',{className:'rack-token',style:{'--piece':owner.color}},'♟'),h('small',null,`${p.index+1}번 말`)));
+ const mobileControlDock=h('div',{className:'mobile-action-dock',role:'region','aria-label':'모바일 조작 영역'},
+  h('div',{className:'mobile-dock-section'},
+   h('div',{className:'mobile-dock-header'},
+    h('span',{className:'mobile-dock-title'},'✦ 사용할 윷 결과'),
+    h('span',{className:'mobile-dock-badge'},g.rolls.length?`${owner.label} · ${g.rolls.length}개 남음`:(g.winner!==null?'게임 종료':`${owner.label} 차례`))
+   ),
+   h('div',{className:'mobile-roll-row'},
+    g.rolls.length?g.rolls.map(r=>{
+     const eff=E.effectivePips(r.value,owner.stoneDelta);
+     const isActive=roll&&roll.id===r.id;
+     return h('button',{key:r.id,className:cx('mobile-roll-chip',isActive&&'active'),'aria-pressed':!!isActive,disabled:!human||g.phase!=='move'||!!s.moving,onClick:()=>this.setState({selectedRoll:r.id,selectedPiece:null,selectedChoice:null})},
+      h('span',{className:'chip-name'},E.NAMES[r.value]),
+      h('span',{className:'chip-pips'},eff===-1?'↶ 빽도':owner.stoneDelta?`${eff}칸(${owner.stoneDelta>0?'+1':'-1'})`:`${eff}칸`)
+     );
+    }):h('div',{className:'mobile-dock-empty'},g.phase==='roll'?'아래 멍석에서 윷을 던져주세요.':'남은 윷 결과가 없습니다.')
+   )
+  ),
+  h('div',{className:'mobile-dock-section'},
+   h('div',{className:'mobile-dock-header'},
+    h('span',{className:'mobile-dock-title'},'♟ 선택 가능한 말'),
+    h('span',{className:'mobile-dock-badge'},human&&g.phase==='move'?`${mobilePieces.length}개 선택 가능`:owner.ai?'AI 차례':'결과를 얻은 뒤 선택')
+   ),
+   h('div',{className:'mobile-piece-row'},
+    mobilePieces.length?mobilePieces.map(p=>{
+     const canPick=allowed.has(p.id)&&human&&g.phase==='move'&&!s.moving;
+     const stack=E.sameStack(g,p),isSelected=stack.some(piece=>piece.id===s.selectedPiece);
+     const numbers=stack.map(piece=>piece.index+1).join('·'),label=`${numbers}번 말`;
+     const position=p.node==='WAIT'?'출발 대기':stack.length>1?`판 위 · ${stack.length}개 업기`:'판 위';
+     return h('button',{key:p.id,className:cx('mobile-rack-chip',canPick&&'pickable',isSelected&&'selected'),'aria-pressed':isSelected,disabled:!canPick,onClick:()=>this.selectPiece(p.id),'aria-label':`${position} ${label} 선택`},
+      h('span',{className:'mobile-rack-token',style:{'--piece':owner.color}},'♟'),
+      h('span',{className:'mobile-rack-text'},numbers,h('small',null,position))
+     );
+    }):h('div',{className:'mobile-dock-empty'},g.winner!==null?'대전이 끝났습니다.':'이 결과로 움직일 수 있는 말이 없습니다. 다른 결과를 선택해 주세요.')
+   )
+  ),
+  s.selectedPiece&&selectedOpt?h('div',{className:'mobile-dock-section mobile-dock-confirm'},
+   opts.length>1?h('div',{className:'mobile-route-selector'},
+    ...opts.map(o=>h('button',{key:o.choice,className:cx('route-btn','mobile-route-btn',selectedOpt.choice===o.choice&&'active'),disabled:!!s.moving,'aria-pressed':selectedOpt.choice===o.choice,onClick:()=>this.setState({selectedChoice:o.choice})},o.label))
+   ):null,
+   h('button',{className:'primary-action mobile-confirm-button',disabled:!!s.moving,onClick:()=>this.commitMove(selectedOpt,false)},
+    `✦ ${E.NAMES[roll?.value ?? 0]||''} · 선택한 말 이동 확정`
+   )
+  ):null
+ );
  const logViews=g.logs.slice(0,9).map(l=>h('div',{className:'log-line',key:l.id},h('div',{className:'log-icon'},l.player==null?'✦':g.players[l.player]?.avatar||'◈'),h('div',{className:'log-content'},h('b',null,l.player==null?'알림':g.players[l.player]?.label),h('span',null,l.text))));
  const rollViews=g.rolls.length?g.rolls.map(r=>{
   const eff=E.effectivePips(r.value,owner.stoneDelta);
@@ -520,6 +616,28 @@ render(){
    })):h('div',{className:'no-rolls'},'보유한 패물이 없습니다. 판 위의 복주머니 칸에 정차해 획득하세요.')
   ])
  );
+ const menuAction=(action: ()=>void)=>(ev)=>{
+  const menu=ev.currentTarget.closest('details.mobile-game-menu');if(menu)menu.open=false;
+  action();
+ };
+ const mobileMenu=h('details',{className:'mobile-game-menu',onKeyDown:ev=>{
+  if(ev.key==='Escape'){ev.currentTarget.open=false;ev.currentTarget.querySelector('summary')?.focus();}
+ }},
+  h('summary',{'aria-label':'게임 메뉴','aria-controls':'mobile-game-menu-content'},'☰'),
+  h('button',{className:'mobile-menu-dismiss','aria-label':'메뉴 닫기',onClick:menuAction(()=>{})}),
+  h('nav',{className:'mobile-menu-content',id:'mobile-game-menu-content','aria-label':'게임 메뉴'},
+   h('button',{className:'mobile-menu-item',onClick:menuAction(()=>this.setState({settingsOpen:true,setup:{...g.config}}))},'⚙ 새 게임 · 윷판 · 인원 설정'),
+   h('button',{className:'mobile-menu-item',onClick:menuAction(()=>this.setState({settingsOpen:true,setup:{...g.config}}))},g.config.itemMode?'🎁 아이템전 설정':'🎲 일반전 / 아이템전'),
+   h('button',{className:'mobile-menu-item',onClick:menuAction(()=>this.setState({settingsOpen:true,setup:{...g.config,mode:'spectate',count:watching?g.players.length:4}}))},watching?'◉ 관전 설정':'◉ AI 관전'),
+   watching?h('button',{className:'mobile-menu-item',disabled:g.winner!==null,onClick:menuAction(()=>this.toggleSpectatorPause())},watchPaused?'▶ 관전 재개':'Ⅱ 관전 일시정지'):null,
+   h('button',{className:'mobile-menu-item','aria-pressed':s.sound,onClick:menuAction(()=>this.setState({sound:!s.sound}))},s.sound?'♫ 소리 끄기':'♬ 소리 켜기'),
+   h('details',{className:'mobile-menu-section'},h('summary',null,'♟ 참가자'),h('div',{className:'mobile-menu-players'},...players)),
+   g.config.itemMode?h('details',{className:'mobile-menu-section'},h('summary',null,'🎁 보유 패물'),itemPouchView):null,
+   h('details',{className:'mobile-menu-section'},h('summary',null,'☷ 대전 기록'),h('div',{className:'log-list'},...logViews)),
+   h('details',{className:'mobile-menu-section'},h('summary',null,'? 이동 방법'),h('p',null,'윷 결과와 말을 선택하고, 경로를 고른 뒤 윷판의 금빛 목적지를 누르세요.')),
+   !watching?h('button',{className:'mobile-menu-item',disabled:!human||g.phase!=='roll'||busy,onClick:menuAction(()=>this.throwYut('nak',false))},'낙 시연 (테스트)'):null
+  )
+ );
  return h('div',{className:'app-shell'},
   h('div',{className:'lantern-decor lantern-decor-left','aria-hidden':true}),h('div',{className:'lantern-decor lantern-decor-right','aria-hidden':true}),
   h('div',{className:'ambient-leaves','aria-hidden':true},...Array.from({length:12},(_,i)=>h('i',{className:'ambient-leaf',key:i,style:{'--left':`${6+i*8}%`,'--delay':`${i*-1.6}s`,'--duration':`${14+i%5*2}s`}}))),
@@ -539,13 +657,15 @@ render(){
     h('div',{className:'turn-hero'},h('div',{className:'eyebrow'},watchPaused?'PAUSED':'CURRENT TURN'),h('div',{className:'turn-name'},h('span',{className:'turn-dot',style:{background:owner.color}}),owner.label),h('div',{className:'turn-sub'},watchPaused?busy?'현재 동작을 마친 뒤 멈춥니다.':'AI 대전을 일시정지했습니다.':s.moving?'선택한 말이 윷판 위를 이동 중입니다.':owner.ai?'AI가 다음 행동을 결정하고 있습니다.':g.phase==='move'?'말을 직접 눌러 이동해보세요.':'아래 멍석에서 윷을 던져주세요.')),
     h('div',{className:'side-section-title'},'참가자',h('span',null,'각 4개의 말')),
     h('div',{className:'players-list'},...players),
-    h('div',{className:'subpanel'},h('div',{className:'rack-title'},h('b',null,'출발 대기 말'),h('span',null,`${readyPieces.length}개`)),h('div',{className:'rack'},rack.length?rack:h('div',{style:{gridColumn:'1/-1',fontSize:11,color:'#c4d1d9'}},'출발 대기 중인 말이 없습니다.'))),
+    h('div',{className:'subpanel rack-subpanel'},h('div',{className:'rack-title'},h('b',null,'출발 대기 말'),h('span',null,`${readyPieces.length}개`)),h('div',{className:'rack'},rack.length?rack:h('div',{style:{gridColumn:'1/-1',fontSize:11,color:'#c4d1d9'}},'출발 대기 중인 말이 없습니다.'))),
     h('div',{className:'subpanel tips-block'},h('div',{className:'side-section-title'},watching?'관전 안내':'이동하는 방법'),
       ...(watching?[['1','AI가 차례대로 윷을 던집니다.'],['2','말과 경로를 자동으로 선택합니다.'],['3','윷·모 또는 잡기 시 추가로 던집니다.']]:[['1','윷을 던져 결과를 얻습니다.'],['2','결과와 움직일 말을 직접 누릅니다.'],['3','경로를 고르고 빛나는 목적지를 누릅니다.']]).map(([num,text])=>h('div',{key:num,className:'tiny-guide'},h('b',null,num),h('p',{className:'tips'},text))))
    ),
    h('section',{className:'panel board-panel'},
+    mobileMenu,
     h('div',{className:'board-top'},h('div',{className:'board-heading'},h('strong',null,`✿ ${graph.title}`),h('small',null,graph.subtitle)),
      h('div',{className:'board-switch'},...M.BOARD_TYPES.map(key=>h('button',{key,className:cx('board-choice',g.config.board===key&&'active'),'aria-pressed':g.config.board===key,onClick:()=>{if(g.config.board!==key)this.startGame({...g.config,board:key});}},key==='S'?'기본판':key==='A'?'팔각형':key==='B'?'이중 링':'나선정원')))),
+    mobileControlDock,
     h('div',{className:'board-shadow'},h('div',{className:'board-cloth'},h('div',{className:'frame-charm frame-charm-left','aria-hidden':true},'❖'),h('div',{className:'frame-charm frame-charm-right','aria-hidden':true},'❖'),h(Board,{game:g,chosenRoll:roll,chosenPiece:g.pieces.find(p=>p.id===s.selectedPiece),chosenChoice:selectedOpt?.choice,onPiece:id=>this.selectPiece(id),onTarget:opt=>this.commitMove(opt,false),moving:s.moving,burst:s.burst}))),
     h('div',{className:'board-cap'},h('span',null,g.config.itemMode?(g.config.board==='G'?'✦ 모 자리 정차 시 협문 · 중반 복주머니 정차 시 패물 획득':'✦ 갈림길 정차 시 지름길 · 중반 복주머니 정차 시 패물 획득'):(g.config.board==='G'?'✦ 모 자리(5·10·15·20) 정차 시 협문 지름길 진입':'✦ 갈림길에 정확히 멈추었을 때만 지름길 진입')),h('span',null,watching?'AI 판단 → 자동 말 이동':'말 선택 → 황금색 목적지 클릭')),
     h('div',{className:'map-sep'}),
@@ -578,7 +698,10 @@ render(){
   h('div',{className:'footer-copy'},'DALBIT YUT · 나 + AI 1~3명 / 2~4인 로컬 / AI 자동 대전 관전'),
   s.toast?h('div',{className:'toast',role:'status'},s.toast):null,
   s.settingsOpen?h('div',{className:'modal-backdrop',role:'presentation',onMouseDown:(ev)=>{if(ev.target===ev.currentTarget)this.setState({settingsOpen:false});}},
-   h('div',{className:'modal',role:'dialog','aria-modal':true,'aria-label':'게임 설정'},h('div',{style:{color:'#e5c17d',fontSize:12,fontWeight:900}},'새로운 한 판'),h('h2',null,'달빛 아래 윷놀이'),h('p',null,'직접 플레이하거나 AI끼리 대전하는 모습을 관전하세요.'),
+   h('div',{className:'modal settings-modal',role:'dialog','aria-modal':true,'aria-labelledby':'settings-title',onKeyDown:ev=>{if(ev.key==='Escape')this.setState({settingsOpen:false});}},
+    h('div',{className:'settings-header'},h('h2',{id:'settings-title'},'새로운 한 판'),h('button',{className:'settings-close',type:'button','aria-label':'게임 설정 닫기',autoFocus:true,onClick:()=>this.setState({settingsOpen:false})},'×')),
+    h('div',{className:'settings-body'},
+    h('p',{className:'settings-description'},'직접 플레이하거나 AI끼리 대전하는 모습을 관전하세요.'),
     h('label',{className:'form-label'},'게임 모드'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[['ai','나 + AI 대전'],['local','함께하기'],['spectate','AI 관전']].map(([value,text])=>h('button',{key:value,className:cx('setting-btn',s.setup.mode===value&&'active'),'aria-pressed':s.setup.mode===value,onClick:()=>this.setState({setup:{...s.setup,mode:value as GameConfig['mode']}})},text))),
     h('label',{className:'form-label'},s.setup.mode==='spectate'?'참가 AI 수':s.setup.mode==='ai'?'AI 상대 수':'총 참가 인원'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(3,1fr)'}},...[2,3,4].map(n=>h('button',{key:n,className:cx('setting-btn',s.setup.count===n&&'active'),'aria-pressed':s.setup.count===n,onClick:()=>this.setState({setup:{...s.setup,count:n}})},s.setup.mode==='spectate'?`AI ${n}명`:s.setup.mode==='ai'?`AI ${n-1}명`:`${n}명`))),
     h('label',{className:'form-label'},'대전 방식'),
@@ -588,10 +711,12 @@ render(){
     ),
     h('p',{className:'setup-composition',role:'status'},(s.setup.mode==='spectate'?`AI ${s.setup.count}명 자동 대전 · 관전 전용`:s.setup.mode==='ai'?`나 1명 + AI ${s.setup.count-1}명 · 총 ${s.setup.count}인`:`사람 ${s.setup.count}명 · 로컬 대전`)+(s.setup.itemMode?` · 아이템전(제 ${E.itemUnlockTurn(s.setup.count)}턴 중반 등장)`:' · 일반전')),
     h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(2,1fr)'}},...M.BOARD_TYPES.map(value=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),'aria-pressed':s.setup.board===value,onClick:()=>this.setState({setup:{...s.setup,board:value}})},M.boardMeta(value).title))),
-    h('label',{className:'form-label',htmlFor:'music-volume'},`배경음악 · 달빛 노을 머문 툇마루 (${Math.round(s.musicVolume*100)}%)`),
-    h('input',{id:'music-volume',type:'range',min:0,max:100,step:1,value:Math.round(s.musicVolume*100),'aria-label':'배경음악 음량',onChange:(ev)=>this.setState({musicVolume:Number(ev.target.value)/100}),style:{width:'100%',accentColor:'#e5c17d'}}),
-    h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 아이템전 선택 시 참가 인원에 따른 중반 턴부터 패물이 등장합니다.'),
-    h('button',{className:'primary-action',onClick:()=>this.startGame(s.setup)},s.setup.mode==='spectate'?`AI ${s.setup.count}명 관전 시작`:s.setup.mode==='ai'?`나 + AI ${s.setup.count-1}명으로 시작`:`사람 ${s.setup.count}명으로 시작`)
+    h('details',{className:'settings-extra'},h('summary',null,'음악 · 규칙'),
+     h('label',{className:'form-label',htmlFor:'music-volume'},`배경음악 (${Math.round(s.musicVolume*100)}%)`),
+     h('input',{id:'music-volume',type:'range',min:0,max:100,step:1,value:Math.round(s.musicVolume*100),'aria-label':'배경음악 음량',onChange:(ev)=>this.setState({musicVolume:Number(ev.target.value)/100}),style:{width:'100%',accentColor:'#e5c17d'}}),
+     h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 아이템전 선택 시 참가 인원에 따른 중반 턴부터 패물이 등장합니다.')
+    )),
+    h('div',{className:'settings-footer'},h('button',{className:'primary-action',onClick:()=>this.startGame(s.setup)},s.setup.mode==='spectate'?`AI ${s.setup.count}명 관전 시작`:s.setup.mode==='ai'?`나 + AI ${s.setup.count-1}명으로 시작`:`사람 ${s.setup.count}명으로 시작`))
    )):null,
   g.winner!==null?h('div',{className:'modal-backdrop'},h('div',{className:'modal victory'},h('div',{style:{color:'#f2d098',fontSize:12,textAlign:'center'}},'승부 결정'),h('div',{className:'prize'},'🏆'),h('h2',{style:{textAlign:'center'}},`${g.players[g.winner].label} 승리!`),h('p',{style:{textAlign:'center'}},'네 개의 말을 모두 완주했습니다.'),h('button',{className:'primary-action',onClick:()=>this.startGame(g.config)},'다시 한 판'))):null
  ));
