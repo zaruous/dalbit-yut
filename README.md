@@ -1,120 +1,195 @@
-# 달빛 윷마당 — React + TypeScript
+[English Version](README.en.md) | **한국어**
 
-한옥 노을을 배경으로 즐기는 **1인 AI / 2~4인 로컬 / AI 자동 대전 관전 윷놀이**. 기본 사각형 윷판에서 시작하며, 직접 플레이할 때는 말과 **황금색 목적지를 눌러** 이동합니다.
+# 달빛 윷마당 (Dalbit Yut) — React + TypeScript & Hugging Face ZeroGPU AI
 
-## 실제 브라우저 화면
+한옥 노을을 배경으로 즐기는 **1인 AI 대전 / 2~4인 로컬 대전 / AI 자동 대전 관전 윷놀이**.  
+브라우저에서 직접 조작하는 전통의 손맛과 최신 Hugging Face ZeroGPU 기반 딥러닝 결정 모델의 전략적 수 싸움을 함께 경험할 수 있습니다.
 
-![기본판 직접 플레이: 걸 결과로 갈림길의 말을 선택하고 ① 지름길 경로와 금빛 목적지를 확인하는 화면](./docs/images/play-desktop.webp)
+---
 
-**직접 플레이 (1600×900):** 윷 결과 `걸` → 갈림길에 멈춘 말 선택 → `① 지름길 진입` 선택. 경로 번호와 금빛 `이동` 목적지가 윷판에 표시됩니다.
+## 🎮 온라인 바로 플레이 (Live Demo)
 
-![윷 던지기 연출: 200ms 발사, 420ms 공중 회전, 700ms 하강, 1360ms 착지](./docs/images/throw-sequence.webp)
+- 🌐 **웹 게임 플레이 (GitHub Pages)**: [https://zaruous.github.io/dalbit-yut/](https://zaruous.github.io/dalbit-yut/)
+- 🤗 **Hugging Face Space (ZeroGPU Inference)**: [callakrsos/dalbit-yut](https://huggingface.co/spaces/callakrsos/dalbit-yut)
+- 📦 **Hugging Face Model Hub**: [callakrsos/dalbit-yut-laya-1500](https://huggingface.co/callakrsos/dalbit-yut-laya-1500)
+- 📄 **독립 실행형 HTML 미리보기**: [preview.html](./preview.html)
 
-**윷 던지기:** 네 가락이 멍석 아래쪽 던지는 자리에서 날아올라 포물선을 그리며 뒤집히고, 바닥 그림자가 커지면서 두 번 튕긴 뒤 착지합니다. 모든 가락은 결과 표시(1450ms) 전인 1360ms까지 착지합니다.
+---
 
-![AI 4인 자동 대전 관전 화면](./docs/images/ai-spectate.webp)
+## 🔥 Hugging Face ZeroGPU AI 대전 & 토큰 설정 가이드
 
-**AI 관전:** `?watch=1&players=4`로 시작한 AI 4인 자동 대전입니다. 하단 버튼으로 일시정지하거나 새 AI 대전을 시작합니다.
+달빛 윷마당은 **Hugging Face Space(A10G ZeroGPU)**와 실시간 연동되어 1,500건의 기보로 파인튜닝된 딥러닝 신경망 AI가 다음 수를 판단합니다.
 
-<img src="./docs/images/play-mobile.webp" alt="모바일 390×844: 윷판 바로 아래에 윷 던지기 멍석과 버튼이 이어지는 화면" width="320">
+> [!IMPORTANT]
+> **ZeroGPU 쿼터 정책 안내**:  
+> Hugging Face의 ZeroGPU 인프라는 로그인하지 않은 익명 IP에 대해 극도로 제한된 무료 쿼터(~1회)만 제공합니다. 따라서 토큰 없이 연속으로 플레이할 경우 `"ZeroGPU runs limit exceeded"` 알림과 함께 내장 탐색 AI로 자동 전환될 수 있습니다.  
+> **무료 Hugging Face 계정에서 발급받은 본인의 Read(읽기 전용) 토큰**을 등록하시면 매일 넉넉하게 주어지는 일일 무료 GPU 쿼터로 제한 없이 쾌적하게 딥러닝 AI 대전을 즐기실 수 있습니다!
 
-**모바일 (390×844):** 윷판 바로 아래에 멍석과 던지기 버튼이 이어집니다.
+### 1. 무료 Hugging Face Read 토큰 발급 (약 10초 소요)
+1. [Hugging Face 계정 토큰 설정 페이지](https://huggingface.co/settings/tokens)에 접속하여 로그인합니다. (계정이 없다면 무료 가입)
+2. **`Create new token`** 버튼을 누릅니다.
+3. Token type에서 **`Read`** (읽기 전용)를 선택합니다. (*Write 권한은 필요하지 않습니다.*)
+4. 토큰 이름(예: `dalbit-yut`)을 입력하고 **`Create token`**을 클릭한 뒤, 생성된 토큰 문자열(`hf_...`)을 복사합니다.
 
-[**플레이 가능한 HTML 미리보기**](./preview.html) · [시각화 품질 기준 및 검증 보고서](./docs/visual-quality-v1.md) · [윷 던지기 연출 검증](./docs/throw-animation-validation.md)
+### 2. 게임에 토큰 등록하기 (아래 두 가지 중 편한 방법 선택)
 
-> 위 이미지는 2026-10-27 저장소의 `preview.html`(빌드된 TypeScript 코드와 배경·스타일·React 런타임을 포함한 독립 HTML)을 Chromium에서 실행해 캡처한 실제 화면입니다. 설명하기 좋은 장면을 만들기 위해 직접 플레이와 모바일 화면은 `window.__DALBIT_INSTANCE__`로 말 위치와 윷 결과를 배치했습니다. 윷 던지기는 애니메이션 시간을 고정해 촬영했습니다.
+- **방법 A — URL 파라미터로 즉시 접속 (가장 간편)**  
+  브라우저 주소창에 토큰을 파라미터로 붙여 접속하면 브라우저의 `localStorage`에 자동 저장됩니다.
+  ```text
+  https://zaruous.github.io/dalbit-yut/?hf_token=hf_your_read_token_here
+  ```
 
-## 개선된 디자인
+- **방법 B — 게임 내 설정 메뉴(⚙️)에서 입력**  
+  1. 게임 화면 우측 상단의 **⚙️ (설정)** 아이콘을 클릭합니다.
+  2. 하단의 **`음악 · 규칙 · 토큰`** 접힘 메뉴를 클릭하여 엽니다.
+  3. **Hugging Face 토큰** 입력란에 복사한 토큰(`hf_...`)을 붙여넣습니다.  
+     *(입력 즉시 브라우저 로컬 저장소에 안전하게 보관되며, 서버로 유출되지 않고 오직 ZeroGPU 추론 헤더로만 전달됩니다.)*
 
-[새 맵 지형 제안 5종 — HTML 이미지 갤러리](https://zaruous.github.io/dalbit-yut/map-concepts/): 달빛 연못, 단풍 산성, 세 섬 나루, 대숲 샛길, 돌담 나선정원. 실제 게임에 적용하기 전 비교용 시안입니다. SVG 이미지와 지름길 강조를 제공하며 `node scripts/build-map-concepts.cjs`로 다시 생성할 수 있습니다.
+> [!TIP]
+> 토큰을 입력하지 않거나 네트워크 오류/쿼터 소진이 발생해도, 브라우저 내장 정밀 탐색 AI(`chooseAIAction`)가 즉시 게임을 이어받아 끊김 없이 계속 플레이할 수 있습니다.
 
-- **독립 배경:** 한옥 마루·노을·산·단풍·등불을 벡터 레이어로 제작했습니다. 배경 이미지에는 윷판, 플레이어 카드, 버튼 같은 UI가 포함되지 않습니다.
-- **플레이어 영역:** 캐릭터 아바타, 4개의 말, 진행 상태 바, 현재 차례를 금장 카드로 강조합니다.
-- **윷 던지기:** 윷판 **바로 아래**의 짜임 멍석에서 4개의 윷가락이 던지는 자리에서 날아올라 포물선 비행·회전·뒤집힘·바운드를 거쳐 착지합니다. 바닥 그림자와 파티클이 함께 표시되고, 착지음은 실제 착지 순간에 납니다.
-- **수동 말 이동:** 사용자가 윷 결과 → 말 → 바깥길/지름길 → 금빛 목적지를 선택합니다. 이동 경로 번호, 점프, 착지·잡기·업기 효과를 표시합니다.
-- **낙:** 윷가락 중 하나라도 멍석 밖으로 완전히 벗어나면 그 던지기만 무효입니다. 앞서 모은 윷·모 결과가 있으면 그것으로 이동한 뒤 차례가 넘어가고, 없으면 바로 다음 차례로 넘어갑니다. 경계에 부분적으로 걸쳐 있으면 유효로 판정합니다.
-- **반응형:** PC에서는 플레이어 / 게임판+던지기 / 조작·로그 3열, 모바일에서는 보드 아래 던지기를 바로 이어서 배치합니다.
+---
 
-## 게임 기능
+## 🌟 주요 특징 및 최신 개선 사항
 
-- 1인 AI 상대 1~3명, 한 기기에서 2~4인 로컬 플레이
-- 우측 상단 ⚙ → **나 + AI 대전** → **AI 1명 / 2명 / 3명** 선택 → 시작. AI 3명을 선택하면 나 1명과 청월·초록·홍단 AI가 총 4인으로 대전합니다.
-- **AI 관전:** 상단 **AI 관전** 또는 ⚙에서 관전 모드를 고르면 AI 2~4명끼리 자동으로 대전합니다. **일시정지/재개**, 같은 구성으로 **새 AI 대전**을 지원합니다. 정지는 현재 던지기·이동을 마친 뒤 적용됩니다.
-- 주소 뒤에 `?watch=1`을 붙이면 기본판에서 AI 4인 관전으로 바로 시작합니다. 예: `/?watch=1&players=3&board=B`는 이중 링형 AI 3인 관전입니다. 일반 주소는 기본판의 사람 + AI 모드로 시작합니다.
-- 전략 AI: 완주 거리·잡기·업기·잡힐 위험과 보유 결과 사용 순서를 고려합니다. [판단 방식과 비교 검증](./docs/ai-strategy.md)
-- 선택 실험: [Laya 결정 모델 설치·비교 도구와 실험 결과](./docs/laya-experiment.md). 브라우저의 기본 AI는 외부 모델 없이 실행되는 탐색 AI입니다.
-- 플레이어별 말 4개, 도·개·걸·윷·모·빽도, 잡기·업기·추가 던지기·승리
-- **기본 사각형(S)이 디폴트**이며, 팔각 순환형(A)·이중 링형(B)도 선택할 수 있습니다. 기본판은 외곽 20개와 중앙 X자 지름길 9개, 총 29개 자리입니다. [판 구성과 검증](./docs/standard-board.md)
-- 분기점에 **정확히 멈춘 말만** 지름길 진입 선택 가능
-- 사용자가 직접 말 선택/이동 확정, AI의 차례만 자동 진행
-- 낙 시험 버튼 (낙 확률은 사람과 AI가 동일)
+### 1. 1,500건 심화 Rollout 파인튜닝 신경망 AI
+- **모델 허브**: [`callakrsos/dalbit-yut-laya-1500`](https://huggingface.co/callakrsos/dalbit-yut-laya-1500)
+- 8스레드 병렬 Rollout 시뮬레이션을 통해 수집된 1,500건의 고품질 기보와 옵션 셔플 데이터 증강 기법을 적용했습니다.
+- 표준 사각(S) 보드 기준 **승률 70.0% (14승 6패)** 및 다중 클래스 Brier 점수 **0.0583**을 기록하여 정밀한 국면 판단력을 갖추었습니다.
+- 자세한 실험 및 검증 수치는 [Laya 결정 모델 실험 보고서](./docs/laya-experiment.md)를 참고하세요.
 
-## 배경음악
+### 2. 모바일 퀵 컨트롤 독 (`mobile-action-dock`)
+- 모바일(390×844 등) 환경에서 윷판 바로 아래에 **윷 결과 칩**, **출발 대기 말 칩**, **이동 확정 버튼**이 즉각 노출됩니다.
+- 복잡한 스크롤 없이도 한 손으로 윷을 던지고, 말을 선택하고, 착수를 확정할 수 있습니다.
 
-[**「달빛 노을 머문 툇마루」 듣기 (MP3, 80초)**](https://zaruous.github.io/dalbit-yut/audio/moonlit-porch.mp3)
+### 3. 전통 한옥 노을 분위기 & 금장 시네마틱 테마
+- 벡터 레이어로 섬세하게 구현된 툇마루, 가을 단풍, 은은한 등불 배경.
+- 윷판 **바로 아래** 멍석에서 네 가락의 윷이 포물선을 그리며 회전하고 바운드되는 착지 애니메이션.
+- 수동 조작 원칙 보존: 사용자가 **윷 결과 선택 → 말 클릭 → 경로 선택 → 금빛 목적지 클릭**으로 직접 손맛을 느끼며 말을 움직입니다.
 
-게임을 처음 클릭하거나 키보드로 조작하면 반복 재생됩니다. 상단 ♫ 버튼으로 효과음과 함께 끄고 켤 수 있고, ⚙ 설정에서 배경음악 음량을 따로 조절할 수 있습니다. 다른 탭으로 이동하면 음악은 잠시 멈춥니다.
+### 4. 전략 패물 아이템전 모드
+- 일반 전통전 외에도, 판 위의 복주머니 칸에 멈추면 전략 패물을 획득할 수 있습니다.
+- **금줄**: 낙(멍석 이탈)을 1회 방어.
+- **협문 열쇠**: 갈림길을 정차하지 않고 지나치면서도 지름길로 꺾을 수 있는 특수 열쇠.
+- **방패**: 상대 말의 잡기로부터 내 말을 1회 완벽 보호.
 
-agy가 이 프로젝트를 위해 작곡·편곡한 국악풍 연주곡입니다. 가야금과 전통 타악 녹음 샘플에 피아노·베이스·스트링·플루트 반주를 더했습니다. [악기 소스와 제작 정보](public/audio/CREDITS.md)를 참고하세요.
+### 5. 오리지널 국악풍 배경음악
+- [**「달빛 노을 머문 툇마루」 듣기 (MP3, 80초)**](https://zaruous.github.io/dalbit-yut/audio/moonlit-porch.mp3)
+- 가야금, 전통 타악기(장구, 북), 피아노, 스트링, 대금이 어우러진 서정적인 연주곡. [악기 소스 및 크레딧](public/audio/CREDITS.md)
 
-## 로컬 실행
+---
 
-Node.js 20.19+ 또는 22.12+ 권장.
+## 📸 실제 브라우저 화면
+
+| 직접 플레이 (1600×900) | 윷 던지기 4단계 연출 |
+|:---:|:---:|
+| ![직접 플레이 화면](./docs/images/play-desktop.webp) | ![윷 던지기 연출](./docs/images/throw-sequence.webp) |
+| 윷 결과 `걸` ➔ 말 선택 ➔ 지름길 선택 ➔ 금빛 목적지 클릭 | 200ms 발사 ➔ 420ms 공중 회전 ➔ 700ms 하강 ➔ 1360ms 착지 |
+
+| AI 4인 자동 관전 모드 | 모바일 퀵 컨트롤 독 (390×844) |
+|:---:|:---:|
+| ![AI 관전 화면](./docs/images/ai-spectate.webp) | <img src="./docs/images/play-mobile.webp" alt="모바일 화면" width="280"> |
+| `?watch=1&players=4` 실시간 AI 대전 관전 | 윷판 바로 아래 퀵 컨트롤 독으로 쾌적한 모바일 플레이 |
+
+- [시각화 품질 기준 및 검증 보고서](./docs/visual-quality-v1.md)
+- [윷 던지기 연출 검증](./docs/throw-animation-validation.md)
+- [탐색 AI 전략 알고리즘](./docs/ai-strategy.md)
+- [새 맵 지형 제안 5종 갤러리](https://zaruous.github.io/dalbit-yut/map-concepts/)
+
+---
+
+## 📜 게임 규칙 및 조작법
+
+1. **윷 던지기 & 결과**:
+   - 도(1칸), 개(2칸), 걸(3칸), 윷(4칸 + 보너스 던지기), 모(5칸 + 보너스 던지기), 빽도(1칸 뒤로).
+   - 상대의 말을 잡으면 추가로 윷을 한 번 더 던집니다.
+2. **낙(멍석 밖 이탈)**:
+   - 네 가락 중 하나라도 멍석 밖으로 **완전히** 나가면 해당 던지기는 무효(낙) 처리됩니다. (경계선에 걸친 가락은 유효)
+   - 이전에 모아둔 윷·모 결과가 있다면 유지되며, 남은 결과로 이동할 수 있습니다.
+3. **지름길 규칙**:
+   - 모서리 분기점 및 중앙 칸에 **정확히 멈추었을 때만** 지름길 경로를 선택할 수 있습니다.
+4. **4가지 윷판 지원**:
+   - **기본 사각형판 (S, 기본값)**: 전통 29개 자리 (외곽 20 + 중앙 X자 9). [상세 분석](./docs/standard-board.md)
+   - **팔각 순환형 (A)**: 외곽 순환과 내곽 십자 교차.
+   - **이중 링형 (B)**: 내·외곽의 동심원 구조.
+   - **나선정원형 (G)**: 4개의 협문과 복주머니가 배치된 확장형 정원 맵.
+
+---
+
+## 💻 로컬 개발 및 실행
+
+**요구 사양**: Node.js 20.19+ 또는 22.12+
 
 ```bash
+# 1. 저장소 클론 및 패키지 설치
+git clone https://github.com/zaruous/dalbit-yut.git
+cd dalbit-yut
 npm install
+
+# 2. 로컬 개발 서버 시작 (Vite)
 npm run dev
 ```
 
-정적 검증과 브라우저 검토용 HTML 생성:
+브라우저에서 `http://localhost:5173`으로 접속합니다.
+
+### 정적 검증 및 빌드
 
 ```bash
+# TypeScript 정적 타입 검사
 npm run typecheck
+
+# 게임 엔진 단위 및 시뮬레이션 테스트 (225판 자동 검증)
 npm test
+
+# 독립 실행형 HTML 미리보기 번들 생성
 npm run build:preview
+
+# 프로덕션 배포 빌드 (dist/ 생성)
 npm run build
 ```
 
-`npm test`는 실제 TypeScript 엔진을 컴파일하여 세 맵의 2~4인 게임 **225판**과 탐색 AI 관전 경기 **36판**을 자동 실행합니다. 기본판의 지름길·중앙 정차·빽도·업기·잡기·완주도 별도로 검사합니다.
+---
 
-## Vercel 배포
+## 🚀 배포 가이드
 
-이 GitHub 저장소를 Vercel에서 Import합니다.
+### Vercel 배포
+이 저장소를 Vercel 프로젝트로 Import합니다.
 
-| 설정 | 값 |
+| 설정 항목 | 설정값 |
 |---|---|
-| Framework | Vite |
-| Install | `npm install` |
-| Build | `npm run build` |
-| Output Directory | `dist` |
+| **Framework Preset** | Vite |
+| **Build Command** | `npm run build` |
+| **Output Directory** | `dist` |
+| **Install Command** | `npm install` |
 
-> GitHub 커밋은 완료될 수 있어도 Vercel에 실제 배포되려면 Vercel 프로젝트 연결이 필요합니다.
+### GitHub Pages 배포
+`dist/` 빌드 아티팩트를 기반으로 GitHub Actions를 통해 `gh-pages` 브랜치에 자동 배포됩니다.
 
-## 주요 소스
+---
 
-| 파일 | 내용 |
-|---|---|
-| `src-ts/App.tsx` | React 화면, 직접 말 선택·윷·말 이동 애니메이션 |
-| `src-ts/gameEngine.ts` | 게임 상태, 낙·잡기·업기·승리 판정 |
-| `src-ts/aiEngine.ts` | 탐색 AI의 수 선택 |
-| `src-ts/mapEngine.ts` | 기본 사각형·팔각형·이중 링형 경로와 분기 처리 |
-| `src-ts/styles.css` | 공통 레이아웃과 SVG |
-| `src-ts/theme-cinematic.css` | 기존 시네마틱 테마 |
-| `src-ts/quality-v1.css` | 새 품질 기준용 화면·반응형·이펙트 스타일 |
-| `public/hanok-autumn-scene.svg` | UI 잔상이 없는 독립 한옥 배경 |
-| `scripts/build-preview.cjs` | TypeScript 컴파일 결과를 단일 HTML로 묶음 |
-| `docs/visual-quality-v1.md` | 품질 기준, 자동 검증, 수동 검수 항목 |
-| `docs/images/` | README용 실제 화면 캡처 |
-| `.github/workflows/ci.yml` | `npm test`와 `npm run build`를 실행하는 CI |
+## 📂 프로젝트 구조
 
-## 검증 범위와 주의사항
+```text
+dalbit-yut/
+├── src-ts/                    # 정본 TypeScript 소스
+│   ├── App.tsx                # 메인 UI, SVG 보드, 조작 인터랙션, HF Space 통신
+│   ├── gameEngine.ts          # 게임 규칙, 상태 머신, 낙/잡기/업기 판정
+│   ├── aiEngine.ts            # 내장 탐색 AI 알고리즘
+│   ├── mapEngine.ts           # 4종 윷판 그래프 및 지름길 라우팅
+│   ├── layaCandidates.ts      # 신경망 모델용 상태 벡터 변환기
+│   ├── styles.css             # 기본 스타일
+│   ├── theme-cinematic.css    # 시네마틱 테마 오버라이드
+│   └── quality-v1.css         # 최상위 비주얼 품질 레이어 (모바일 독 등)
+├── public/                    # 정적 에셋 (한옥 SVG 배경, BGM, 효과음)
+├── docs/                      # 개발, 벤치마크, 시각 품질 검증 문서
+├── scripts/                   # 빌드, 테스트, 데이터 수집, 벤치마크 도구
+└── preview.html               # 빌드된 독립 단일 HTML
+```
 
-2026-10-26 Chromium에서 1600×900, 1366×768, 390×844, 360×800 화면을 검사했습니다. **가로 스크롤·런타임 JavaScript 예외 없음**, 수동 말 선택→목적지 클릭, 강제 낙→차례 전환을 확인했습니다.
+---
 
-2026-10-27에는 낙 확률을 사람과 AI에 동일하게 맞췄고, 낙이 나도 모아 둔 윷·모 결과를 유지하도록 고쳤으며, 각각 회귀 테스트를 추가했습니다. 윷 던지기 연출은 착지 순간의 끊김(결과 표시 전후 위치 차이)이 0px임을 확인했습니다. 근거는 [연출 검증](./docs/throw-animation-validation.md)에 있습니다. 같은 날 기본 사각형판과 AI 관전 화면에서도 페이지 오류가 없었습니다.
+## 📄 라이선스 & 크레딧
 
-**알려진 성능 문제:** GPU 없는 환경에서는 패널의 `backdrop-filter` 때문에 화면 전체가 15~18fps로 떨어집니다. 실기기 FPS는 아직 측정하지 않았습니다. 진행 상황은 [#2](https://github.com/zaruous/dalbit-yut/issues/2)에서 다룹니다.
-
-`npm run build`(tsc 타입 검사 + `vite build` → `dist/`)는 로컬과 CI(`.github/workflows/ci.yml`)에서 확인합니다. Vercel 연결 후 배포 로그는 별도로 확인해야 합니다. 애니메이션은 경계 좌표 기반의 2D 연출이며, 3D 물리 엔진은 아닙니다. 해당 맵과 낙 처리는 커스텀 규칙입니다.
-
-라이선스: [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) · Codex 가이드: [AGENTS.md](./AGENTS.md)
+- 코드 및 디자인: [MIT License](./LICENSE)
+- 서드파티 고지 및 음원 크레딧: [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) · [CREDITS.md](public/audio/CREDITS.md)
+- 개발 에이전트 지침: [AGENTS.md](./AGENTS.md)
