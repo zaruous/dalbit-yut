@@ -21,13 +21,25 @@ async function spaceAction(game: GameState,signal: AbortSignal): Promise<MoveOpt
  if(game.config.board==='G')return chooseAIAction(game);
  const input=candidatesFor(game,'v2');
  if(input.options.length<2)return input.fallback;
- const start=await fetch(`${SPACE_URL}/gradio_api/call/predict`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:[input.state,input.criteria]}),signal});
+ const urlToken=typeof window!=='undefined'?new URLSearchParams(window.location.search).get('hf_token'):null;
+ if(urlToken&&typeof window!=='undefined'){try{localStorage.setItem('hf_token',urlToken.trim());}catch(e){}}
+ const hfToken=(typeof window!=='undefined'&&(localStorage.getItem('hf_token')||urlToken))||'';
+ const postHeaders: Record<string,string>={'Content-Type':'application/json'};
+ if(hfToken)postHeaders['Authorization']=`Bearer ${hfToken.trim()}`;
+ const start=await fetch(`${SPACE_URL}/gradio_api/call/predict`,{method:'POST',headers:postHeaders,body:JSON.stringify({data:[input.state,input.criteria]}),signal});
  if(!start.ok)throw Error('Space request failed');
  const {event_id}=await start.json();
  if(typeof event_id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(event_id))throw Error('Invalid Space event');
- const response=await fetch(`${SPACE_URL}/gradio_api/call/predict/${event_id}`,{signal});
+ const getHeaders: Record<string,string>={};
+ if(hfToken)getHeaders['Authorization']=`Bearer ${hfToken.trim()}`;
+ const response=await fetch(`${SPACE_URL}/gradio_api/call/predict/${event_id}`,{headers:getHeaders,signal});
  if(!response.ok)throw Error('Space response failed');
- const stream=await response.text(),match=stream.match(/event:\s*complete\s*\r?\ndata:\s*([^\r\n]+)/);
+ const stream=await response.text();
+ if(stream.includes('event: error')||stream.includes('"error":')){
+  console.warn('⚠️ [Laya Space AI Error]',stream);
+  throw Error('Space ZeroGPU quota or inference error');
+ }
+ const match=stream.match(/event:\s*complete\s*\r?\ndata:\s*([^\r\n]+)/);
  if(!match)throw Error('Space prediction failed');
  const answer=JSON.parse(match[1])?.[0]?.choice;
  if(typeof answer!=='string'||!Object.hasOwn(input.criteria,answer))throw Error('Invalid Space choice');
@@ -355,8 +367,8 @@ componentDidMount(){
   .then(r=>r.ok?r.json():null)
   .then(d=>{
    if(d&&(useSpace||d.ready)){
-    this.setState({layaConnected:true,layaModelName:useSpace?'Space (ZeroGPU)':(d.model||'1500')});
-    this.notify(`🤖 달빛 Laya AI (${useSpace?'HF Space ZeroGPU':(d.model||'1500')}) 연결됨`);
+    this.setState({layaConnected:true,layaModelName:useSpace?'Space (Laya 1500)':(d.model||'1500')});
+    this.notify(`🤖 달빛 Laya AI (${useSpace?'HF Space (Laya 1500)':(d.model||'1500')}) 연결됨`);
    }
   })
   .catch(()=>{});
@@ -738,7 +750,9 @@ render(){
     ),
     h('p',{className:'setup-composition',role:'status'},(s.setup.mode==='spectate'?`AI ${s.setup.count}명 자동 대전 · 관전 전용`:s.setup.mode==='ai'?`나 1명 + AI ${s.setup.count-1}명 · 총 ${s.setup.count}인`:`사람 ${s.setup.count}명 · 로컬 대전`)+(s.setup.itemMode?` · 아이템전(제 ${E.itemUnlockTurn(s.setup.count)}턴 중반 등장)`:' · 일반전')),
     h('label',{className:'form-label'},'윷놀이판'),h('div',{className:'setting-options',style:{gridTemplateColumns:'repeat(2,1fr)'}},...M.BOARD_TYPES.map(value=>h('button',{key:value,className:cx('setting-btn',s.setup.board===value&&'active'),'aria-pressed':s.setup.board===value,onClick:()=>this.setState({setup:{...s.setup,board:value}})},M.boardMeta(value).title))),
-    h('details',{className:'settings-extra'},h('summary',null,'음악 · 규칙'),
+    h('details',{className:'settings-extra'},h('summary',null,'음악 · 규칙 · 토큰'),
+     h('label',{className:'form-label',htmlFor:'hf-token-input'},'Hugging Face 토큰 (ZeroGPU 인증)'),
+     h('input',{id:'hf-token-input',type:'password',placeholder:'hf_... 입력 시 ZeroGPU 쿼터 무제한',defaultValue:typeof window!=='undefined'?(localStorage.getItem('hf_token')||''):'',onChange:(ev)=>{const v=ev.target.value.trim();try{if(v)localStorage.setItem('hf_token',v);else localStorage.removeItem('hf_token');}catch(e){}},style:{width:'100%',padding:'6px 8px',borderRadius:'6px',border:'1px solid #c8a368',background:'#241612',color:'#fbe4be',fontSize:'11px',marginBottom:'8px'}}),
      h('label',{className:'form-label',htmlFor:'music-volume'},`배경음악 (${Math.round(s.musicVolume*100)}%)`),
      h('input',{id:'music-volume',type:'range',min:0,max:100,step:1,value:Math.round(s.musicVolume*100),'aria-label':'배경음악 음량',onChange:(ev)=>this.setState({musicVolume:Number(ev.target.value)/100}),style:{width:'100%',accentColor:'#e5c17d'}}),
      h('p',{className:'modal-note'},'규칙: 갈림길 정차 시 지름길, 빽도는 지나온 경로로 후진, 낙은 그 던지기만 무효. 아이템전 선택 시 참가 인원에 따른 중반 턴부터 패물이 등장합니다.')

@@ -12,7 +12,7 @@ _agent = laya.load(MODEL, device="cuda")
 _lock = threading.Lock()
 
 
-@spaces.GPU(duration=20)
+@spaces.GPU(duration=10)
 def predict(state, criteria):
     if not isinstance(state, str) or len(state) > 16384:
         raise gr.Error("Invalid game state")
@@ -22,7 +22,12 @@ def predict(state, criteria):
         raise gr.Error("Invalid choice")
     with _lock:
         with torch.inference_mode():
-            result = _agent.predict(state, {"move": {"type": "choice", "instructions": INSTRUCTIONS, "criteria": criteria}}, max_len=1024, head_max_len=512)
+            result = _agent.predict(
+                state,
+                {"move": {"type": "choice", "instructions": INSTRUCTIONS, "criteria": criteria}},
+                max_len=1024,
+                head_max_len=512
+            )
     usage = result.get("usage", {})
     if usage.get("truncated") or usage.get("options"):
         raise gr.Error("Model input was truncated")

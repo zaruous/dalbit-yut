@@ -10,4 +10,4 @@ app_file: app.py
 pinned: false
 ---
 
-달빛 윷마당의 공개 Laya 선택 API입니다. ZeroGPU를 사용합니다.
+달빛 윷마당의 공개 Laya 선택 API입니다.
