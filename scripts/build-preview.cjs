@@ -19,10 +19,10 @@ const wrap=f=>{const names=[];let src=fs.readFileSync(path.join(root,'build-stat
  if(/^\s*(import|export)\b/m.test(src))throw new Error('Unsupported import/export in '+f);
  return `const ${ns(f)}=(()=>{'use strict';\n${src}\nreturn {${names.join(',')}};\n})();`};
 const css=['src-ts/styles.css','src-ts/theme-cinematic.css','src-ts/quality-v1.css'].map(f=>inlineUrls(rd(f))).join('\n');
-const js=['mapEngine.js','gameEngine.js','aiEngine.js','App.js'].map(wrap).join('\n');
+const js=['mapEngine.js','gameEngine.js','aiEngine.js','layaCandidates.js','App.js'].map(wrap).join('\n');
 const head=rd('index.html').match(/<head>([\s\S]*?)<\/head>/)[1]
  .replace(/\s*<link rel="stylesheet"[^>]*>/g,'').replace(/\s*<script[^>]*><\/script>/g,'')
- .replace(/href="\/([^"]+)"/g,(m,f)=>{const d=dataUri(f);return d?`href="${d}"`:m});
+ .replace(/href="(?:\/|\.\/)([^"]+)"/g,(m,f)=>{const d=dataUri(f);return d?`href="${d}"`:m});
 const html=`<!doctype html><html lang="ko"><head>${head}<style>${css}</style></head><body><audio id="dalbit-bgm" src="${dataUri('audio/moonlit-porch.mp3')}" loop preload="none"></audio><div id="root"></div>
 <script>${safe(rd('public/react.production.min.js'))}</script>
 <script>${safe(rd('public/react-dom.production.min.js'))}</script>

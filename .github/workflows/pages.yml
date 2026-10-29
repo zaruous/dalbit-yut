@@ -1,17 +1,15 @@
 name: Deploy GitHub Pages
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-
+  pages: write
+  id-token: write
 concurrency:
-  group: github-pages
+  group: pages
   cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,20 +19,14 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: actions/configure-pages@v5
       - run: npm ci
-      - run: npm run typecheck
-      - run: npx vite build --base=/dalbit-yut/
-      - uses: actions/upload-pages-artifact@v4
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

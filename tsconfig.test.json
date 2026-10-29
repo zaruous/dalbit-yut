@@ -11,6 +11,7 @@
   "include": [
     "src-ts/mapEngine.ts",
     "src-ts/gameEngine.ts",
-    "src-ts/aiEngine.ts"
+    "src-ts/aiEngine.ts",
+    "src-ts/layaCandidates.ts"
   ]
 }

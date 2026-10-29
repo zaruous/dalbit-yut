@@ -1,6 +1,7 @@
 import * as E from './gameEngine.js';
 import * as M from './mapEngine.js';
 import {chooseAIAction, chooseAIItem} from './aiEngine.js';
+import {candidatesFor} from './layaCandidates.js';
 import type { GameState, GameConfig, MoveOption, MoveMeta, LandingStick, YutRoll, GamePiece, PlayerItem } from './gameEngine.js';
 import type { MoveChoice } from './mapEngine.js';
 
@@ -13,6 +14,25 @@ const h: any = React.createElement;
 
 const FRAG=(children)=>h('div',null,children);
 const cx=(...names)=>names.filter(Boolean).join(' ');
+const SPACE_URL='https://callakrsos-dalbit-yut.hf.space';
+const useSpace=(window.location.hostname||'').endsWith('.github.io')||(typeof window!=='undefined'&&new URLSearchParams(window.location.search).get('space')==='1');
+async function spaceAction(game: GameState,signal: AbortSignal): Promise<MoveOption|null>{
+ // This model was trained on S/A/B; retain the built-in strategy for the spiral board.
+ if(game.config.board==='G')return chooseAIAction(game);
+ const input=candidatesFor(game,'v2');
+ if(input.options.length<2)return input.fallback;
+ const start=await fetch(`${SPACE_URL}/gradio_api/call/predict`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:[input.state,input.criteria]}),signal});
+ if(!start.ok)throw Error('Space request failed');
+ const {event_id}=await start.json();
+ if(typeof event_id!=='string'||!/^[a-zA-Z0-9_-]+$/.test(event_id))throw Error('Invalid Space event');
+ const response=await fetch(`${SPACE_URL}/gradio_api/call/predict/${event_id}`,{signal});
+ if(!response.ok)throw Error('Space response failed');
+ const stream=await response.text(),match=stream.match(/event:\s*complete\s*\r?\ndata:\s*([^\r\n]+)/);
+ if(!match)throw Error('Space prediction failed');
+ const answer=JSON.parse(match[1])?.[0]?.choice;
+ if(typeof answer!=='string'||!Object.hasOwn(input.criteria,answer))throw Error('Invalid Space choice');
+ return input.options[Number(answer.slice(1))]||null;
+}
 function coords(g: M.BoardGraph,id: string): M.Point{
  if(id==='WAIT')return g.xy.O0;
  if(id==='FIN')return g.type==='G'?g.xy.C:{x:432,y:406};
@@ -329,12 +349,12 @@ class App extends React.Component {
   timers: ReturnType<typeof setTimeout>[] = [];
 
 componentDidMount(){
- fetch('/api/laya/status')
+ fetch(useSpace?`${SPACE_URL}/gradio_api/info`:'/api/laya/status')
   .then(r=>r.ok?r.json():null)
   .then(d=>{
-   if(d&&d.ready){
-    this.setState({layaConnected:true,layaModelName:d.model||'1500'});
-    this.notify(`🤖 달빛 Laya AI (${d.model||'1500'}) 연결됨`);
+   if(d&&(useSpace||d.ready)){
+    this.setState({layaConnected:true,layaModelName:useSpace?'Space (ZeroGPU)':(d.model||'1500')});
+    this.notify(`🤖 달빛 Laya AI (${useSpace?'HF Space ZeroGPU':(d.model||'1500')}) 연결됨`);
    }
   })
   .catch(()=>{});
@@ -383,32 +403,37 @@ checkAI(){
   }
   if(current.phase==='roll')this.throwYut('random',true);else if(current.phase==='move'){
    void (async()=>{
-    let action: MoveOption|null=null;
+    let action: MoveOption|null=null,spaceFailed=false;
     try{
      const ctrl=new AbortController();
-     const timer=setTimeout(()=>ctrl.abort(),2000);
+     const timer=setTimeout(()=>ctrl.abort(),useSpace?120000:2000);
+     try{if(useSpace){action=await spaceAction(current,ctrl.signal);}else{
      const res=await fetch('/api/laya/action',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({game:current,matchId:this.matchId}),
       signal:ctrl.signal,
      });
-     clearTimeout(timer);
      if(res.ok){
       const data=await res.json();
       if(data&&data.action)action=data.action;
      }
-    }catch(e){}
-    if(!action)action=chooseAIAction(current);
+     }}finally{clearTimeout(timer);}
+    }catch(e){spaceFailed=useSpace;}
+    if(!action){action=chooseAIAction(current);if(useSpace)spaceFailed=true;}
     if(this.destroyed||this.state.game!==current)return;
     if(!action){this.setState({game:E.normalize(current)});return;}
     this.commitMove(action,true);
+    if(useSpace&&current.config.board!=='G'){
+     if(spaceFailed)this.setState({layaConnected:false,toast:'Laya 연결 실패 · 기본 AI로 진행합니다.'});
+     else if(!this.state.layaConnected)this.setState({layaConnected:true,layaModelName:'1500'});
+    }
    })();
   }
  },g.phase==='roll'?850:620);
 };
 recordMatchEnd(game: GameState){
- if(!this.state.layaConnected)return;
+ if(!this.state.layaConnected||useSpace)return;
  fetch('/api/laya/match-end',{
   method:'POST',
   headers:{'Content-Type':'application/json'},
@@ -528,7 +553,7 @@ render(){
       h('div',{className:'avatar-coin'},h('div',{className:'avatar'},p.avatar)),
       h('div',{className:'player-identity'},
         h('div',{className:'player-name'},p.label),
-        h('div',{className:'player-role'},p.ai?watching?'AI 선수':(s.layaConnected?`달빛 Laya AI (${s.layaModelName?.replace('checkpoint-rollout-','')||'1500'})`:'인공지능 상대'):p.id===0&&g.config.mode==='ai'?'내 플레이어':'참가자'),
+        h('div',{className:'player-role'},p.ai?watching?'AI 선수':(s.layaConnected&&(!useSpace||g.config.board!=='G')?`달빛 Laya AI (${s.layaModelName?.replace('checkpoint-rollout-','')||'1500'})`:'인공지능 상대'):p.id===0&&g.config.mode==='ai'?'내 플레이어':'참가자'),
         h('div',{className:'pawns'},...pcs.map((pc,i)=>h('span',{key:i,className:cx('pawn-mini',pc.node==='FIN'&&'done'),style:{'--piece':p.color},title:pc.node==='FIN'?'완주':pc.node==='WAIT'?'대기':'이동 중'}))),
         h('div',{className:'player-progress','aria-label':`${done}개 완주`},h('div',{className:'player-progress-fill',style:{width:`${done*25}%`}}))
       ),

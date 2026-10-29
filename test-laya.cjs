@@ -3,12 +3,20 @@ const assert=require('node:assert/strict');
 const E=require('./build-test/gameEngine.js');
 const {chooseAIAction}=require('./build-test/aiEngine.js');
 const {LayaWorker,candidatesFor,chooseLayaAction}=require('./scripts/laya-client.cjs');
+const browserCandidates=require('./build-test/layaCandidates.js').candidatesFor;
 
 function game(){
  const state=E.createGame({mode:'local'});state.phase='move';
  state.rolls=[{id:'one',value:1,faces:[false,true,false,false]},{id:'two',value:2,faces:[true,true,false,false]}];
  return state;
 }
+test('browser and local Laya receive identical legal candidate representations',()=>{
+ for(const board of ['S','A','B']){
+  const state=E.createGame({mode:'local',board});state.phase='move';
+  state.rolls=[{id:'one',value:1,faces:[false,true,false,false]},{id:'two',value:2,faces:[true,true,false,false]}];
+  assert.deepEqual(browserCandidates(state,'v2'),candidatesFor(state,'v2'));
+ }
+});
 test('shortlist contains the existing AI move and only legal moves without changing state',()=>{
  const state=game(),before=JSON.stringify(state),input=candidatesFor(state),baseline=chooseAIAction(state);
  assert(input.options.length>=2&&input.options.length<=4);

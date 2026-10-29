@@ -7,7 +7,7 @@ const proxy = {
   },
 };
 export default defineConfig({
-  base: '/',
+  base: process.env.GITHUB_ACTIONS ? '/dalbit-yut/' : '/',
   server: {
     host: '0.0.0.0',
     allowedHosts,
