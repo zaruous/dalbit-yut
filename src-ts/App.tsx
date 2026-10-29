@@ -31,7 +31,9 @@ async function spaceAction(game: GameState,signal: AbortSignal): Promise<MoveOpt
  if(!match)throw Error('Space prediction failed');
  const answer=JSON.parse(match[1])?.[0]?.choice;
  if(typeof answer!=='string'||!Object.hasOwn(input.criteria,answer))throw Error('Invalid Space choice');
- return input.options[Number(answer.slice(1))]||null;
+ const chosenOpt=input.options[Number(answer.slice(1))]||null;
+ console.log('🤖 [Laya Space AI]',{event_id,choice:answer,chosenAction:chosenOpt,candidates:input.criteria});
+ return chosenOpt;
 }
 function coords(g: M.BoardGraph,id: string): M.Point{
  if(id==='WAIT')return g.xy.O0;
