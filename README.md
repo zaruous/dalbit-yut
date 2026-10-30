@@ -13,6 +13,7 @@
 - 🤗 **Hugging Face Space (ZeroGPU Inference)**: [callakrsos/dalbit-yut](https://huggingface.co/spaces/callakrsos/dalbit-yut)
 - 📦 **Hugging Face Model Hub**: [callakrsos/dalbit-yut-laya-1500](https://huggingface.co/callakrsos/dalbit-yut-laya-1500)
 - 📄 **독립 실행형 HTML 미리보기**: [preview.html](./preview.html)
+- 📝 **AI 개발 기술 블로그**: [Laya 파인튜닝: 100·500·1500건 학습 데이터와 승률 비교](./docs/blog/dalbit-yut-laya-finetuning.md) — 맵·말 배치 데이터 구조, Colab·Drive 학습 흐름, CPU 추론, 승률 그래프 포함
 
 ---
 
@@ -193,3 +194,4 @@ dalbit-yut/
 - 코드 및 디자인: [MIT License](./LICENSE)
 - 서드파티 고지 및 음원 크레딧: [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) · [CREDITS.md](public/audio/CREDITS.md)
 - 개발 에이전트 지침: [AGENTS.md](./AGENTS.md)
+
